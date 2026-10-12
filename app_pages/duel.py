@@ -127,27 +127,30 @@ def render_duel_page(df: pd.DataFrame):
     ha_b_str = to_tr_num(ha_b, 1)
 
     # Yardımcı Fark Çipi Fonksiyonu (kazandı/kaybetti ifadesi ASLA kullanılmaz)
-    def format_diff_chip(val_1: float, val_2: float, unit_s: str, name_1: str, name_2: str) -> str:
-        diff_val = val_1 - val_2
-        denom_val = max(val_1, val_2)
+    def format_diff_chip(val_1: float, val_2: float, unit_s: str, name_1: str, name_2: str, decimals: int = 1) -> str:
+        dec_fmt = "1" if decimals == 0 else f"0.{'0'*(decimals-1)}1"
+        v1_disp = float(Decimal(f"{float(val_1):.4f}").quantize(Decimal(dec_fmt), rounding=ROUND_HALF_UP))
+        v2_disp = float(Decimal(f"{float(val_2):.4f}").quantize(Decimal(dec_fmt), rounding=ROUND_HALF_UP))
+        diff_val = round(v1_disp - v2_disp, decimals) if decimals > 0 else (v1_disp - v2_disp)
+        denom_val = max(v1_disp, v2_disp)
         pct_rel = (abs(diff_val) / denom_val * 100.0) if denom_val > 0 else 0.0
 
         if pct_rel < 5.0:
             pct_s = to_tr_num(pct_rel, 1)
             return f"<span style='background:#1e293b; color:#94a3b8; padding:3px 8px; border-radius:6px; font-size:12px; font-weight:600;'>≈ Benzer (%{pct_s})</span>"
 
-        diff_abs_s = to_tr_num(abs(diff_val), 1)
+        diff_abs_s = to_tr_num(abs(diff_val), decimals)
         pct_s = to_tr_num(pct_rel, 1)
         if diff_val > 0:
             return f"<span style='background:rgba(56, 189, 248, 0.12); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.3); padding:3px 8px; border-radius:6px; font-size:12px; font-weight:600;'>▲ {name_1} +{diff_abs_s} {unit_s} (+%{pct_s})</span>"
         else:
             return f"<span style='background:rgba(16, 185, 129, 0.12); color:#10b981; border:1px solid rgba(16, 185, 129, 0.3); padding:3px 8px; border-radius:6px; font-size:12px; font-weight:600;'>▲ {name_2} +{diff_abs_s} {unit_s} (+%{pct_s})</span>"
 
-    chip_pm = format_diff_chip(pm_a, pm_b, "µg/m³", il_a_name, il_b_name)
-    chip_sol = format_diff_chip(sol_a, sol_b, "/ 100k", il_a_name, il_b_name)
-    chip_osb = format_diff_chip(float(osb_a), float(osb_b), "OSB", il_a_name, il_b_name)
-    chip_osb_m = format_diff_chip(osb_per_m_a, osb_per_m_b, "OSB/M", il_a_name, il_b_name)
-    chip_ha = format_diff_chip(ha_a, ha_b, "ha", il_a_name, il_b_name)
+    chip_pm = format_diff_chip(pm_a, pm_b, "µg/m³", il_a_name, il_b_name, decimals=1)
+    chip_sol = format_diff_chip(sol_a, sol_b, "/ 100k", il_a_name, il_b_name, decimals=1)
+    chip_osb = format_diff_chip(float(osb_a), float(osb_b), "Adet", il_a_name, il_b_name, decimals=0)
+    chip_osb_m = format_diff_chip(osb_per_m_a, osb_per_m_b, "Adet/Milyon", il_a_name, il_b_name, decimals=1)
+    chip_ha = format_diff_chip(ha_a, ha_b, "ha", il_a_name, il_b_name, decimals=1)
 
     # HTML Tablosu (Glassmorphic lüks koyu tasarım)
     st.markdown("#### Kafa Kafaya Gösterge Karşılaştırma Tablosu")
@@ -205,14 +208,18 @@ def render_duel_page(df: pd.DataFrame):
     """, unsafe_allow_html=True)
 
     # E. VERİDEN ÜRETİLEN NÖTR ÖZET CÜMLE (Nedensellik ve yorum içermez)
-    diff_pm = pm_a - pm_b
+    pm_a_disp = float(Decimal(f"{float(pm_a):.4f}").quantize(Decimal('0.1'), rounding=ROUND_HALF_UP))
+    pm_b_disp = float(Decimal(f"{float(pm_b):.4f}").quantize(Decimal('0.1'), rounding=ROUND_HALF_UP))
+    diff_pm = round(pm_a_disp - pm_b_disp, 1)
     pm_dir = "daha düşük" if diff_pm < 0 else ("daha yüksek" if diff_pm > 0 else "eşit")
     pm_abs_str = to_tr_num(abs(diff_pm), 1)
-    denom_pm = max(pm_a, pm_b)
+    denom_pm = max(pm_a_disp, pm_b_disp)
     pm_rel = (abs(diff_pm) / denom_pm * 100.0) if denom_pm > 0 else 0.0
     pm_rel_note = "benzer düzeyde" if pm_rel < 5.0 else f"%{to_tr_num(pm_rel, 1)} farkla"
 
-    diff_sol = sol_a - sol_b
+    sol_a_disp = float(Decimal(f"{float(sol_a):.4f}").quantize(Decimal('0.1'), rounding=ROUND_HALF_UP))
+    sol_b_disp = float(Decimal(f"{float(sol_b):.4f}").quantize(Decimal('0.1'), rounding=ROUND_HALF_UP))
+    diff_sol = round(sol_a_disp - sol_b_disp, 1)
     sol_dir = "daha düşük" if diff_sol < 0 else ("daha yüksek" if diff_sol > 0 else "eşit")
     sol_abs_str = to_tr_num(abs(diff_sol), 1)
 

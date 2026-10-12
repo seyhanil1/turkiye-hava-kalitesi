@@ -25,6 +25,14 @@ def test_duel_dumbbell_chart_percentile():
     assert "İstanbul" in names
     assert "Ankara" in names
 
+    # Lejant üst kısımda olmalı (x ekseniyle çakışma olmamalı)
+    assert fig.layout.legend.y >= 1.0
+    assert fig.layout.legend.xanchor == "right"
+
+    # Dinamik etiket pozisyonları atanmış olmalı
+    assert isinstance(marker_traces[0].textposition, (list, tuple))
+    assert isinstance(marker_traces[1].textposition, (list, tuple))
+
 
 def test_duel_single_metric_comparison_bars():
     fig = create_single_metric_comparison_bar(
@@ -71,14 +79,19 @@ def test_duel_page_istanbul_ankara_exact_values():
     assert "2.424,7 ha" in all_markdown
     assert "9.173,5 ha" in all_markdown
 
-    # 2. Metin kalitesi kontrolü (Sayısal NaN, Inf, None kelime olarak bulunmamalı)
+    # 2. Fark çipleri ve matematiksel tutarlılık
+    assert "+6 Adet" in all_markdown
+    assert "0,9 µg/m³" in all_markdown
+    assert "+6,0 OSB" not in all_markdown
+
+    # 3. Metin kalitesi kontrolü (Sayısal NaN, Inf, None kelime olarak bulunmamalı)
     import re
     assert not re.search(r'\b(nan|none|inf)\b', all_markdown, re.IGNORECASE)
     assert "kazandı" not in all_markdown.lower()
     assert "kaybetti" not in all_markdown.lower()
     assert "tüiklerin" not in all_markdown.lower()
 
-    # 3. Dipnotlar
+    # 4. Dipnotlar
     assert "CAMS" in all_markdown
     assert "OSBÜK" in all_markdown
 

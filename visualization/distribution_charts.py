@@ -324,6 +324,21 @@ def create_duel_dumbbell_chart(
             hoverinfo="none"
         ))
 
+    # Dinamik metin pozisyonları (birbirine çok yakın yüzdelerde üst üste binmeyi önler)
+    pos_a = []
+    pos_b = []
+    for va, vb in zip(vals_a, vals_b):
+        if abs(va - vb) < 8:
+            if va <= vb:
+                pos_a.append("middle left")
+                pos_b.append("middle right")
+            else:
+                pos_a.append("middle right")
+                pos_b.append("middle left")
+        else:
+            pos_a.append("top center")
+            pos_b.append("bottom center")
+
     # Şehir A noktaları (Mavi)
     fig.add_trace(go.Scatter(
         x=vals_a,
@@ -332,7 +347,7 @@ def create_duel_dumbbell_chart(
         name=city_a["il"],
         marker=dict(color="#38bdf8", size=13, line=dict(color="#ffffff", width=1.5)),
         text=[f"%{va:.0f}" for va in vals_a],
-        textposition="top center",
+        textposition=pos_a,
         textfont=dict(color="#38bdf8", size=10),
         customdata=raw_a,
         hovertemplate=f"<b>{city_a['il']}</b><br>%{{y}}<br>Yüzdelik Konum: %{{x:.1f}} / 100<br>Ham Değer: %{{customdata}}<extra></extra>"
@@ -346,7 +361,7 @@ def create_duel_dumbbell_chart(
         name=city_b["il"],
         marker=dict(color="#10b981", size=13, line=dict(color="#ffffff", width=1.5)),
         text=[f"%{vb:.0f}" for vb in vals_b],
-        textposition="bottom center",
+        textposition=pos_b,
         textfont=dict(color="#10b981", size=10),
         customdata=raw_b,
         hovertemplate=f"<b>{city_b['il']}</b><br>%{{y}}<br>Yüzdelik Konum: %{{x:.1f}} / 100<br>Ham Değer: %{{customdata}}<extra></extra>"
@@ -358,13 +373,14 @@ def create_duel_dumbbell_chart(
             font=dict(size=13, color="#f8fafc")
         ),
         height=320,
-        margin=dict(t=40, l=30, r=30, b=30),
+        margin=dict(t=50, l=30, r=30, b=45),
         xaxis=dict(
             title=dict(
                 text="81 İl İçindeki Yüzdelik Sıralama (Percentile)",
-                font=dict(color="#94a3b8", size=11)
+                font=dict(color="#94a3b8", size=11),
+                standoff=10
             ),
-            range=[-5, 105],
+            range=[-8, 108],
             gridcolor="#1e293b",
             tickfont=dict(color="#94a3b8", size=10),
             zeroline=False
@@ -376,9 +392,9 @@ def create_duel_dumbbell_chart(
         legend=dict(
             orientation="h",
             yanchor="bottom",
-            y=-0.28,
-            xanchor="center",
-            x=0.5,
+            y=1.04,
+            xanchor="right",
+            x=1.0,
             font=dict(color="#f8fafc", size=11)
         ),
         paper_bgcolor="rgba(0,0,0,0)",
