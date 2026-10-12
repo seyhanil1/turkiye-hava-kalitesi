@@ -7,6 +7,22 @@ import streamlit as st
 import pandas as pd
 
 
+from decimal import Decimal, ROUND_HALF_UP
+
+
+def to_tr_num(val: float, decimals: int = 1) -> str:
+    """Sayıları matematiksel doğru yuvarlamayla (ROUND_HALF_UP) Türkçe formatlar."""
+    if pd.isnull(val):
+        return "—"
+    dec_fmt = "1" if decimals == 0 else f"0.{'0'*(decimals-1)}1"
+    dec = Decimal(f"{float(val):.4f}").quantize(Decimal(dec_fmt), rounding=ROUND_HALF_UP)
+    if decimals == 0:
+        return f"{int(dec):,}".replace(",", ".")
+    parts = f"{dec:.{decimals}f}".split(".")
+    int_part = f"{int(parts[0]):,}".replace(",", ".")
+    return f"{int_part},{parts[1]}"
+
+
 def diagnose_root_cause(pm25: float, osb_sayisi: int) -> dict:
     """
     Kök neden analizi algoritması:
@@ -40,12 +56,12 @@ def diagnose_root_cause(pm25: float, osb_sayisi: int) -> dict:
             "title": "Çanak Topoğrafyası & Evsel Katı Yakıt",
             "detail": (
                 "Coğrafi çanak yapısı hava akımını engellemekte; düşük gelirli konutlarda "
-                "kalitesiz kömür/biyokütle kullanımı inversiyonla birleşerek ölümcül kirlilik sisi üretmektedir."
+                "kalitesiz kömür/biyokütle kullanımı inversiyonla birleşerek tehlikeli hava kirliliği epizotlarına ve yoğun duman birikimine yol açmaktadır."
             ),
             "action_items": [
                 "Sosyal yardım amaçlı kömür dağıtımının acilen sonlandırılarak ücretsiz ısı pompası/doğalgaz desteği verilmesi",
                 "Vadi tabanında rüzgar koridorlarını kesen çok katlı imar izinlerinin durdurulması",
-                "Kırsal/varoş mahallelerde bina yalıtım ve cephe mantolama seferberliği"
+                "Alt gelir grubu yerleşim alanları ve kentsel dönüşüm bölgelerinde bina yalıtım seferberliği"
             ]
         }
     else:
@@ -72,13 +88,13 @@ def calculate_inaction_scenario(pm25: float, solunum_olum: float) -> dict:
     2035 Eylemsizlik Senaryosu matematiksel modellemesi:
     - 10 Yıllık Önlenemeyen Ek Can Kaybı: int(solunum_olum * 1.45)
     - Kronikleşme Riski: 'Astım ve KOAH acil servis başvurularında +%38 kalıcı artış.'
-    - Resmi Uyarı: 'Kritik inversiyon dönemlerinde yaşam süresinde 2.8 - 4.1 yıl kayıp projeksiyonu.'
+    - Epidemiyolojik Uyarı: 'Kritik inversiyon dönemlerinde yaşam süresinde 2,8 - 4,1 yıl kayıp projeksiyonu.'
     """
     ek_can_kaybi = int(max(0.0, solunum_olum) * 1.45)
     return {
         "ek_can_kaybi_10yil": ek_can_kaybi,
         "kroniklesme_riski": "Astım ve KOAH acil servis başvurularında +%38 kalıcı artış.",
-        "resmi_uyari": "Kritik inversiyon dönemlerinde yaşam süresinde 2.8 - 4.1 yıl kayıp projeksiyonu."
+        "resmi_uyari": "Kritik inversiyon dönemlerinde yaşam süresinde 2,8 - 4,1 yıl kayıp projeksiyonu."
     }
 
 
@@ -116,7 +132,7 @@ def simulate_green_policy(
     }
 
 
-def render_green_page(df: pd.DataFrame):
+def render_green_page(df: pd.DataFrame, selected_city: str = None):
     """
     Ulusal Yeşil Dönüşüm Stratejisi, Teşhis & Risk Projeksiyon Motoru
     Sağlık Bakanlığı / Çevre Bakanlığı düzeyinde kurumsal karar destek arayüzü.
@@ -234,7 +250,7 @@ def render_green_page(df: pd.DataFrame):
             Ulusal Yeşil Dönüşüm, Eylem Planı & Risk Projeksiyonu
         </div>
         <div class="green-subtitle">
-            Veriye dayalı kök neden tespiti, resmi müdahale politikaları ve 2035 eylemsizlik projeksiyonu.
+            Veriye dayalı kök neden tespiti, kurumsal müdahale politikaları ve 2035 eylemsizlik projeksiyonu.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -245,16 +261,15 @@ def render_green_page(df: pd.DataFrame):
 
     # 3. Şehir Seçimi (Varsayılan: Yüksek riskli Iğdır veya Osmaniye)
     cities = sorted(df["il"].unique().tolist())
-    default_idx = 0
-    if "Iğdır" in cities:
-        default_idx = cities.index("Iğdır")
-    elif "Osmaniye" in cities:
-        default_idx = cities.index("Osmaniye")
+    if selected_city is None or selected_city not in cities:
+        default_idx = 0
+        if "Iğdır" in cities:
+            default_idx = cities.index("Iğdır")
+        elif "Osmaniye" in cities:
+            default_idx = cities.index("Osmaniye")
 
-    sel_col1, sel_col2 = st.columns([1.2, 2.8])
-    with sel_col1:
         selected_city = st.selectbox(
-            "İncelenecek Şehir:",
+            "Senaryo Analizi Yapılacak İli Seçin:",
             cities,
             index=default_idx,
             key="green_city_selector"
@@ -271,31 +286,39 @@ def render_green_page(df: pd.DataFrame):
         nufus = float(city_data.get("nufus", 500000))
         solunum_olum = solunum_olum_100k * (nufus / 100000.0)
 
-    with sel_col2:
-        dso_kat = round(pm25 / 5.0, 1) if pm25 > 0 else 0
-        st.markdown(f"""
-        <div style="background:rgba(2, 18, 32, 0.7); border:1px solid rgba(0, 242, 254, 0.2); border-radius:10px; padding:10px 16px; margin-top:24px; display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:10px;">
-            <div style="text-align:center;">
-                <div style="font-size:11px; color:#94a3b8;">PM2.5 Seviyesi</div>
-                <div style="font-size:18px; font-weight:800; color:{'#ef4444' if pm25 > 40 else '#f59e0b'};">{pm25:.1f} <span style="font-size:12px; font-weight:400; color:#cbd5e1;">µg/m³</span></div>
-            </div>
-            <div style="width:1px; height:28px; background:rgba(255,255,255,0.1);"></div>
-            <div style="text-align:center;">
-                <div style="font-size:11px; color:#94a3b8;">DSÖ Limit Aşımı</div>
-                <div style="font-size:18px; font-weight:800; color:#ef4444;">{dso_kat} Kat</div>
-            </div>
-            <div style="width:1px; height:28px; background:rgba(255,255,255,0.1);"></div>
-            <div style="text-align:center;">
-                <div style="font-size:11px; color:#94a3b8;">Aktif OSB Sayısı</div>
-                <div style="font-size:18px; font-weight:800; color:#38bdf8;">{osb_sayisi} Tesis</div>
-            </div>
-            <div style="width:1px; height:28px; background:rgba(255,255,255,0.1);"></div>
-            <div style="text-align:center;">
-                <div style="font-size:11px; color:#94a3b8;">Yıllık Solunum Vefatı</div>
-                <div style="font-size:18px; font-weight:800; color:#cbd5e1;">~{int(solunum_olum):,} Can</div>
-            </div>
+    dso_kat = round(pm25 / 5.0, 1) if pm25 > 0 else 0
+    pm25_str = to_tr_num(pm25, 1)
+    dso_kat_str = to_tr_num(dso_kat, 1)
+    sol_str = to_tr_num(solunum_olum, 0)
+
+    st.markdown(f"""
+    <div style="background:rgba(2, 18, 32, 0.7); border:1px solid rgba(0, 242, 254, 0.2); border-radius:10px; padding:12px 18px; margin-top:12px; margin-bottom:20px; display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div style="text-align:center;">
+            <div style="font-size:11px; color:#94a3b8;">Seçili İl</div>
+            <div style="font-size:18px; font-weight:800; color:#38bdf8;">{selected_city}</div>
         </div>
-        """, unsafe_allow_html=True)
+        <div style="width:1px; height:28px; background:rgba(255,255,255,0.1);"></div>
+        <div style="text-align:center;">
+            <div style="font-size:11px; color:#94a3b8;">PM2.5 Seviyesi</div>
+            <div style="font-size:18px; font-weight:800; color:{'#ef4444' if pm25 > 40 else '#f59e0b'};">{pm25_str} <span style="font-size:12px; font-weight:400; color:#cbd5e1;">µg/m³</span></div>
+        </div>
+        <div style="width:1px; height:28px; background:rgba(255,255,255,0.1);"></div>
+        <div style="text-align:center;">
+            <div style="font-size:11px; color:#94a3b8;">DSÖ Limit Aşımı</div>
+            <div style="font-size:18px; font-weight:800; color:#ef4444;">{dso_kat_str} Kat</div>
+        </div>
+        <div style="width:1px; height:28px; background:rgba(255,255,255,0.1);"></div>
+        <div style="text-align:center;">
+            <div style="font-size:11px; color:#94a3b8;">Aktif OSB Sayısı</div>
+            <div style="font-size:18px; font-weight:800; color:#38bdf8;">{osb_sayisi} Tesis</div>
+        </div>
+        <div style="width:1px; height:28px; background:rgba(255,255,255,0.1);"></div>
+        <div style="text-align:center;">
+            <div style="font-size:11px; color:#94a3b8;">Yıllık Solunum Vefatı</div>
+            <div style="font-size:18px; font-weight:800; color:#cbd5e1;">~{sol_str} Can</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.write("")
 
@@ -310,13 +333,13 @@ def render_green_page(df: pd.DataFrame):
         st.markdown(f"""<div class="glass-card" style="border:1px solid {diag['border_glow']}; box-shadow:0 8px 24px {diag['border_glow']};">
 <div>
 <span class="col-badge" style="background:{diag['badge_color']}22; color:{diag['badge_color']}; border:1px solid {diag['badge_color']};">KÖK NEDEN ANALİZİ</span>
-<div class="card-header-title">{diag['title']}</div>
+<div class="card-header-title">{selected_city} — {diag['title']}</div>
 <p style="font-size:13px; color:#cbd5e1; line-height:1.65; margin-bottom:16px;">{diag['detail']}</p>
 </div>
 <div style="background:rgba(2, 18, 32, 0.7); border-radius:8px; padding:12px; border:1px solid rgba(255,255,255,0.05);">
 <div style="font-size:11px; color:#8faec9; margin-bottom:4px;">Algoritma Teşhis Çıktısı:</div>
 <div style="font-size:13px; font-weight:700; color:{diag['badge_color']};">&bull; {diag['badge']}</div>
-<div style="font-size:11.5px; color:#94a3b8; margin-top:4px;">(OSB: {osb_sayisi} &bull; PM2.5: {pm25:.1f} µg/m³)</div>
+<div style="font-size:11.5px; color:#94a3b8; margin-top:4px;">(OSB: {osb_sayisi} &bull; PM2.5: {pm25_str} µg/m³)</div>
 </div>
 </div>""", unsafe_allow_html=True)
 
@@ -326,7 +349,7 @@ def render_green_page(df: pd.DataFrame):
         st.markdown(f"""<div class="glass-card" style="border:1px solid rgba(0, 242, 254, 0.35); box-shadow:0 8px 24px rgba(0, 242, 254, 0.15);">
 <div>
 <span class="col-badge" style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe;">RESMİ EYLEM PLANI</span>
-<div class="card-header-title">Öncelikli Politika Müdahalesi</div>
+<div class="card-header-title">{selected_city} Öncelikli Politika Müdahalesi</div>
 <div style="margin-top:6px;">{actions_html}</div>
 </div>
 <div style="margin-top:12px; font-size:11.5px; color:#64748b; font-style:italic;">* Çevre, Şehircilik ve İklim Değişikliği Bakanlığı ile İl Mahalli Çevre Kurulu direktifleriyle uyumlu.</div>
@@ -337,10 +360,10 @@ def render_green_page(df: pd.DataFrame):
         st.markdown(f"""<div class="glass-card" style="border:1px solid rgba(239, 68, 68, 0.35); box-shadow:0 8px 24px rgba(239, 68, 68, 0.15);">
 <div>
 <span class="col-badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid #ef4444;">2035 EYLEMSİZLİK SENARYOSU</span>
-<div class="card-header-title">Hiçbir Şey Yapılmazsa (10 Yıllık Risk)</div>
+<div class="card-header-title">{selected_city} — Hiçbir Şey Yapılmazsa (10 Yıllık Risk)</div>
 <div class="metric-row">
 <div class="metric-label">10 Yıllık Önlenemeyen Ek Can Kaybı</div>
-<div class="metric-val" style="color:#ef4444;">+{inaction['ek_can_kaybi_10yil']:,} Kişi</div>
+<div class="metric-val" style="color:#ef4444;">+{to_tr_num(inaction['ek_can_kaybi_10yil'], 0)} Kişi</div>
 </div>
 <div class="metric-row" style="margin-bottom:0;">
 <div class="metric-label">Kronikleşme Riski</div>
@@ -348,19 +371,19 @@ def render_green_page(df: pd.DataFrame):
 </div>
 </div>
 <div style="background:rgba(239, 68, 68, 0.08); border:1px dashed rgba(239, 68, 68, 0.4); border-radius:8px; padding:10px 12px; margin-top:12px;">
-<div style="font-size:11px; font-weight:700; color:#ef4444; margin-bottom:2px;">RESMİ EPİDEMİYOLOJİK UYARI</div>
+<div style="font-size:11px; font-weight:700; color:#ef4444; margin-bottom:2px;">Epidemiyolojik Risk Modeli Uyarısı</div>
 <div style="font-size:11.5px; color:#cbd5e1; line-height:1.4;">{inaction['resmi_uyari']}</div>
 </div>
 </div>""", unsafe_allow_html=True)
 
     # 5. İnteraktif Yeşil Politika Simülatörü
-    st.markdown("""<div class="sim-panel">
+    st.markdown(f"""<div class="sim-panel">
 <div style="font-size:18px; font-weight:800; color:#ffffff; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
-İnteraktif Yeşil Politika Simülatörü
+{selected_city} İnteraktif Politika Simülatörü
 </div>
 <div style="font-size:13px; color:#94a3b8; margin-bottom:20px;">
 Sanayi baca filtre denetimlerini ve temiz ısınma/enerji dönüşüm oranlarını ayarlayarak 
-kurtarılabilecek hayatları ve hava kalitesi iyileşme oranını simüle edin.
+{selected_city} için kurtarılabilecek hayatları ve hava kalitesi iyileşme oranını simüle edin.
 </div>""", unsafe_allow_html=True)
 
     col_sim_ctrl, col_sim_kpis = st.columns([1.1, 1.9])
@@ -398,15 +421,22 @@ kurtarılabilecek hayatları ve hava kalitesi iyileşme oranını simüle edin.
         with kpi1:
             st.markdown(f"""<div class="sim-kpi-card" style="border-top:3px solid #10b981;">
 <div style="font-size:11px; color:#8faec9; text-transform:uppercase; font-weight:700;">Kurtarılabilecek Can</div>
-<div style="font-size:24px; font-weight:900; color:#10b981; margin:6px 0;">~{sim_res['saved_lives']:,}</div>
+<div style="font-size:24px; font-weight:900; color:#10b981; margin:6px 0;">~{to_tr_num(sim_res['saved_lives'], 0)}</div>
 <div style="font-size:11px; color:#94a3b8;">Kişi / Yıl (Önlenebilir)</div>
 </div>""", unsafe_allow_html=True)
 
         with kpi2:
             st.markdown(f"""<div class="sim-kpi-card" style="border-top:3px solid #38bdf8;">
 <div style="font-size:11px; color:#8faec9; text-transform:uppercase; font-weight:700;">PM2.5 İyileşme Oranı</div>
-<div style="font-size:24px; font-weight:900; color:#38bdf8; margin:6px 0;">-%{sim_res['pm_reduction_pct']:.1f}</div>
-<div style="font-size:11px; color:#94a3b8;">{pm25:.1f} ➔ {sim_res['new_pm25']:.1f} µg/m³</div>
+<div style="font-size:24px; font-weight:900; color:#38bdf8; margin:6px 0;">-%{to_tr_num(sim_res['pm_reduction_pct'], 1)}</div>
+<div style="font-size:11px; color:#94a3b8;">{pm25_str} ➔ {to_tr_num(sim_res['new_pm25'], 1)} µg/m³</div>
 </div>""", unsafe_allow_html=True)
+
+    # Metodolojik Şeffaflık Notu (DSÖ AirQ+ ve RR katsayıları)
+    st.markdown("""
+    <div style="margin-top:20px; background:rgba(2, 18, 32, 0.6); border:1px solid rgba(255, 255, 255, 0.08); border-radius:8px; padding:12px 16px; font-size:12px; color:#94a3b8; line-height:1.5;">
+        <strong>Not:</strong> Öngörülen can kaybı ve morbidite projeksiyonları, DSÖ AirQ+ ve küresel nispi risk (RR) katsayıları baz alınarak simüle edilmiştir. Klinik kesinlik veya resmi adli can kaybı verisi niteliği taşımaz.
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)

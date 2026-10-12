@@ -28,13 +28,27 @@ def render_scenarios_page(df: pd.DataFrame):
     </div>
     """, unsafe_allow_html=True)
 
+    cities = sorted(df["il"].unique().tolist()) if (df is not None and not df.empty) else []
+    default_idx = 0
+    if "Iğdır" in cities:
+        default_idx = cities.index("Iğdır")
+    elif "selected_city" in st.session_state and st.session_state["selected_city"] in cities:
+        default_idx = cities.index(st.session_state["selected_city"])
+
+    selected_city = st.selectbox(
+        "Senaryo Analizi Yapılacak İli Seçin:",
+        cities,
+        index=default_idx,
+        key="scenario_selected_city"
+    )
+
     tab_sim, tab_2035 = st.tabs([
         "Politika & Dönüşüm Simülatörü",
         "2035: Gelecek Yol Ayrımı (Temiz Yol vs. Gri Yol)"
     ])
 
     with tab_sim:
-        render_green_page(df)
+        render_green_page(df, selected_city=selected_city)
 
     with tab_2035:
         render_future_fork_page(df)

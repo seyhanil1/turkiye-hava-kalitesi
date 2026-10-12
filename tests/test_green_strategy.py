@@ -45,7 +45,20 @@ def test_calculate_inaction_scenario_formulas():
 
     # Kronikleşme Riski & Resmi Uyarı metin kontrolü
     assert "+%38" in res["kroniklesme_riski"]
-    assert "2.8 - 4.1 yıl" in res["resmi_uyari"]
+    assert "2,8 - 4,1 yıl" in res["resmi_uyari"]
+
+
+def test_ethical_and_scientific_terminology():
+    res_canak = diagnose_root_cause(pm25=82.1, osb_sayisi=1)
+    
+    # 1. 'varoş' kelimesi kesinlikle bulunmamalı
+    for item in res_canak["action_items"]:
+        assert "varoş" not in item.lower()
+    assert "Alt gelir grubu yerleşim alanları" in res_canak["action_items"][2]
+
+    # 2. 'ölümcül kirlilik sisi' yerine bilimsel ifade olmalı
+    assert "ölümcül" not in res_canak["detail"].lower()
+    assert "tehlikeli hava kirliliği epizotlarına" in res_canak["detail"]
 
 
 def test_simulate_green_policy_calculations():
@@ -86,18 +99,59 @@ def test_simulate_green_policy_calculations():
 
 
 def test_render_green_page_structure():
-    # Mini test dataframe
-    test_df = pd.DataFrame([
-        {"il": "Iğdır", "pm25": 82.1, "osb_sayisi": 1, "solunum_olum": 125, "solunum_olum_100k": 61.2, "nufus": 204000},
-        {"il": "Osmaniye", "pm25": 83.6, "osb_sayisi": 10, "solunum_olum": 517, "solunum_olum_100k": 94.3, "nufus": 548000},
-        {"il": "İstanbul", "pm25": 38.4, "osb_sayisi": 8, "solunum_olum": 11143, "solunum_olum_100k": 71.0, "nufus": 15655000}
-    ])
+    from streamlit.testing.v1 import AppTest
 
-    # Should run without raising exceptions
-    try:
+    def app_green():
+        import pandas as pd
+        from app_pages.green_page import render_green_page
+        test_df = pd.DataFrame([
+            {"il": "Iğdır", "pm25": 82.1, "osb_sayisi": 1, "solunum_olum": 125, "solunum_olum_100k": 61.2, "nufus": 204000},
+            {"il": "Osmaniye", "pm25": 83.6, "osb_sayisi": 10, "solunum_olum": 517, "solunum_olum_100k": 94.3, "nufus": 548000},
+            {"il": "İstanbul", "pm25": 38.4, "osb_sayisi": 8, "solunum_olum": 11143, "solunum_olum_100k": 71.0, "nufus": 15655000}
+        ])
         render_green_page(test_df)
-    except Exception as e:
-        # In a headless pytest environment without streamlit active session,
-        # it might raise a Streamlit runtime error if any unhandled state occurs.
-        # But st functions handle script runs or log warning.
-        pytest.fail(f"render_green_page threw exception: {e}")
+
+    at = AppTest.from_function(app_green)
+    at.run()
+    assert not at.exception
+
+    all_markdown = " ".join([m.value for m in at.markdown])
+
+    # 1. Etik dil kontrolü
+    assert "varoş" not in all_markdown.lower()
+    assert "ölümcül" not in all_markdown.lower()
+    assert "RESMİ EPİDEMİYOLOJİK" not in all_markdown
+    assert "Epidemiyolojik Risk Modeli Uyarısı" in all_markdown
+
+    # 2. Metodolojik şeffaflık notu
+    assert "DSÖ AirQ+" in all_markdown
+    assert "Klinik kesinlik veya resmi adli can kaybı verisi niteliği taşımaz" in all_markdown
+
+    # 3. Sayı ve birim formatı kontrolü (Türkçe virgüllü ondalık)
+    assert "82,1" in all_markdown
+    assert "2,8 - 4,1" in all_markdown
+
+    # 4. Şehir entegrasyonu ve il seçici
+    assert "Senaryo Analizi Yapılacak İli Seçin:" in at.selectbox[0].label
+    assert "Iğdır İnteraktif Politika Simülatörü" in all_markdown
+
+
+def test_render_scenarios_page_dropdown():
+    from streamlit.testing.v1 import AppTest
+
+    def app_scenarios():
+        import pandas as pd
+        from app_pages.scenarios_page import render_scenarios_page
+        test_df = pd.DataFrame([
+            {"il": "Iğdır", "pm25": 82.1, "osb_sayisi": 1, "solunum_olum": 125, "solunum_olum_100k": 61.2, "nufus": 204000},
+            {"il": "Osmaniye", "pm25": 83.6, "osb_sayisi": 10, "solunum_olum": 517, "solunum_olum_100k": 94.3, "nufus": 548000}
+        ])
+        render_scenarios_page(test_df)
+
+    at = AppTest.from_function(app_scenarios)
+    at.run()
+    assert not at.exception
+
+    # Sayfanın en üstünde dropdown olmalı
+    assert len(at.selectbox) >= 1
+    assert "Senaryo Analizi Yapılacak İli Seçin:" in at.selectbox[0].label

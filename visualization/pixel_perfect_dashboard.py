@@ -3662,13 +3662,13 @@ function renderGreenModule(targetCity) {{
     }} else if (cityOsb < 6 && cityPm > 50) {{
         diagType = "canak";
         diagTitle = "🏔️ Çanak Topoğrafyası & Evsel Katı Yakıt";
-        diagDetail = "Coğrafi çanak yapısı hava akımını engellemekte; düşük gelirli konutlarda kalitesiz kömür/biyokütle kullanımı inversiyonla birleşerek ölümcül kirlilik sisi üretmektedir.";
+        diagDetail = "Coğrafi çanak yapısı hava akımını engellemekte; düşük gelirli konutlarda kalitesiz kömür/biyokütle kullanımı inversiyonla birleşerek tehlikeli hava kirliliği epizotlarına ve yoğun duman birikimine yol açmaktadır.";
         diagBadge = "COĞRAFİ KAPAN & İNVERSİYON";
         diagColor = "#f59e0b";
         actions = [
             "Sosyal yardım amaçlı kömür dağıtımının acilen sonlandırılarak ücretsiz ısı pompası/doğalgaz desteği verilmesi",
             "Vadi tabanında rüzgar koridorlarını kesen çok katlı imar izinlerinin durdurulması",
-            "Kırsal/varoş mahallelerde bina yalıtım ve cephe mantolama seferberliği"
+            "Alt gelir grubu yerleşim alanları ve kentsel dönüşüm bölgelerinde bina yalıtım seferberliği"
         ];
     }}
 
@@ -3693,7 +3693,7 @@ function renderGreenModule(targetCity) {{
 
     const sortedCities = [...CITIES].sort((a,b) => a.il.localeCompare(b.il, 'tr'));
     const cityOptionsHtml = sortedCities.map(c => 
-        `<option value="${{c.il}}" ${{c.il === selectedCity ? 'selected' : ''}}>${{c.il}} (PM2.5: ${{c.pm25.toFixed(1)}}, OSB: ${{c.osb_sayisi}})</option>`
+        `<option value="${{c.il}}" ${{c.il === selectedCity ? 'selected' : ''}}>${{c.il}} (PM2.5: ${{c.pm25.toFixed(1).replace('.', ',')}}, OSB: ${{c.osb_sayisi}})</option>`
     ).join('');
 
     const actionsHtml = actions.map(a => 
@@ -3703,14 +3703,14 @@ function renderGreenModule(targetCity) {{
     cont.innerHTML = `
         <div style="background:#031b2e; border:1px solid #093452; border-radius:12px; padding:16px 20px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div style="display:flex; align-items:center; gap:12px;">
-                <label style="font-size:13px; font-weight:700; color:#f8fafc;">📍 İncelenecek Şehir:</label>
+                <label style="font-size:13px; font-weight:700; color:#f8fafc;">📍 Senaryo Analizi Yapılacak İli Seçin:</label>
                 <select id="greenCitySelect" onchange="renderGreenModule(this.value)" style="background:#021220; border:1px solid #00e5db; color:#ffffff; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:700; outline:none; cursor:pointer;">
                     ${{cityOptionsHtml}}
                 </select>
             </div>
             <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                <span style="font-size:12px; color:#8faec9;">PM2.5: <strong style="color:${{cityPm > 40 ? '#ef4444' : '#f59e0b'}};">${{cityPm.toFixed(1)}} µg/m³</strong></span>
-                <span style="font-size:12px; color:#8faec9;">DSÖ: <strong style="color:#ef4444;">${{dsoKat}} Kat</strong></span>
+                <span style="font-size:12px; color:#8faec9;">PM2.5: <strong style="color:${{cityPm > 40 ? '#ef4444' : '#f59e0b'}};">${{cityPm.toFixed(1).replace('.', ',')}} µg/m³</strong></span>
+                <span style="font-size:12px; color:#8faec9;">DSÖ: <strong style="color:#ef4444;">${{dsoKat.toFixed(1).replace('.', ',')}} Kat</strong></span>
                 <span style="font-size:12px; color:#8faec9;">OSB: <strong style="color:#38bdf8;">${{cityOsb}}</strong></span>
                 <span style="font-size:12px; color:#8faec9;">Solunum Vefatı: <strong style="color:#f8fafc;">~${{fmt(citySolunumOlum)}} Can</strong></span>
             </div>
@@ -3721,13 +3721,13 @@ function renderGreenModule(targetCity) {{
             <div style="background:rgba(17, 26, 46, 0.85); border:1px solid ${{diagColor}}66; border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 8px 24px ${{diagColor}}22;">
                 <div>
                     <span style="background:${{diagColor}}22; color:${{diagColor}}; border:1px solid ${{diagColor}}; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; display:inline-block; margin-bottom:10px;">🔍 KÖK NEDEN ANALİZİ</span>
-                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:10px;">${{diagTitle}}</div>
+                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:10px;">${{selectedCity}} — ${{diagTitle}}</div>
                     <p style="font-size:13px; color:#cbd5e1; line-height:1.6; margin-bottom:14px;">${{diagDetail}}</p>
                 </div>
                 <div style="background:rgba(2, 18, 32, 0.7); border-radius:8px; padding:12px; border:1px solid rgba(255,255,255,0.05);">
                     <div style="font-size:11px; color:#8faec9; margin-bottom:4px;">Algoritma Teşhis Çıktısı:</div>
                     <div style="font-size:13px; font-weight:700; color:${{diagColor}};">&bull; ${{diagBadge}}</div>
-                    <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">(OSB: ${{cityOsb}} &bull; PM2.5: ${{cityPm.toFixed(1)}} µg/m³)</div>
+                    <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">(OSB: ${{cityOsb}} &bull; PM2.5: ${{cityPm.toFixed(1).replace('.', ',')}} µg/m³)</div>
                 </div>
             </div>
 
@@ -3735,7 +3735,7 @@ function renderGreenModule(targetCity) {{
             <div style="background:rgba(17, 26, 46, 0.85); border:1px solid rgba(0, 242, 254, 0.35); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 8px 24px rgba(0, 242, 254, 0.15);">
                 <div>
                     <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; display:inline-block; margin-bottom:10px;">🛠️ RESMİ EYLEM PLANI</span>
-                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:12px;">Öncelikli Politika Müdahalesi</div>
+                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:12px;">${{selectedCity}} Öncelikli Politika Müdahalesi</div>
                     <div>${{actionsHtml}}</div>
                 </div>
                 <div style="margin-top:10px; font-size:11px; color:#64748b; font-style:italic;">
@@ -3747,7 +3747,7 @@ function renderGreenModule(targetCity) {{
             <div style="background:rgba(17, 26, 46, 0.85); border:1px solid rgba(239, 68, 68, 0.35); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 8px 24px rgba(239, 68, 68, 0.15);">
                 <div>
                     <span style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid #ef4444; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; display:inline-block; margin-bottom:10px;">⚠️ 2035 EYLEMSİZLİK SENARYOSU</span>
-                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:10px;">Hiçbir Şey Yapılmazsa (10 Yıllık Risk)</div>
+                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:10px;">${{selectedCity}} — Hiçbir Şey Yapılmazsa (10 Yıllık Risk)</div>
                     
                     <div style="background:rgba(2, 18, 32, 0.7); border-radius:8px; padding:8px 12px; margin-bottom:6px;">
                         <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase;">10 Yıllık Önlenemeyen Ek Can Kaybı</div>
@@ -3760,8 +3760,8 @@ function renderGreenModule(targetCity) {{
                     </div>
                 </div>
                 <div style="background:rgba(239, 68, 68, 0.08); border:1px dashed rgba(239, 68, 68, 0.4); border-radius:8px; padding:8px 10px; margin-top:10px;">
-                    <div style="font-size:10px; font-weight:700; color:#ef4444; margin-bottom:2px;">🚨 RESMİ EPİDEMİYOLOJİK UYARI</div>
-                    <div style="font-size:11px; color:#cbd5e1; line-height:1.35;">Kritik inversiyon dönemlerinde yaşam süresinde 2.8 - 4.1 yıl kayıp projeksiyonu.</div>
+                    <div style="font-size:10px; font-weight:700; color:#ef4444; margin-bottom:2px;">🚨 Epidemiyolojik Risk Modeli Uyarısı</div>
+                    <div style="font-size:11px; color:#cbd5e1; line-height:1.35;">Kritik inversiyon dönemlerinde yaşam süresinde 2,8 - 4,1 yıl kayıp projeksiyonu.</div>
                 </div>
             </div>
         </div>
@@ -3769,10 +3769,10 @@ function renderGreenModule(targetCity) {{
         <!-- SİMÜLATÖR -->
         <div style="background:linear-gradient(135deg, rgba(11, 19, 43, 0.95) 0%, rgba(3, 22, 38, 0.98) 100%); border:1px solid rgba(0, 242, 254, 0.3); border-radius:14px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.4);">
             <div style="font-size:16px; font-weight:800; color:#ffffff; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
-                <span>🎛️</span> İnteraktif Yeşil Politika Simülatörü
+                <span>🎛️</span> ${{selectedCity}} İnteraktif Politika Simülatörü
             </div>
             <div style="font-size:12px; color:#8faec9; margin-bottom:18px;">
-                Sanayi baca filtre denetimlerini ve temiz enerji oranını ayarlayarak önlenebilecek tahmini ölümleri ve kirlilik iyileşmesini senaryo bazında simüle edin.
+                Sanayi baca filtre denetimlerini ve temiz enerji oranını ayarlayarak ${{selectedCity}} için önlenebilecek tahmini ölümleri ve kirlilik iyileşmesini senaryo bazında simüle edin.
             </div>
 
             <div style="display:grid; grid-template-columns:1.2fr 1.8fr; gap:20px; align-items:center;">
@@ -3804,10 +3804,15 @@ function renderGreenModule(targetCity) {{
                     <div style="background:rgba(2, 18, 32, 0.85); border-radius:10px; padding:16px 12px; text-align:center; border-top:3px solid #38bdf8; border-left:1px solid rgba(255,255,255,0.05); border-right:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
                         <div style="font-size:22px;">📉</div>
                         <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase; font-weight:700; margin-top:2px;">PM2.5 İyileşme Oranı</div>
-                        <div style="font-size:22px; font-weight:900; color:#38bdf8; margin:4px 0;">-%${{pmReduction.toFixed(1)}}</div>
-                        <div style="font-size:10px; color:#94a3b8;">${{cityPm.toFixed(1)}} ➔ ${{newPm25}} µg/m³</div>
+                        <div style="font-size:22px; font-weight:900; color:#38bdf8; margin:4px 0;">-%${{pmReduction.toFixed(1).replace('.', ',')}}</div>
+                        <div style="font-size:10px; color:#94a3b8;">${{cityPm.toFixed(1).replace('.', ',')}} ➔ ${{newPm25.replace('.', ',')}} µg/m³</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Metodolojik Şeffaflık Notu -->
+            <div style="margin-top:16px; background:rgba(2, 18, 32, 0.6); border:1px solid rgba(255, 255, 255, 0.08); border-radius:8px; padding:10px 14px; font-size:11.5px; color:#94a3b8; line-height:1.5;">
+                <strong>Not:</strong> Öngörülen can kaybı ve morbidite projeksiyonları, DSÖ AirQ+ ve küresel nispi risk (RR) katsayıları baz alınarak simüle edilmiştir. Klinik kesinlik veya resmi adli can kaybı verisi niteliği taşımaz.
             </div>
         </div>
     `;
