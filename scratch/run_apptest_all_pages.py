@@ -26,7 +26,7 @@ results = {}
 for p in all_pages:
     print(f"Testing page: {p}...", flush=True)
     try:
-        at = AppTest.from_file(app_file, default_timeout=30)
+        at = AppTest.from_file(app_file, default_timeout=60)
         at.query_params["sayfa"] = p
         at.run()
         

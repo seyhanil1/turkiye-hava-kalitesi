@@ -93,7 +93,7 @@ def _calculate_science_note(df: pd.DataFrame, pollutant: str = "pm25") -> dict:
     clean = df[[col, "osb_alani_hektar"]].dropna()
     if len(clean) >= 5:
         rho, p = stats.spearmanr(clean["osb_alani_hektar"], clean[col])
-        label = "PM2.5" if "25" in col else ("PM10" if "10" in col else "NO₂")
+        label = "PM2.5"
         direction = "pozitif" if rho >= 0 else "negatif"
         signif = p < 0.05
         p_txt = "p < 0,001" if p < 0.001 else f"p = {p:.3f}".replace(".", ",")
@@ -2144,7 +2144,7 @@ html, body {{
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label notranslate" translate="no" id="card1Label" title="81 ilin aritmetik ortalaması (Dönem: {period_label_str}, Birim: µg/m³)">81 İlin Ortalaması ⓘ</span>
+                            <span class="stat-label notranslate" translate="no" id="card1Label" title="81 ilin aritmetik ortalaması (nüfus ağırlıklı değildir, Dönem: {period_label_str}, Birim: µg/m³)">81 İlin Düz Ortalaması ⓘ</span>
                             <div class="stat-value" id="card1Value">{pm25_ort_str}<span>µg/m³</span></div>
                         </div>
                     </div>
@@ -2180,7 +2180,7 @@ html, body {{
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label notranslate" translate="no" id="card3Label" title="Dönemin en temiz / en düşük ortalamasına sahip ili (Birim: µg/m³)">En Temiz İl (En Düşük) ⓘ</span>
+                            <span class="stat-label notranslate" translate="no" id="card3Label" title="Dönemin en düşük ortalamasına sahip ili (Birim: µg/m³)">En Düşük PM2,5 ⓘ</span>
                             <div class="stat-value" id="card3Value" style="color: #00e599;">{min_val_str}<span>µg/m³</span></div>
                         </div>
                     </div>
@@ -2198,7 +2198,7 @@ html, body {{
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label" style="color: #00d2ee;" title="Model ve istasyon verisi bulunan toplam il sayısı (Dönem: {period_label_str})">Kapsanan İl ⓘ</span>
+                            <span class="stat-label" style="color: #00d2ee;" title="Model ve konsolide veri bulunan toplam il sayısı (Dönem: {period_label_str})">Model Verisi Bulunan İl ⓘ</span>
                             <div class="stat-value">{total_cities} / 81</div>
                         </div>
                     </div>
@@ -2217,10 +2217,7 @@ html, body {{
                     <div class="panel-header">
                         <div class="panel-title-box">
                             <svg class="panel-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg>
-                            <span class="panel-title">Türkiye Hava Kalitesi Haritası</span>
-                        </div>
-                        <div class="tab-pills" id="pollutantTabs">
-                            {pollutant_tabs_html}
+                            <span class="panel-title">Türkiye Hava Kalitesi Haritası (PM2.5)</span>
                         </div>
                     </div>
                     
@@ -2230,7 +2227,7 @@ html, body {{
                         </div>
                         <div class="map-tooltip" id="mapTooltip"></div>
                         <div class="map-controls">
-                            <span class="zoom-level-badge" id="zoomLevelLabel">115%</span>
+                            <span class="zoom-level-badge" id="zoomLevelLabel">100%</span>
                             <div class="map-btn" id="mapZoomIn" title="Yakınlaştır (+)">+</div>
                             <div class="map-btn" id="mapZoomOut" title="Uzaklaştır (−)">−</div>
                             <div class="map-btn" id="mapZoomReset" title="Sıfırla ve Ortala (⌖)">⌖</div>
@@ -2569,38 +2566,20 @@ function fmt(val) {{
     return (val || 0).toFixed(1).replace('.', ',');
 }}
 
-function getColor(val, pol) {{
-    if (pol === 'PM2.5') {{
-        if (val <= 15) return '#00e599';
-        if (val <= 30) return '#facc15';
-        if (val <= 50) return '#f97316';
-        if (val <= 70) return '#f87171';
-        return '#ef4444';
-    }} else if (pol === 'PM10') {{
-        if (val <= 30) return '#00e599';
-        if (val <= 50) return '#facc15';
-        if (val <= 80) return '#f97316';
-        if (val <= 120) return '#f87171';
-        return '#ef4444';
-    }} else {{
-        if (val <= 20) return '#00e599';
-        if (val <= 30) return '#facc15';
-        if (val <= 40) return '#f97316';
-        return '#ef4444';
-    }}
+function getColor(val) {{
+    if (val <= 15) return '#00e599';
+    if (val <= 30) return '#facc15';
+    if (val <= 50) return '#f97316';
+    if (val <= 70) return '#f87171';
+    return '#ef4444';
 }}
 
-function getStatusBadge(val, pol) {{
-    if (pol === 'PM2.5') {{
-        if (val > 70) return '<span class="rank-badge-status" style="background:#ef444422; color:#ef4444; border:1px solid #ef444455;">Kritik</span>';
-        if (val > 50) return '<span class="rank-badge-status" style="background:#f8717122; color:#f87171; border:1px solid #f8717155;">Sağlıksız</span>';
-        if (val > 30) return '<span class="rank-badge-status" style="background:#f9731622; color:#f97316; border:1px solid #f9731655;">Hassas</span>';
-        if (val > 15) return '<span class="rank-badge-status" style="background:#facc1522; color:#facc15; border:1px solid #facc1555;">Orta</span>';
-        return '<span class="rank-badge-status" style="background:#00e59922; color:#00e599; border:1px solid #00e59955;">İyi</span>';
-    }} else {{
-        if (val > 100) return '<span class="rank-badge-status" style="background:#ef444422; color:#ef4444; border:1px solid #ef444455;">Kritik</span>';
-        return '<span class="rank-badge-status" style="background:#00e59922; color:#00e599; border:1px solid #00e59955;">Normal</span>';
-    }}
+function getStatusBadge(val) {{
+    if (val > 70) return '<span class="rank-badge-status" style="background:#ef444422; color:#ef4444; border:1px solid #ef444455;">Kritik</span>';
+    if (val > 50) return '<span class="rank-badge-status" style="background:#f8717122; color:#f87171; border:1px solid #f8717155;">Sağlıksız</span>';
+    if (val > 30) return '<span class="rank-badge-status" style="background:#f9731622; color:#f97316; border:1px solid #f9731655;">Hassas</span>';
+    if (val > 15) return '<span class="rank-badge-status" style="background:#facc1522; color:#facc15; border:1px solid #facc1555;">Orta</span>';
+    return '<span class="rank-badge-status" style="background:#00e59922; color:#00e599; border:1px solid #00e59955;">İyi</span>';
 }}
 
 
@@ -2653,7 +2632,7 @@ document.addEventListener('click', () => {{
 // ==========================================
 // 4. HARİTA DRAG-TO-PAN VE SMOOTH ZOOM MOTORU
 // ==========================================
-let mapZoom = 1.15;
+let mapZoom = 1.0;
 let mapPanX = 0;
 let mapPanY = 0;
 let isPanning = false;
@@ -2727,7 +2706,7 @@ document.getElementById('mapZoomOut').addEventListener('click', () => {{
 }});
 
 document.getElementById('mapZoomReset').addEventListener('click', () => {{
-    mapZoom = 1.15;
+    mapZoom = 1.0;
     mapPanX = 0;
     mapPanY = 0;
     updateMapTransform();
@@ -2740,11 +2719,11 @@ document.querySelectorAll('.province-path').forEach(p => {{
         const name = p.getAttribute('data-name');
         const c = CITIES.find(ci => ci.il === name);
         if (c) {{
-            const polKey = currentPollutant === 'PM2.5' ? 'pm25' : (currentPollutant === 'PM10' ? 'pm10' : 'no2');
+            const polKey = 'pm25';
             tooltip.innerHTML = `
                 <div style="font-weight:800; font-size:13px; color:#ffffff;">${{c.il}} <span style="font-size:10px; color:#6d8fae;">(${{String(c.plaka).padStart(2, '0')}})</span></div>
                 <div style="color:#00e5db; font-size:12.5px; margin-top:2px;">
-                    ${{currentPollutant}}: <strong>${{fmt(c[polKey])}} µg/m³</strong>
+                    PM2.5: <strong>${{fmt(c[polKey])}} µg/m³</strong>
                 </div>
                 <div style="font-size:11px; color:#cbd5e1; margin-top:3px;">Bölge: ${{c.bolge}} &bull; OSB: ${{c.osb_sayisi}} Adet</div>
             `;
@@ -2774,7 +2753,7 @@ document.querySelectorAll('.province-path').forEach(p => {{
 // ==========================================
 function renderRankingTable() {{
     const container = document.getElementById('rankingTableContent');
-    const polKey = currentPollutant === 'PM2.5' ? 'pm25' : (currentPollutant === 'PM10' ? 'pm10' : 'no2');
+    const polKey = 'pm25';
     
     let filtered = [...CITIES];
     if (currentRegion && currentRegion !== 'Türkiye Geneli' && currentRegion !== 'Türkiye') {{
@@ -2840,29 +2819,16 @@ function renderRankingTable() {{
 // Madde 4: Seviyelere Göre İl Sayısını Dinamik Hesapla ve Güncelle
 function updateTierDistribution(citiesToCount) {{
     const list = citiesToCount || CITIES;
-    const polKey = currentPollutant === 'PM2.5' ? 'pm25' : (currentPollutant === 'PM10' ? 'pm10' : 'no2');
+    const polKey = 'pm25';
     
     let cntIyi = 0, cntOrta = 0, cntHassas = 0, cntSagliksiz = 0, cntKritik = 0;
     list.forEach(c => {{
         const v = c[polKey];
-        if (currentPollutant === 'PM2.5') {{
-            if (v <= 15) cntIyi++;
-            else if (v <= 30) cntOrta++;
-            else if (v <= 50) cntHassas++;
-            else if (v <= 70) cntSagliksiz++;
-            else cntKritik++;
-        }} else if (currentPollutant === 'PM10') {{
-            if (v <= 30) cntIyi++;
-            else if (v <= 50) cntOrta++;
-            else if (v <= 80) cntHassas++;
-            else if (v <= 120) cntSagliksiz++;
-            else cntKritik++;
-        }} else {{
-            if (v <= 20) cntIyi++;
-            else if (v <= 30) cntOrta++;
-            else if (v <= 40) cntHassas++;
-            else cntKritik++;
-        }}
+        if (v <= 15) cntIyi++;
+        else if (v <= 30) cntOrta++;
+        else if (v <= 50) cntHassas++;
+        else if (v <= 70) cntSagliksiz++;
+        else cntKritik++;
     }});
     
     const tot = Math.max(1, list.length);
@@ -2923,8 +2889,6 @@ function applyTimelineDay(dayIdx) {{
         if (dayData[c.il]) {{
             const arr = dayData[c.il];
             c.pm25 = arr[0];
-            c.pm10 = arr[1];
-            c.no2 = arr[2];
         }}
     }});
     
@@ -2986,7 +2950,7 @@ function initTimeline() {{
 // 6. DİĞER ETKİLEŞİMLER & TABLOLAR
 // ==========================================
 function updateKpiCards() {{
-    const polKey = currentPollutant === 'PM2.5' ? 'pm25' : (currentPollutant === 'PM10' ? 'pm10' : 'no2');
+    const polKey = 'pm25';
     let vals = CITIES.map(c => c[polKey]).filter(v => !isNaN(v) && v > 0);
     if (vals.length === 0) return;
     
@@ -2997,7 +2961,7 @@ function updateKpiCards() {{
     let minCity = CITIES.reduce((p, c) => (c[polKey] < p[polKey] ? c : p), CITIES[0]);
     
     const card1 = document.getElementById('card1Label');
-    if (card1) card1.innerHTML = '81 İlin Ortalaması ⓘ';
+    if (card1) card1.innerHTML = '81 İlin Düz Ortalaması ⓘ';
     const card1Val = document.getElementById('card1Value');
     if (card1Val) card1Val.innerHTML = fmt(mean) + '<span>µg/m³</span>';
     
@@ -3009,7 +2973,7 @@ function updateKpiCards() {{
     if (card2Diff) card2Diff.textContent = '(ortalamanın +' + fmt(maxCity[polKey] - mean) + ' µg/m³ üzerinde)';
     
     const card3Label = document.getElementById('card3Label');
-    if (card3Label) card3Label.innerHTML = 'En Temiz İl (En Düşük) ⓘ';
+    if (card3Label) card3Label.innerHTML = 'En Düşük PM2,5 ⓘ';
     const card3Val = document.getElementById('card3Value');
     if (card3Val) card3Val.innerHTML = fmt(minCity[polKey]) + '<span>µg/m³</span>';
     const card3City = document.getElementById('card3City');
@@ -3019,7 +2983,7 @@ function updateKpiCards() {{
 }}
 
 function updateMapValues() {{
-    const polKey = currentPollutant === 'PM2.5' ? 'pm25' : (currentPollutant === 'PM10' ? 'pm10' : 'no2');
+    const polKey = 'pm25';
     const cityMap = {{}};
     CITIES.forEach(c => {{ cityMap[c.il] = c; }});
     
@@ -3300,14 +3264,12 @@ function runDuelComparison() {{
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:20px;">
                 <h3 style="color:#00e5db; font-size:18px; margin-bottom:14px;">${{cA.il}} Profili</h3>
                 <p>• <strong>PM2.5:</strong> ${{fmt(cA.pm25)}} µg/m³</p>
-                <p style="margin-top:6px;">• <strong>PM10:</strong> ${{fmt(cA.pm10)}} µg/m³</p>
                 <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cA.osb / 10)}} Hektar</p>
                 <p style="margin-top:6px;">• <strong>Solunum Ölümü:</strong> ${{fmt(cA.solunum_olum_100k)}} / 100k</p>
             </div>
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:20px;">
                 <h3 style="color:#38bdf8; font-size:18px; margin-bottom:14px;">${{cB.il}} Profili</h3>
                 <p>• <strong>PM2.5:</strong> ${{fmt(cB.pm25)}} µg/m³</p>
-                <p style="margin-top:6px;">• <strong>PM10:</strong> ${{fmt(cB.pm10)}} µg/m³</p>
                 <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cB.osb / 10)}} Hektar</p>
                 <p style="margin-top:6px;">• <strong>Solunum Ölümü:</strong> ${{fmt(cB.solunum_olum_100k)}} / 100k</p>
             </div>
@@ -3500,7 +3462,7 @@ function renderCorrelationModule() {{
                 const outliers = ['Iğdır', 'Osmaniye', 'Erzincan', 'Malatya', 'Düzce'];
                 const xVals = CITIES.map(c => c.osb_alani || 0);
                 const yVals = CITIES.map(c => c.pm25);
-                const texts = CITIES.map(c => `<b>${{c.il}}</b> (${{c.bolge}})<br>PM2.5: ${{c.pm25.toFixed(1)}} µg/m³<br>OSB: ${{c.osb_alani || 0}} Ha`);
+                const texts = CITIES.map(c => `<b>${{c.il}}</b> (${{c.bolge}})<br>PM2.5: ${{fmt(c.pm25)}} µg/m³<br>OSB: ${{c.osb_alani || 0}} Ha`);
                 const colors = CITIES.map(c => outliers.includes(c.il) ? '#ef4444' : '#00d2ee');
                 const sizes = CITIES.map(c => outliers.includes(c.il) ? 10 : 7);
 
@@ -3557,7 +3519,7 @@ function renderCorrelationModule() {{
                     else {{ qNames.push('Low-High (Aykırı)'); qColors.push('#8b5cf6'); }}
                 }});
 
-                const mTexts = CITIES.map((c, i) => `<b>${{c.il}}</b><br>Z-skoru: ${{zScores[i].toFixed(2)}}<br>Mekânsal Gecikme: ${{wzScores[i].toFixed(2)}}<br>Durum: ${{qNames[i]}}`);
+                const mTexts = CITIES.map((c, i) => `<b>${{c.il}}</b><br>Z-skoru: ${{fmt(zScores[i])}}<br>Mekânsal Gecikme: ${{fmt(wzScores[i])}}<br>Durum: ${{qNames[i]}}`);
 
                 Plotly.newPlot(moranDiv, [
                     {{
@@ -3899,7 +3861,7 @@ function renderIndustryModule() {{
                             </div>
                         </div>
                         <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                            PM2.5 ve NO2 emisyonlarının en yüksek yoğunluğa ulaştığı bölge. 100 OSB ve 12.434 aktif parsel ile kimya, petrokimya ve otomotiv sanayisi kaynaklı partikül yükünün %38'i bu koridorda yoğunlaşmaktadır.
+                            PM2.5 partikül emisyonlarının en yüksek yoğunluğa ulaştığı bölge. 100 OSB ve 12.434 aktif parsel ile kimya, petrokimya ve otomotiv sanayisi kaynaklı partikül yükünün %38'i bu koridorda yoğunlaşmaktadır.
                         </div>
                         <div style="margin-top:8px; font-size:11px; color:#f87171; font-weight:600;">
                             • Çözüm: Kesintisiz online SEÖS baca denetimi ve yeşil OSB emisyon sertifikasyonu zorunluluğu.
@@ -4043,15 +4005,15 @@ function renderAIForecastModule(targetCity) {{
     
     const sortedCities = [...CITIES].sort((a,b) => a.il.localeCompare(b.il, 'tr'));
     const cityOptionsHtml = sortedCities.map(c => 
-        `<option value="${{c.il}}" ${{c.il === selectedCity ? 'selected' : ''}}>${{c.il}} (${{c.bolge}} — PM2.5: ${{c.pm25.toFixed(1)}}, OSB: ${{c.osb_sayisi}})</option>`
+        `<option value="${{c.il}}" ${{c.il === selectedCity ? 'selected' : ''}}>${{c.il}} (${{c.bolge}} — PM2.5: ${{fmt(c.pm25)}}, OSB: ${{c.osb_sayisi}})</option>`
     ).join('');
     
     const katAPills = katA_cities.sort((a,b) => b.pm25 - a.pm25).map(c => 
-        `<span onclick="renderAIForecastModule('${{c.il}}')" style="cursor:pointer; background:#2a1b0a; border:1px solid #f59e0b; color:#fbbf24; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block; margin:2px;">${{c.il}} (${{c.pm25.toFixed(1)}})</span>`
+        `<span onclick="renderAIForecastModule('${{c.il}}')" style="cursor:pointer; background:#2a1b0a; border:1px solid #f59e0b; color:#fbbf24; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block; margin:2px;">${{c.il}} (${{fmt(c.pm25)}})</span>`
     ).join('');
     
     const katBPills = katB_cities.sort((a,b) => b.pm25 - a.pm25).map(c => 
-        `<span onclick="renderAIForecastModule('${{c.il}}')" style="cursor:pointer; background:#2d1215; border:1px solid #ef4444; color:#f87171; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block; margin:2px;">${{c.il}} (${{c.pm25.toFixed(1)}})</span>`
+        `<span onclick="renderAIForecastModule('${{c.il}}')" style="cursor:pointer; background:#2d1215; border:1px solid #ef4444; color:#f87171; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block; margin:2px;">${{c.il}} (${{fmt(c.pm25)}})</span>`
     ).join('');
     
     cont.innerHTML = `
@@ -4063,8 +4025,8 @@ function renderAIForecastModule(targetCity) {{
             </div>
             <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
                 <div style="font-size:11px; color:#8faec9;">PM2.5 Çeyreklik Eşiği</div>
-                <div style="font-size:18px; font-weight:800; color:#00e5db; margin-top:4px;">Q1: ${{q1_pm.toFixed(1)}} | Q3: ${{q3_pm.toFixed(1)}}</div>
-                <div style="font-size:11px; color:#557896; margin-top:2px;">Kritik Eşik ≥ ${{q3_pm.toFixed(1)}} µg/m³</div>
+                <div style="font-size:18px; font-weight:800; color:#00e5db; margin-top:4px;">Q1: ${{fmt(q1_pm)}} | Q3: ${{fmt(q3_pm)}}</div>
+                <div style="font-size:11px; color:#557896; margin-top:2px;">Kritik Eşik ≥ ${{fmt(q3_pm)}} µg/m³</div>
             </div>
             <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
                 <div style="font-size:11px; color:#8faec9;">Kategori A (Coğrafi Kapan)</div>
@@ -4091,7 +4053,7 @@ function renderAIForecastModule(targetCity) {{
                     ${{badgeLabel}}
                 </span>
                 <span style="color:#94a3b8; font-size:12px;">
-                    Mevcut PM2.5: <strong style="color:#f8fafc;">${{cityPm.toFixed(1)}} µg/m³</strong> &bull; OSB: <strong style="color:#f8fafc;">${{cityOsb}}</strong>
+                    Mevcut PM2.5: <strong style="color:#f8fafc;">${{fmt(cityPm)}} µg/m³</strong> &bull; OSB: <strong style="color:#f8fafc;">${{cityOsb}}</strong>
                 </span>
             </div>
         </div>
@@ -4132,15 +4094,15 @@ function renderAIForecastModule(targetCity) {{
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <span style="font-size:11px; color:#557896;">2026:</span>
-                            <strong style="font-size:15px; color:#ffffff; margin-left:4px;">${{startVal.toFixed(1)}} µg/m³</strong>
+                            <strong style="font-size:15px; color:#ffffff; margin-left:4px;">${{fmt(startVal)}} µg/m³</strong>
                         </div>
                         <div style="color:#38bdf8; font-size:16px;">➔</div>
                         <div>
                             <span style="font-size:11px; color:#557896;">2031:</span>
-                            <strong style="font-size:15px; color:#ffffff; margin-left:4px;">${{endVal.toFixed(1)}} µg/m³</strong>
+                            <strong style="font-size:15px; color:#ffffff; margin-left:4px;">${{fmt(endVal)}} µg/m³</strong>
                         </div>
                         <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#f87171; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:700;">
-                            ${{diffSign}}%${{diffPct}} Kümülatif
+                            ${{diffSign}}%${{fmt(diffPct)}} Kümülatif
                         </div>
                     </div>
                 </div>
@@ -4152,7 +4114,7 @@ function renderAIForecastModule(targetCity) {{
                 <div style="color:#f59e0b; font-size:14px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
                     <span>⛰️</span> Kategori A: Coğrafi Kapan İlleri (${{katA_cities.length}} İl)
                 </div>
-                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Düşük sanayi yoğunluğu (OSB ≤ ${{q1_osb.toFixed(0)}}), aşırı partikül hapsi (PM2.5 ≥ ${{q3_pm.toFixed(1)}})</div>
+                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Düşük sanayi yoğunluğu (OSB ≤ ${{q1_osb.toFixed(0)}}), aşırı partikül hapsi (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
                 <div>${{katAPills}}</div>
             </div>
             
@@ -4160,7 +4122,7 @@ function renderAIForecastModule(targetCity) {{
                 <div style="color:#ef4444; font-size:14px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
                     <span>🏭</span> Kategori B: Ağır Sanayi Baskısı İlleri (${{katB_cities.length}} İl)
                 </div>
-                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Yüksek endüstriyel kümelenme (OSB ≥ ${{q3_osb.toFixed(0)}}), yüksek emisyon (PM2.5 ≥ ${{q3_pm.toFixed(1)}})</div>
+                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Yüksek endüstriyel kümelenme (OSB ≥ ${{q3_osb.toFixed(0)}}), yüksek emisyon (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
                 <div>${{katBPills}}</div>
             </div>
         </div>
@@ -4182,7 +4144,7 @@ function renderAIForecastModule(targetCity) {{
                 color: '#ffffff',
                 line: {{ color: badgeColor, width: 3 }}
             }},
-            text: projValues.map(v => v.toFixed(1)),
+            text: projValues.map(v => fmt(v)),
             textposition: 'top center',
             textfont: {{ color: '#f8fafc', size: 12, family: 'Inter, Segoe UI, sans-serif' }},
             hovertemplate: '<b>Yıl:</b> %{{x}}<br><b>Tahmini PM2.5:</b> %{{y:.2f}} µg/m³<extra></extra>'
@@ -4223,7 +4185,7 @@ function renderAIForecastModule(targetCity) {{
 let chatHistory = [
     {{
         role: "assistant",
-        text: "Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>. 🌍<br><br>81 ilin hava kalitesi (PM2.5, NO₂), OSB sanayi baskısı ve resmi çevre karnesi hakkında sorularınızı yanıtlamaya hazırım.<br><br>Bana şunları sorabilirsiniz:<br>• <em>'En kirli iller hangileri?'</em> veya <em>'kötü'</em><br>• <em>'Havası en temiz yerler'</em> veya <em>'temiz'</em><br>• <em>'İstanbul veya Iğdır'ın durumu'</em>"
+        text: "Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>. 🌍<br><br>81 ilin hava kalitesi (PM2.5), OSB sanayi baskısı ve resmi çevre karnesi hakkında sorularınızı yanıtlamaya hazırım.<br><br>Bana şunları sorabilirsiniz:<br>• <em>'En kirli iller hangileri?'</em> veya <em>'kötü'</em><br>• <em>'Havası en temiz yerler'</em> veya <em>'temiz'</em><br>• <em>'İstanbul veya Iğdır'ın durumu'</em>"
     }}
 ];
 
@@ -4350,14 +4312,14 @@ function answerUserQuery(userQuery) {{
     // 1. En Kirli / Kötü
     if (q.includes('kirli') || q.includes('kotu') || q.includes('en yuksek') || q.includes('tehlikeli')) {{
         const top3 = [...CITIES].sort((a,b) => b.pm25 - a.pm25).slice(0, 3);
-        const list = top3.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong> (${{c.bolge}}): <code style="color:#ef4444; background:#2d1215; padding:2px 6px; border-radius:4px;">${{c.pm25.toFixed(1)}} µg/m³</code> (DSÖ sınırının ${{(c.pm25/5).toFixed(1)}} katı)`).join('<br>');
+        const list = top3.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong> (${{c.bolge}}): <code style="color:#ef4444; background:#2d1215; padding:2px 6px; border-radius:4px;">${{fmt(c.pm25)}} µg/m³</code> (DSÖ sınırının ${{fmt(c.pm25/5)}} katı)`).join('<br>');
         return `🚨 <strong>Türkiye Genelinde Havası En Kirli 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Analiz Notu:</em> Osmaniye, Iğdır ve Erzincan gibi illerimizde topoğrafik çanak yapısı (rüzgar hapsi / termal inversiyon) ve kış aylarındaki evsel ısınma emisyonları kirliliği kritik seviyelere taşımaktadır.`;
     }}
 
     // 2. En Temiz / İyi
     if (q.includes('temiz') || q.includes('iyi') || q.includes('en dusuk') || q.includes('saglikli') || q.includes('ferah')) {{
         const top3 = [...CITIES].sort((a,b) => a.pm25 - b.pm25).slice(0, 3);
-        const list = top3.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong> (${{c.bolge}}): <code style="color:#00e599; background:#04281f; padding:2px 6px; border-radius:4px;">${{c.pm25.toFixed(1)}} µg/m³</code>`).join('<br>');
+        const list = top3.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong> (${{c.bolge}}): <code style="color:#00e599; background:#04281f; padding:2px 6px; border-radius:4px;">${{fmt(c.pm25)}} µg/m³</code>`).join('<br>');
         return `🌿 <strong>Türkiye Genelinde Havası En Temiz Olan 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Analiz Notu:</em> Tunceli, Artvin ve Rize kırsalında sanayi yoğunluğunun düşüklüğü ve güçlü hava koridorları partikül madde konsantrasyonunu ulusal ortalamaların oldukça altında tutmaktadır.`;
     }}
 
@@ -4366,14 +4328,14 @@ function answerUserQuery(userQuery) {{
         const cNorm = c.il.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
         if (q.includes(cNorm)) {{
             const status = c.pm25 > 50 ? '<span style="color:#ef4444; font-weight:700;">Kritik</span>' : (c.pm25 > 35 ? '<span style="color:#f97316; font-weight:700;">Yüksek</span>' : '<span style="color:#00e599; font-weight:700;">İyi</span>');
-            return `🏙️ <strong>${{c.il}} İli Detaylı Çevre ve Hava Kalitesi Karnesi:</strong><br><br>• <strong>PM2.5 Kirlilik Değeri:</strong> <code>${{c.pm25.toFixed(1)}} µg/m³</code> (Durum: ${{status}})<br>• <strong>NO₂ Değeri:</strong> ${{c.no2.toFixed(1)}} µg/m³<br>• <strong>Bölge:</strong> ${{c.bolge}} &bull; <strong>Plaka:</strong> ${{c.plaka}}<br>• <strong>Nüfus:</strong> ${{c.nufus.toLocaleString('tr-TR')}} kişi<br>• <strong>Organize Sanayi Bölgesi (OSB):</strong> ${{c.osb_sayisi}} adet (${{c.osb.toFixed(0)}} hektar)<br>• <strong>DSÖ Sınır Aşımı:</strong> DSÖ kılavuz limitinin <strong>${{(c.pm25/5).toFixed(1)}} katı</strong>`;
+            return `🏙️ <strong>${{c.il}} İli Detaylı Çevre ve Hava Kalitesi Karnesi:</strong><br><br>• <strong>PM2.5 Kirlilik Değeri:</strong> <code>${{fmt(c.pm25)}} µg/m³</code> (Durum: ${{status}})<br>• <strong>Bölge:</strong> ${{c.bolge}} &bull; <strong>Plaka:</strong> ${{c.plaka}}<br>• <strong>Nüfus:</strong> ${{c.nufus.toLocaleString('tr-TR')}} kişi<br>• <strong>Organize Sanayi Bölgesi (OSB):</strong> ${{c.osb_sayisi}} adet (${{fmt(c.osb)}} hektar)<br>• <strong>DSÖ Sınır Aşımı:</strong> DSÖ kılavuz limitinin <strong>${{fmt(c.pm25/5)}} katı</strong>`;
         }}
     }}
 
     // 4. Sanayi / OSB
     if (q.includes('osb') || q.includes('sanayi') || q.includes('fabrika') || q.includes('endustri')) {{
         const top3Osb = [...CITIES].sort((a,b) => b.osb_sayisi - a.osb_sayisi).slice(0, 3);
-        const list = top3Osb.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong>: ${{c.osb_sayisi}} OSB (${{c.osb.toFixed(0)}} hektar) &bull; PM2.5: <code>${{c.pm25.toFixed(1)}} µg/m³</code>`).join('<br>');
+        const list = top3Osb.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong>: ${{c.osb_sayisi}} OSB (${{fmt(c.osb)}} hektar) &bull; PM2.5: <code>${{fmt(c.pm25)}} µg/m³</code>`).join('<br>');
         return `🏭 <strong>Türkiye'de En Çok Organize Sanayi Bölgesine (OSB) Sahip 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Bilgi:</em> OSB alanları (OSB verileri: OSBÜK, indirme tarihi: GG.AA.2026) hava kirliliği göstergeleriyle orta-yüksek düzeyde pozitif korelasyon göstermektedir.`;
     }}
 
@@ -4439,10 +4401,10 @@ searchInput.addEventListener('input', (e) => {{
     }}
     
     let html = '';
-    const polKey = currentPollutant === 'PM2.5' ? 'pm25' : (currentPollutant === 'PM10' ? 'pm10' : 'no2');
+    const polKey = 'pm25';
     matches.forEach(m => {{
         const val = m[polKey];
-        const color = getColor(val, currentPollutant);
+        const color = getColor(val);
         html += `
         <div class="search-item" onclick="openCityReportCard('${{m.il}}')">
             <div class="search-item-left">
