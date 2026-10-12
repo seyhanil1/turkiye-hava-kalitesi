@@ -78,8 +78,8 @@ def create_regional_boxplot(
     val_col = pollutant if pollutant in df.columns else "pm25"
     label = "PM2.5" if val_col == "pm25" else ("PM10" if val_col == "pm10" else "NO₂")
     
-    # Bölgeleri ortalama kirliliğe göre sırala
-    order = df.groupby("bolge")[val_col].median().sort_values(ascending=False).index.tolist()
+    # Bölgeleri ortalama kirliliğe göre yüksekten düşüğe doğru sırala
+    order = df.groupby("bolge")[val_col].mean().sort_values(ascending=False).index.tolist()
     
     fig = px.box(
         df,
@@ -92,12 +92,9 @@ def create_regional_boxplot(
     )
     
     fig.update_layout(
-        title=dict(
-            text=f"<b>Bölgesel {label} Dağılımı ve Varyans (Box-Plot)</b>",
-            font=dict(size=14, color="#f8fafc")
-        ),
+        title=None,
         height=380,
-        margin=dict(t=40, l=20, r=20, b=30),
+        margin=dict(t=15, l=20, r=20, b=30),
         xaxis=dict(title="", tickfont=dict(color="#94a3b8", size=11)),
         yaxis=dict(
             title=dict(text=f"{label} Konsantrasyonu (µg/m³)", font=dict(color="#94a3b8", size=11)),
@@ -191,8 +188,8 @@ def create_duel_radar_chart(
     Boyutlar 0-100 ölçeğine normalize edilir.
     """
     categories = [
-        "Temiz Hava (Ters PM2.5)", 
-        "Hafif Sanayi Yükü", 
+        "Hava Temizliği Skoru", 
+        "Sanayi Baskısı (Düşük)", 
         "Solunum Sağlığı", 
         "Yeşil Dönüşüm Skoru"
     ]
@@ -239,8 +236,17 @@ def create_duel_radar_chart(
     
     fig.update_layout(
         polar=dict(
-            radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(color="#94a3b8", size=9), gridcolor="#1e293b"),
-            angularaxis=dict(tickfont=dict(color="#f8fafc", size=10), gridcolor="#1e293b"),
+            radialaxis=dict(
+                visible=True, 
+                range=[0, 100], 
+                angle=45,
+                tickfont=dict(color="#94a3b8", size=9), 
+                gridcolor="#1e293b"
+            ),
+            angularaxis=dict(
+                tickfont=dict(color="#f8fafc", size=10), 
+                gridcolor="#1e293b"
+            ),
             bgcolor="rgba(0,0,0,0)"
         ),
         title=dict(
@@ -248,8 +254,8 @@ def create_duel_radar_chart(
             font=dict(size=13, color="#f8fafc")
         ),
         height=360,
-        margin=dict(t=40, l=30, r=30, b=20),
-        legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5),
+        margin=dict(t=50, l=60, r=60, b=30),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.18, xanchor="center", x=0.5),
         paper_bgcolor="rgba(0,0,0,0)"
     )
     

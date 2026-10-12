@@ -95,28 +95,29 @@ def create_forecast_figure(
     """
     if category == "Kategori A":
         theme_color = "#f59e0b"   # Amber / Uyarı
-        badge_text = "Kategori A (Coğrafi Kapan — Yıllık +%3)"
+        badge_text = "Kategori A (Coğrafi Kapan) — Yıllık +%3 Artış Trendi"
     elif category == "Kategori B":
         theme_color = "#ef4444"   # Kırmızı / Kritik Sanayi
-        badge_text = "Kategori B (Ağır Sanayi Baskısı — Yıllık +%5)"
+        badge_text = "Kategori B (Ağır Sanayi Baskısı) — Yıllık +%5 Artış Trendi"
     else:
         theme_color = "#00e5db"   # Neon Turkuaz / Normal
-        badge_text = "Normal Profil (Dengeli — Yıllık +%1)"
+        badge_text = "Normal Profil (Dengeli) — Yıllık +%1 Artış Trendi"
 
     fig = go.Figure()
 
-    # DSÖ 2021 Kılavuz Değeri (5 µg/m³)
+    # DSÖ 2021 Kılavuz Değeri (5 µg/m³) - Çizginin üstüne kaydırılmış etiket
     fig.add_hline(
         y=5.0,
         line_dash="dot",
         line_color="#10b981",
         line_width=1.5,
         annotation_text="DSÖ Yıllık Kılavuz Eşiği (5 µg/m³)",
-        annotation_position="bottom right",
-        annotation_font=dict(color="#10b981", size=11)
+        annotation_position="top right",
+        annotation_yshift=8,
+        annotation_font=dict(color="#10b981", size=10)
     )
 
-    # DSÖ IT-1 Geçiş Hedefi (35 µg/m³)
+    # DSÖ IT-1 Geçiş Hedefi (35 µg/m³) - Çizginin üstüne kaydırılmış etiket
     fig.add_hline(
         y=35.0,
         line_dash="dot",
@@ -124,7 +125,8 @@ def create_forecast_figure(
         line_width=1.5,
         annotation_text="DSÖ IT-1 Geçiş Eşiği (35 µg/m³)",
         annotation_position="top right",
-        annotation_font=dict(color="#f59e0b", size=11)
+        annotation_yshift=8,
+        annotation_font=dict(color="#f59e0b", size=10)
     )
 
     # 5 Yıllık Trend Projeksiyonu Çizgisi (Dashed / Ucu Kesik Çizgili)
@@ -136,19 +138,19 @@ def create_forecast_figure(
         line=dict(
             color=theme_color,
             width=3.5,
-            dash="dash"  # Kullanıcının talep ettiği kesik çizgi
+            dash="dash"  # Kesik çizgi
         ),
         marker=dict(
             size=11,
             color="#ffffff",
             line=dict(color=theme_color, width=3.5)
         ),
-        text=[f"{v:.1f}" for v in values],
+        text=[f"{v:.1f}".replace(".", ",") for v in values],
         textposition="top center",
         textfont=dict(color="#f8fafc", size=12, family="Inter, Segoe UI, sans-serif"),
         hovertemplate=(
             "<b>Yıl:</b> %{x}<br>"
-            "<b>Tahmini PM2.5:</b> %{y:.2f} µg/m³<br>"
+            "<b>Tahmini PM2.5:</b> %{text} µg/m³<br>"
             f"<b>Model:</b> {badge_text}<extra></extra>"
         )
     ))
@@ -156,8 +158,8 @@ def create_forecast_figure(
     # Koyu Tema ve Glassmorphic Düzen
     fig.update_layout(
         title=dict(
-            text=f"<b>{city_name}</b> — 5 Yıllık Trend Projeksiyonu (2026–2031) <span style='font-size:13px; color:{theme_color};'>[{badge_text}]</span>",
-            font=dict(color="#f8fafc", size=16, family="Inter, Segoe UI, sans-serif")
+            text=f"<b>{city_name}</b> — 5 Yıllık Trend Projeksiyonu (2026–2031) <span style='font-size:12px; color:{theme_color};'>[{badge_text}]</span>",
+            font=dict(color="#f8fafc", size=15, family="Inter, Segoe UI, sans-serif")
         ),
         paper_bgcolor="#0b1324",
         plot_bgcolor="#070d17",
@@ -309,21 +311,24 @@ def render_ai_forecast_page(df: pd.DataFrame):
     st.markdown("""
     <div style='margin-bottom: 24px;'>
         <div style='display:flex; align-items:center; gap:12px;'>
-            <span style='font-size:32px;'>🤖</span>
+            <span style='font-size:32px;'>📈</span>
             <div>
                 <h2 style='color:#f8fafc; margin:0; font-size:24px; font-weight:700;'>
-                    Yapay Zeka İçgörü & Tahmin Motoru
+                    Mevcut Trend Projeksiyonu &amp; Risk Analizi (BAU - Müdahalesiz Senaryo)
                 </h2>
                 <p style='color:#94a3b8; margin:4px 0 0 0; font-size:14px;'>
-                    81 İl İçin Dinamik Çeyreklik (Quantile) Anomali Analizi, Kategori Sınıflandırması ve 5 Yıllık Trend Projeksiyonu (2026–2031)
+                    81 İl İçin Dinamik Çeyreklik (Quantile) Anomali Analizi, İstatistiksel Trend Modeli ve 5 Yıllık Projeksiyon (2026–2031)
                 </p>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 1. AŞAMA: PANDAS İLE DİNAMİK ANOMALİ VE NEDEN-SONUÇ ALGORİTMASI
+    # 1. AŞAMA: DİNAMİK ANOMALİ VE ÇEYREKLİK ANALİZİ
     q1_osb, q3_osb, q1_pm25, q3_pm25, kat_a_df, kat_b_df = calculate_quantiles_and_anomalies(df)
+
+    q1_pm_str = f"{q1_pm25:.1f}".replace(".", ",")
+    q3_pm_str = f"{q3_pm25:.1f}".replace(".", ",")
 
     # Üst İstatistik Özet Kartları
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
@@ -343,9 +348,9 @@ def render_ai_forecast_page(df: pd.DataFrame):
         <div class='info-bubble' style='padding:14px 18px;'>
             <div style='color:#94a3b8; font-size:12px;'>PM2.5 Kirlilik Eşikleri</div>
             <div style='color:#00e5db; font-size:18px; font-weight:700; margin-top:4px;'>
-                Q1: {q1_pm25:.1f} | Q3: {q3_pm25:.1f}
+                Q1: {q1_pm_str} | Q3: {q3_pm_str}
             </div>
-            <div style='color:#64748b; font-size:11px; margin-top:2px;'>Üst dilim eşiği ≥ {q3_pm25:.1f} µg/m³</div>
+            <div style='color:#64748b; font-size:11px; margin-top:2px;'>Alt %25 ≤ {q1_pm_str} µg/m³ &bull; Üst %25 ≥ {q3_pm_str} µg/m³</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -391,7 +396,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
             "📍 Analiz Edilecek İli Seçin:",
             iller,
             index=default_index,
-            help="81 il arasından dilediğinizi seçerek yapay zeka anomali sınıflandırmasını ve projeksiyon modelini inceleyin."
+            help="81 il arasından dilediğinizi seçerek istatistiksel trend modelini, anomali sınıflandırmasını ve projeksiyonunu inceleyin."
         )
 
     il_row = df[df["il"] == secilen_il].iloc[0]
@@ -406,12 +411,13 @@ def render_ai_forecast_page(df: pd.DataFrame):
         else:
             cat_badge_html = "<span style='background:rgba(0,229,219,0.15); border:1px solid #00e5db; color:#38bdf8; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>✅ Normal / Dengeli Profil</span>"
 
+        pm_val_now_str = f"{float(il_row['pm25']):.1f}".replace(".", ",")
         st.markdown(
             f"<div style='margin-top:28px; display:flex; align-items:center; gap:12px;'>"
             f"{cat_badge_html}"
             f"<span style='color:#94a3b8; font-size:13px;'>"
-            f"Mevcut PM2.5: <strong style='color:#f8fafc;'>{il_row['pm25']:.1f} µg/m³</strong> &bull; "
-            f"OSB Sayısı: <strong style='color:#f8fafc;'>{int(il_row['osb_sayisi'])}</strong>"
+            f"Mevcut PM2.5: <strong style='color:#f8fafc;'>{pm_val_now_str} µg/m³</strong> &bull; "
+            f"OSB Sayısı: <strong style='color:#f8fafc;'>{int(il_row['osb_sayisi'])} Adet</strong>"
             f"</span></div>",
             unsafe_allow_html=True
         )
@@ -432,7 +438,8 @@ def render_ai_forecast_page(df: pd.DataFrame):
             values=proj_values,
             growth_rate=growth_rate
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        st.caption("Mevcut Trend Projeksiyonu & Risk Analizi (BAU - Müdahalesiz Senaryo): İstatistiksel Trend Modeli ile geçmiş ve mevcut dinamikler baz alınarak müdahalesiz gelişim öngörülmektedir.")
 
     with col_recipe:
         # Kategoriye göre pulsing glow sınıfı ve başlık renkleri
@@ -441,13 +448,13 @@ def render_ai_forecast_page(df: pd.DataFrame):
             title_cls = "neon-amber-title"
             
             neden_sonuc_metni = (
-                f"Yapay Zeka Analizi: {secilen_il} ilinde sanayi yoğunluğu düşük olmasına rağmen "
+                f"{secilen_il} ilinde sanayi yoğunluğu düşük olmasına rağmen "
                 f"hava kirliliği tehlikeli boyuttadır. Bu durumun ana nedeni coğrafi çanak yapısı (rüzgar hapsi) "
                 f"ve kış aylarındaki kalitesiz yakıt kullanımıdır (Termal İnversiyon)."
             )
             onlem_metni = (
-                "Acil Eylem Planı: Doğalgaz/temiz enerji altyapısı acilen teşvik edilmeli, "
-                "rüzgar koridorlarını kesecek yüksek yapılaşma derhal durdurulmalıdır."
+                "Öncelikli Eylem: Doğalgaz ve temiz enerji altyapısı hızla yaygınlaştırılmalı, "
+                "rüzgar koridorlarını kesecek dikey yapılaşma sınırlandırılmalıdır."
             )
             
         elif category == "Kategori B":
@@ -455,11 +462,11 @@ def render_ai_forecast_page(df: pd.DataFrame):
             title_cls = "neon-red-title"
             
             neden_sonuc_metni = (
-                f"Yapay Zeka Analizi: {secilen_il} ilindeki kirlilik doğrudan yoğun OSB ve "
-                f"endüstriyel faaliyetler kaynaklıdır."
+                f"{secilen_il} ilindeki partikül kirliliği doğrudan yoğun organize sanayi bölgeleri ve "
+                f"endüstriyel baca emisyonları kaynaklıdır."
             )
             onlem_metni = (
-                "Acil Eylem Planı: Fabrika bacalarına akıllı (IoT) filtre zorunluluğu getirilmeli, "
+                "Öncelikli Eylem: Fabrika bacalarına sürekli izleme ve filtre zorunluluğu getirilmeli, "
                 "yeni açılacak sanayi bölgeleri şehrin hakim rüzgar yönünün tersine planlanmalıdır."
             )
             
@@ -468,11 +475,11 @@ def render_ai_forecast_page(df: pd.DataFrame):
             title_cls = "neon-blue-title"
             
             neden_sonuc_metni = (
-                f"Yapay Zeka Analizi: {secilen_il} ilinde sanayi yoğunluğu ve hava kirliliği göstergeleri "
+                f"{secilen_il} ilinde sanayi yoğunluğu ve hava kirliliği göstergeleri "
                 f"dengeli/normal seyretmektedir. Aşırı uç bir jeolojik veya endüstriyel anomali saptanmamıştır."
             )
             onlem_metni = (
-                "Koruyucu Eylem Planı: Mevcut emisyon denetimleri sürdürülmeli, sanayi atık kontrolleri "
+                "Öncelikli Eylem: Mevcut emisyon denetimleri titizlikle sürdürülmeli, sanayi atık kontrolleri "
                 "ve yeşil enerji dönüşümü desteklenmelidir."
             )
 
@@ -480,7 +487,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
         st.markdown(f"""
         <div class='info-bubble'>
             <div class='neon-blue-title'>
-                <span>🔬</span> Yapay Zeka Neden-Sonuç Analizi
+                <span>🔬</span> İstatistiksel Neden-Sonuç Analizi
             </div>
             <p class='bubble-text'>{neden_sonuc_metni}</p>
         </div>
@@ -490,7 +497,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
         st.markdown(f"""
         <div class='info-bubble {pulse_cls}'>
             <div class='{title_cls}'>
-                <span>🚨</span> Alınacak Önlemler (Acil Eylem Reçetesi)
+                <span>🚨</span> Öncelikli Eylem ve Müdahale Planı
             </div>
             <p class='bubble-text'><strong>{onlem_metni}</strong></p>
         </div>
@@ -499,21 +506,25 @@ def render_ai_forecast_page(df: pd.DataFrame):
         # 3. Bilgi Balonu: Projeksiyon Metrik Özeti
         growth_pct = round(((proj_values[-1] - proj_values[0]) / proj_values[0]) * 100, 1)
         sign = "+" if growth_pct > 0 else ""
+        v0_str = f"{proj_values[0]:.1f}".replace(".", ",")
+        vend_str = f"{proj_values[-1]:.1f}".replace(".", ",")
+        pct_str = f"{abs(growth_pct):.1f}".replace(".", ",")
+
         st.markdown(f"""
         <div class='info-bubble' style='margin-bottom:0;'>
             <div style='color:#94a3b8; font-size:12px; margin-bottom:6px;'>5 Yıllık Projeksiyon Değişimi (2026 ➔ 2031)</div>
             <div style='display:flex; justify-content:space-between; align-items:center;'>
                 <div>
                     <span style='font-size:12px; color:#64748b;'>2026:</span>
-                    <strong style='font-size:15px; color:#f8fafc; margin-left:4px;'>{proj_values[0]:.1f} µg/m³</strong>
+                    <strong style='font-size:15px; color:#f8fafc; margin-left:4px;'>{v0_str} µg/m³</strong>
                 </div>
                 <div style='color:#38bdf8; font-size:16px;'>➔</div>
                 <div>
                     <span style='font-size:12px; color:#64748b;'>2031:</span>
-                    <strong style='font-size:15px; color:#f8fafc; margin-left:4px;'>{proj_values[-1]:.1f} µg/m³</strong>
+                    <strong style='font-size:15px; color:#f8fafc; margin-left:4px;'>{vend_str} µg/m³</strong>
                 </div>
                 <div style='background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:700;'>
-                    {sign}%{growth_pct} Kümülatif
+                    {sign}%{pct_str} Kümülatif
                 </div>
             </div>
         </div>
@@ -522,7 +533,27 @@ def render_ai_forecast_page(df: pd.DataFrame):
     # 4. AŞAMA ALT BÖLÜM: DİNAMİK OLARAK FİLTRELENEN TÜM KATEGORİ LİSTELERİ
     st.write("")
     st.markdown("<hr style='border-color:#1e293b; margin:20px 0;'>", unsafe_allow_html=True)
-    st.markdown("#### 📋 81 İl Otomatik Anomali Grupları (Pandas Filtreleme)")
+    st.markdown("#### 📋 81 İl İstatistiksel Risk ve Anomali Grupları")
+
+    chips_a = []
+    for _, r in kat_a_df.sort_values(by="pm25", ascending=False).iterrows():
+        p_str = f"{float(r['pm25']):.1f}".replace(".", ",")
+        o_str = f"{int(r['osb_sayisi'])} Adet"
+        chips_a.append(
+            f"<span class='kpi-chip' style='background:#2a1b0a; border:1px solid #f59e0b; color:#fbbf24;'>"
+            f"{r['il']} (PM2.5: {p_str} µg/m³, OSB: {o_str})</span>"
+        )
+    chips_a_html = "".join(chips_a)
+
+    chips_b = []
+    for _, r in kat_b_df.sort_values(by="pm25", ascending=False).iterrows():
+        p_str = f"{float(r['pm25']):.1f}".replace(".", ",")
+        o_str = f"{int(r['osb_sayisi'])} Adet"
+        chips_b.append(
+            f"<span class='kpi-chip' style='background:#2d1215; border:1px solid #ef4444; color:#f87171;'>"
+            f"{r['il']} (PM2.5: {p_str} µg/m³, OSB: {o_str})</span>"
+        )
+    chips_b_html = "".join(chips_b)
 
     col_list_a, col_list_b = st.columns(2)
     with col_list_a:
@@ -532,10 +563,10 @@ def render_ai_forecast_page(df: pd.DataFrame):
                 <span>⛰️</span> Kategori A: Coğrafi Kapan İlleri ({len(kat_a_df)} İl)
             </div>
             <p style='color:#94a3b8; font-size:12px; margin-bottom:10px;'>
-                OSB Sayısı ≤ {q1_osb:.0f} (Alt %25) ve PM2.5 ≥ {q3_pm25:.1f} µg/m³ (Üst %25)
+                OSB Sayısı ≤ {q1_osb:.0f} (Alt %25) ve PM2.5 ≥ {q3_pm_str} µg/m³ (Üst %25)
             </p>
             <div style='display:flex; flex-wrap:wrap; gap:6px;'>
-                {"".join([f"<span class='kpi-chip' style='background:#2a1b0a; border:1px solid #f59e0b; color:#fbbf24;'>{r['il']} (PM2.5: {r['pm25']:.1f}, OSB: {int(r['osb_sayisi'])})</span>" for _, r in kat_a_df.sort_values(by="pm25", ascending=False).iterrows()])}
+                {chips_a_html}
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -547,10 +578,10 @@ def render_ai_forecast_page(df: pd.DataFrame):
                 <span>🏭</span> Kategori B: Ağır Sanayi Baskısı İlleri ({len(kat_b_df)} İl)
             </div>
             <p style='color:#94a3b8; font-size:12px; margin-bottom:10px;'>
-                OSB Sayısı ≥ {q3_osb:.0f} (Üst %25) ve PM2.5 ≥ {q3_pm25:.1f} µg/m³ (Üst %25)
+                OSB Sayısı ≥ {q3_osb:.0f} (Üst %25) ve PM2.5 ≥ {q3_pm_str} µg/m³ (Üst %25)
             </p>
             <div style='display:flex; flex-wrap:wrap; gap:6px;'>
-                {"".join([f"<span class='kpi-chip' style='background:#2d1215; border:1px solid #ef4444; color:#f87171;'>{r['il']} (PM2.5: {r['pm25']:.1f}, OSB: {int(r['osb_sayisi'])})</span>" for _, r in kat_b_df.sort_values(by="pm25", ascending=False).iterrows()])}
+                {chips_b_html}
             </div>
         </div>
         """, unsafe_allow_html=True)

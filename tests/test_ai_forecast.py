@@ -80,3 +80,48 @@ def test_create_forecast_figure():
     assert len(fig.data) >= 1
     # Çizginin dash=dash olduğunu doğrula
     assert fig.data[0].line.dash == "dash"
+    # Başlıktaki kırık parantez düzeltmesini doğrula
+    assert "[Kategori B (Ağır Sanayi Baskısı) — Yıllık +%5 Artış Trendi]" in fig.layout.title.text
+    # Çizgi etiketlerinin yshift ile kaydırıldığını doğrula
+    assert fig.layout.annotations[0].yshift == 8
+    assert fig.layout.annotations[1].yshift == 8
+
+
+def test_ai_forecast_page_apptest_rendering():
+    from streamlit.testing.v1 import AppTest
+
+    def app_forecast():
+        import streamlit as st
+        from data_sources.local_official_data import build_master_dataset
+        from app_pages.ai_forecast_page import render_ai_forecast_page
+        df = build_master_dataset()
+        render_ai_forecast_page(df)
+
+    at = AppTest.from_function(app_forecast)
+    at.run()
+
+    assert not at.exception
+
+    all_markdown = " ".join([m.value for m in at.markdown])
+
+    # 1. Başlıklar ve kod sızıntısı temizliği
+    assert "📋 81 İl İstatistiksel Risk ve Anomali Grupları" in all_markdown
+    assert "(Pandas Filtreleme)" not in all_markdown
+    assert "Mevcut Trend Projeksiyonu &amp; Risk Analizi (BAU - Müdahalesiz Senaryo)" in all_markdown or "BAU - Müdahalesiz Senaryo" in all_markdown
+
+    # 2. İstatistiksel kartlar ve dilim bilgisi (Türkçe virgüllü)
+    assert "Alt %25 ≤" in all_markdown
+    assert "Üst %25 ≥" in all_markdown
+
+    # 3. Şehir rozetlerinde birimler (µg/m³, Adet)
+    assert "µg/m³, OSB:" in all_markdown
+    assert "Adet)" in all_markdown
+
+    # 4. Metin temizliği (Yapay Zeka Analizi: kalktı, Öncelikli Eylem geldi)
+    assert "Yapay Zeka Analizi:" not in all_markdown
+    assert "Öncelikli Eylem:" in all_markdown
+
+    # Caption doğrulaması
+    all_captions = " ".join([c.value for c in at.caption])
+    assert "BAU - Müdahalesiz Senaryo" in all_captions
+

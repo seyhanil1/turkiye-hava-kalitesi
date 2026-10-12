@@ -3,6 +3,7 @@ Bölgeler Analiz Sayfası (Regional Analysis & ANOVA)
 HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 """
 
+from decimal import Decimal, ROUND_HALF_UP
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -44,19 +45,25 @@ def create_regional_benchmark_bar(df: pd.DataFrame, pollutant: str = "pm25") -> 
     for b_name in regions_order:
         b_df = clean_df[clean_df["bolge"] == b_name]
         if not b_df.empty:
-            mean_val = round(float(b_df[pol_col].mean()), 1)
+            mean_raw = float(b_df[pol_col].mean())
+            # Matematiksel doğru yuvarlama (Round half up): Marmara 35.65 -> 35.7
+            mean_val = float(Decimal(f"{mean_raw:.4f}").quantize(Decimal('0.1'), rounding=ROUND_HALF_UP))
             # Güvenli en yüksek il tespiti: İndeks uyuşmazlığı ve NaN riskine karşı
             # sort_values(ascending=False).iloc[0] kullanımı
             b_df_sorted = b_df.sort_values(by=pol_col, ascending=False)
             mx_row = b_df_sorted.iloc[0]
             mx_il = str(mx_row["il"]).strip()
-            mx_val = round(float(mx_row[pol_col]), 1)
+            mx_raw = float(mx_row[pol_col])
+            mx_val = float(Decimal(f"{mx_raw:.4f}").quantize(Decimal('0.1'), rounding=ROUND_HALF_UP))
+            
+            mean_str = f"{mean_val:.1f}".replace(".", ",")
+            mx_str = f"{mx_val:.1f}".replace(".", ",")
             benchmarks.append({
                 "bolge": b_name,
                 "mean": mean_val,
                 "max_il": mx_il,
                 "max_val": mx_val,
-                "bar_text": f"{mean_val:.1f} µg/m³ | En Yüksek: {mx_il} ({mx_val:.1f} µg/m³)"
+                "bar_text": f"{mean_str} µg/m³ | En Yüksek: {mx_il} ({mx_str} µg/m³)"
             })
 
     benchmarks.sort(key=lambda x: x["mean"], reverse=True)
@@ -136,8 +143,8 @@ def render_regions_page(df: pd.DataFrame):
     # 1. BÖLÜM: 7 COĞRAFİ BÖLGE BENCHMARK & DSÖ AŞIM ANALİZİ (Genel Bakış'tan taşınan analitik bileşen)
     st.markdown("### 7 Coğrafi Bölge Benchmark &amp; DSÖ Aşım Analizi", unsafe_allow_html=True)
     fig_bench = create_regional_benchmark_bar(df, pollutant="pm25")
-    st.plotly_chart(fig_bench, use_container_width=True)
-    st.caption("* Kesikli kırmızı çizgi DSÖ güvenli yıllık kılavuz eşiğidir (5 µg/m³). Tüm bölgeler bu eşiğin 6 ila 9 katı üzerindedir.")
+    st.plotly_chart(fig_bench, use_container_width=True, config={'displayModeBar': False})
+    st.caption("* Kesikli kırmızı çizgi DSÖ yıllık kılavuz sınırıdır (5 µg/m³). Tüm bölge ortalamaları bu eşiğin 6 ila 9 katı üzerindedir.")
     st.caption("Not: Gösterilen bölgesel veriler yıllık konsolidasyon (son 12 ay) ölçümlerini yansıtmakta olup DSÖ yıllık referans kılavuz çizgisi ile karşılaştırılmıştır.")
 
     st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
@@ -149,19 +156,20 @@ def render_regions_page(df: pd.DataFrame):
     display_df = region_summary[[
         "bolge", "il_sayisi", "ortalama", "medyan", "std", 
         "toplam_osb", "bolgesel_solunum_olum_100k", "ort_yesil_skor"
-    ]].rename(columns={
-        "bolge": "Bölge",
-        "il_sayisi": "İl Sayısı",
-        "ortalama": "Ort. PM2.5 (µg/m³)",
-        "medyan": "Medyan PM2.5",
-        "std": "Standart Sapma",
-        "toplam_osb": "Toplam OSB",
-        "bolgesel_solunum_olum_100k": "Solunum Ölümü (100k)",
-        "ort_yesil_skor": "Ort. Yeşil Skor"
-    })
+    ]].copy()
+
+    formatted_df = pd.DataFrame()
+    formatted_df["Bölge"] = display_df["bolge"]
+    formatted_df["İl Sayısı"] = display_df["il_sayisi"].astype(int)
+    formatted_df["Ort. PM2.5 (µg/m³)"] = display_df["ortalama"].apply(lambda x: f"{x:.2f}".replace(".", ","))
+    formatted_df["Medyan PM2.5 (µg/m³)"] = display_df["medyan"].apply(lambda x: f"{x:.2f}".replace(".", ","))
+    formatted_df["Standart Sapma"] = display_df["std"].apply(lambda x: f"{x:.2f}".replace(".", ","))
+    formatted_df["Toplam OSB"] = display_df["toplam_osb"].astype(int)
+    formatted_df["Solunum Ölüm Hızı (100k)"] = display_df["bolgesel_solunum_olum_100k"].apply(lambda x: f"{x:.1f}".replace(".", ","))
+    formatted_df["Ort. Yeşil Skor"] = display_df["ort_yesil_skor"].apply(lambda x: f"{x:.1f}".replace(".", ","))
 
     st.dataframe(
-        display_df,
+        formatted_df,
         use_container_width=True,
         hide_index=True
     )
@@ -173,7 +181,7 @@ def render_regions_page(df: pd.DataFrame):
     with col_box:
         st.markdown("### Bölgesel PM2.5 Dağılımı (Kutu Grafiği)")
         fig_box = create_regional_boxplot(df, pollutant="pm25")
-        st.plotly_chart(fig_box, use_container_width=True)
+        st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
 
     with col_bar:
         st.markdown("### Bölgesel Toplam OSB Dağılımı")
@@ -181,19 +189,24 @@ def render_regions_page(df: pd.DataFrame):
             region_summary,
             x="bolge",
             y="toplam_osb",
-            color="bolge",
             text="toplam_osb",
             labels={"bolge": "Bölge", "toplam_osb": "OSB Sayısı"}
         )
-        fig_osb.update_traces(textposition="outside")
+        fig_osb.update_traces(
+            marker_color="#0ea5e9",
+            textposition="outside",
+            textfont=dict(color="#f8fafc", size=11)
+        )
         fig_osb.update_layout(
             height=380, 
             showlegend=False, 
             margin=dict(t=30, l=10, r=10, b=30),
             paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)"
+            plot_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(tickfont=dict(color="#94a3b8", size=11)),
+            yaxis=dict(gridcolor="#1e293b", tickfont=dict(color="#94a3b8", size=10))
         )
-        st.plotly_chart(fig_osb, use_container_width=True)
+        st.plotly_chart(fig_osb, use_container_width=True, config={'displayModeBar': False})
 
     st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
