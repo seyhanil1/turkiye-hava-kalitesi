@@ -32,14 +32,14 @@ def create_timeseries_chart(
     start_date = latest_date - pd.Timedelta(days=window_days)
     df_window = df[df["date"] >= start_date].copy()
     
-    val_col = pollutant if pollutant in df_window.columns else "pm25"
-    label = "PM2.5" if val_col == "pm25" else ("PM10" if val_col == "pm10" else "NO₂")
+    val_col = "pm25"
+    label = "PM2.5"
     
     # 7 günlük hareketli ortalama hesapla
     df_window["ma7"] = df_window[val_col].rolling(7, min_periods=1).mean().round(2)
     
-    # DSÖ 24 saatlik kılavuz limiti
-    dso_threshold = 15.0 if val_col == "pm25" else (45.0 if val_col == "pm10" else 25.0)
+    # DSÖ 24 saatlik kılavuz limiti (PM2.5 = 15 µg/m³)
+    dso_threshold = 15.0
     
     fig = go.Figure()
     

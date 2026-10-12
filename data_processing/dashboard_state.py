@@ -46,10 +46,6 @@ POLLUTANTS = {
     "pm25": {"label": "PM2.5", "unit": "µg/m³", "who_annual": 5.0, "who_24h": 15.0,
              # DSÖ 2021 yıllık kılavuz + ara hedefler (IT-4 … IT-1)
              "breaks": [5, 10, 15, 25, 35]},
-    "pm10": {"label": "PM10", "unit": "µg/m³", "who_annual": 15.0, "who_24h": 45.0,
-             "breaks": [15, 20, 30, 50, 70]},
-    "no2": {"label": "NO₂", "unit": "µg/m³", "who_annual": 10.0, "who_24h": 25.0,
-            "breaks": [10, 20, 30, 40, 60]},
 }
 
 CATEGORIES = [
@@ -119,7 +115,7 @@ def fmt_num(value: Optional[float], digits: int = 1) -> str:
 @dataclass
 class DashboardData:
     master: pd.DataFrame                    # 81 il yıllık resmi veri + sanayi + sağlık
-    city_daily: Optional[pd.DataFrame]      # il bazlı günlük CAMS (date, il, pm25, pm10, no2)
+    city_daily: Optional[pd.DataFrame]      # il bazlı günlük CAMS (date, il, pm25, n_hours)
     messages: list = field(default_factory=list)   # [(seviye, metin)]
     master_updated: Optional[str] = None
     cams_updated: Optional[str] = None
@@ -278,7 +274,7 @@ def _scope_master(data: DashboardData, state: FilterState) -> pd.DataFrame:
 def _cams_window(data: DashboardData, start: date, end: date, ils) -> pd.DataFrame:
     cd = data.city_daily
     if cd is None:
-        return pd.DataFrame(columns=["date", "il", "pm25", "pm10", "no2"])
+        return pd.DataFrame(columns=["date", "il", "pm25", "n_hours"])
     mask = (cd["date"].dt.date >= start) & (cd["date"].dt.date <= end) & cd["il"].isin(ils)
     return cd[mask]
 

@@ -170,25 +170,6 @@ DSO_KILAVUZ_DEGERLERI = {
         "birim": "µg/m³",
         "kaynak": "Dünya Sağlık Örgütü (WHO) Küresel Hava Kalitesi Kılavuzları (2021)",
         "aciklama": "DSÖ'ye göre PM2.5 için güvenli bir eşik yoktur; 5 µg/m³ yıllık kılavuz değerdir."
-    },
-    "pm10": {
-        "yillik_kilavuz": 15.0,
-        "gunluk_kilavuz_24h": 45.0,
-        "ara_hedef_1": 70.0,
-        "ara_hedef_2": 50.0,
-        "ara_hedef_3": 30.0,
-        "ara_hedef_4": 20.0,
-        "birim": "µg/m³",
-        "kaynak": "WHO Global Air Quality Guidelines (2021)"
-    },
-    "no2": {
-        "yillik_kilavuz": 10.0,
-        "gunluk_kilavuz_24h": 25.0,
-        "ara_hedef_1": 40.0,
-        "ara_hedef_2": 30.0,
-        "ara_hedef_3": 20.0,
-        "birim": "µg/m³",
-        "kaynak": "WHO Global Air Quality Guidelines (2021)"
     }
 }
 

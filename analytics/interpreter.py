@@ -48,7 +48,7 @@ def generate_data_science_notes(
     })
     
     # 2. DSÖ (WHO) Kılavuz Limit Değerlendirmesi
-    dso_limit = 5.0 if pollutant == "pm25" else (15.0 if pollutant == "pm10" else 10.0)
+    dso_limit = 5.0
     exceeding_count = (df[pollutant] > dso_limit).sum()
     exceeding_pct = round((exceeding_count / len(df)) * 100, 1)
     avg_val = round(df[pollutant].mean(), 1)

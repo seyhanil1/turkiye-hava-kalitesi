@@ -219,7 +219,7 @@ def render_industry_page(df: pd.DataFrame):
                     </div>
                 </div>
                 <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                    PM2.5 ve NO2 emisyonlarının en yüksek yoğunluğa ulaştığı bölge. 100 OSB ve 12.434 aktif üretim parseliyle kimya, petrokimya ve otomotiv sanayisi kaynaklı partikül yükünün %38'i bu koridorda yoğunlaşmaktadır.
+                    İnce partikül (PM2.5) emisyonlarının en yüksek yoğunluğa ulaştığı bölge. 100 OSB ve 12.434 aktif üretim parseliyle kimya, petrokimya ve otomotiv sanayisi kaynaklı partikül yükünün %38'i bu koridorda yoğunlaşmaktadır.
                 </div>
                 <div style="margin-top:8px; font-size:11px; color:#f87171; font-weight:600; display:flex; align-items:center; gap:4px;">
                     <span>•</span> Acil Müdahale: Online SEÖS baca filtresi zorunluluğu ve ağır tonaj lojistik koridoru düzenlemesi.

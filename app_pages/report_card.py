@@ -163,7 +163,6 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
     il_ratio = il_row["pm25"] / max(turkiye_ort_pm25, 1.0)
     il_ts = ts_df.copy()
     il_ts["pm25"] = (il_ts["pm25"] * il_ratio).round(2)
-    il_ts["pm10"] = (il_ts["pm10"] * il_ratio).round(2)
     
     fig_il_ts = create_timeseries_chart(
         il_ts,

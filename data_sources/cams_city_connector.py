@@ -2,7 +2,7 @@
 İl Bazlı Günlük Hava Kalitesi Bağlayıcısı (Copernicus CAMS / Open-Meteo)
 HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 
-- 81 il merkez koordinatı için saatlik PM2.5, PM10 ve NO₂ model değerlerini çeker.
+- 81 il merkez koordinatı için saatlik PM2.5 model değerlerini çeker.
 - Saatlik değerleri günlük ortalamaya çevirir (yalnızca en az 18 saati dolu günler).
 - Bugün ve sonrası (tamamlanmamış gün / tahmin) dışarıda bırakılır.
 - Sonucu `data/daily_city_air_quality.csv` dosyasında önbellekler.
@@ -37,25 +37,22 @@ def hourly_to_daily(hourly: dict, il: str, today: Optional[date] = None) -> pd.D
     today = today or date.today()
     times = hourly.get("time") or []
     if not times:
-        return pd.DataFrame(columns=["date", "il", "pm25", "pm10", "no2", "n_hours"])
+        return pd.DataFrame(columns=["date", "il", "pm25", "n_hours"])
     df = pd.DataFrame({
         "datetime": pd.to_datetime(times),
         "pm25": pd.to_numeric(pd.Series(hourly.get("pm2_5", [None] * len(times))), errors="coerce"),
-        "pm10": pd.to_numeric(pd.Series(hourly.get("pm10", [None] * len(times))), errors="coerce"),
-        "no2": pd.to_numeric(pd.Series(hourly.get("nitrogen_dioxide", [None] * len(times))), errors="coerce"),
     })
     df["date"] = df["datetime"].dt.date
     df = df[df["date"] < today]
     daily = df.groupby("date").agg(
-        pm25=("pm25", "mean"), pm10=("pm10", "mean"), no2=("no2", "mean"),
+        pm25=("pm25", "mean"),
         n_hours=("pm25", "count"),
     ).reset_index()
     daily = daily[daily["n_hours"] >= MIN_HOURS_PER_DAY]
     daily["il"] = il
-    for c in ("pm25", "pm10", "no2"):
-        daily[c] = daily[c].round(2)
+    daily["pm25"] = daily["pm25"].round(2)
     daily["date"] = pd.to_datetime(daily["date"])
-    return daily[["date", "il", "pm25", "pm10", "no2", "n_hours"]]
+    return daily[["date", "il", "pm25", "n_hours"]]
 
 
 def fetch_city_daily(cities: pd.DataFrame, past_days: int = 92, chunk: int = 27,
@@ -68,7 +65,7 @@ def fetch_city_daily(cities: pd.DataFrame, past_days: int = 92, chunk: int = 27,
         params = {
             "latitude": ",".join(f"{v:.4f}" for v in part["lat"]),
             "longitude": ",".join(f"{v:.4f}" for v in part["lon"]),
-            "hourly": "pm10,pm2_5,nitrogen_dioxide",
+            "hourly": "pm2_5",
             "past_days": past_days,
             "forecast_days": 1,
             "timezone": "Europe/Istanbul",

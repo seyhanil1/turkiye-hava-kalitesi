@@ -247,13 +247,9 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             sol_100k = float(r.get("solunum_olum_100k", 0.0))
             sol_toplam = int(r.get("solunum_olum", 0)) if pd.notna(r.get("solunum_olum")) else 0
 
-            pm10_str = f"`{r.get('pm10', 0):.1f} µg/m³`" if pd.notna(r.get("pm10")) else "Veri yok"
-            no2_str = f"`{r.get('no2', 0):.1f} µg/m³`" if pd.notna(r.get("no2")) else "Veri yok"
-
             return (
                 f"🏙️ **{c} İli Çevre & Hava Kalitesi Karnesi**\n\n"
                 f"- **PM2.5 Kirlilik Değeri:** `{pm25:.1f} µg/m³`\n"
-                f"- **PM10 & NO₂ Düzeyi:** PM10: {pm10_str} &bull; NO₂: {no2_str}\n"
                 f"- **DSÖ Durumu (Dünya Sağlık Örgütü):** **{dso_status}** (DSÖ 5 µg/m³ yıllık kılavuzunun **{kat:.1f} katı**)\n"
                 f"- **Organize Sanayi Bölgesi (OSB):** **{osb_count} Adet** ({parsel_count:,} parsel, {alan_ha:,.0f} hektar)\n"
                 f"- **Bölge & Plaka:** {r.get('bolge', '-')} &bull; Plaka Kodu: {int(r.get('plaka', 0)):02d}\n"

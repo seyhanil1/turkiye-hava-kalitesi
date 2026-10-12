@@ -49,8 +49,8 @@ def get_dso_compliance_stats(df: pd.DataFrame, pollutant: str = "pm25") -> Dict[
         
     val_col = df[pollutant] if pollutant in df.columns else df["pm25"]
     
-    # DSÖ Yıllık Limitleri: PM2.5 = 5.0 µg/m³, PM10 = 15.0 µg/m³, NO2 = 10.0 µg/m³
-    threshold = 5.0 if pollutant == "pm25" else (15.0 if pollutant == "pm10" else 10.0)
+    # DSÖ Yıllık Kılavuz Limiti: PM2.5 = 5.0 µg/m³
+    threshold = 5.0
     
     exceed_count = int((val_col > threshold).sum())
     safe_count = total - exceed_count

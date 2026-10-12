@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **"Havanın hikâyesini veriler anlatır."**  
-> HavaAtlası; Türkiye'nin 81 iline ait hava kirliliği ölçümlerini (PM2.5, PM10, NO₂), sanayi parsel yoğunluklarını, TÜİK resmi ölüm istatistiklerini ve Dünya Sağlık Örgütü (WHO) kılavuz sınırlarını bir araya getiren, ileri düzey istatistiksel hipotez testleriyle desteklenmiş analitik bir karar destek platformudur.
+> HavaAtlası; Türkiye'nin 81 iline ait hava kirliliği ölçümlerini (PM2.5), sanayi parsel yoğunluklarını, TÜİK resmi ölüm istatistiklerini ve Dünya Sağlık Örgütü (WHO) kılavuz sınırlarını bir araya getiren, ileri düzey istatistiksel hipotez testleriyle desteklenmiş analitik bir karar destek platformudur.
 
 ---
 
@@ -84,7 +84,7 @@ Uygulama, profesyonel veri analitiği estetiğine sadık kalarak tasarlanmışt�
 | **TÜİK (TurkStat)** | İl Bazlı Ölüm ve Ölüm Nedenleri (2022-2025) | `data/tuik_saglik.xlsx` (Ölüm İstatistikleri) | Resmi İstatistik Programı (TÜİK Açık Veri) |
 | **OSBÜK** | 81 İl OSB Dizini, Parsel ve Hektar Verisi | `data/sanayi.txt` | OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026) |
 | **TÜİK ADNKS** | 81 İl Resmi Nüfus Sayımları | `data_sources/constants.py` | Resmi Nüfus İstatistikleri |
-| **Copernicus CAMS & Open-Meteo** | Saatlik / Günlük PM2.5, PM10, NO₂ Zaman Serisi | `air-quality-api.open-meteo.com` | CC-BY 4.0 (Copernicus Atmosphere Service) |
+| **Copernicus CAMS & Open-Meteo** | Saatlik / Günlük PM2.5 Zaman Serisi | `air-quality-api.open-meteo.com` | CC-BY 4.0 (Copernicus Atmosphere Service) |
 | **OpenAQ v3 API** | Küresel Hava Kalitesi İstasyon Verileri | `data_sources/openaq_connector.py` | OpenAQ Açık Veri Lisansı |
 | **Dünya Sağlık Örgütü (WHO)** | Küresel Hava Kalitesi Kılavuz Limitleri (2021) | `data_sources/constants.py` | DSÖ Halk Sağlığı Kılavuzları |
 | **Türkiye İl Sınırları GeoJSON** | 81 İl Coğrafi Vektör Sınırları | `data/tr-cities.json` | Açık Kaynak Coğrafi Veri |

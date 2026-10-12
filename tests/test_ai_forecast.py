@@ -111,7 +111,7 @@ def test_ai_forecast_page_apptest_rendering():
     # 1. Başlıklar ve kod sızıntısı temizliği
     assert "📋 81 İl İstatistiksel Risk ve Anomali Grupları" in all_markdown
     assert "(Pandas Filtreleme)" not in all_markdown
-    assert "Mevcut Trend Projeksiyonu &amp; Risk Analizi (BAU - Müdahalesiz Senaryo)" in all_markdown or "BAU - Müdahalesiz Senaryo" in all_markdown
+    assert "İstatistiksel Risk ve Anomali Analizi" in all_markdown
 
     # 2. İstatistiksel kartlar ve dilim bilgisi (Türkçe virgüllü)
     assert "Alt %25 ≤" in all_markdown
@@ -121,11 +121,6 @@ def test_ai_forecast_page_apptest_rendering():
     assert "µg/m³, OSB:" in all_markdown
     assert "Adet)" in all_markdown
 
-    # 4. Metin temizliği (Yapay Zeka Analizi: kalktı, Öncelikli Eylem geldi)
+    # 4. Metin temizliği (Yapay Zeka Analizi kalktı)
     assert "Yapay Zeka Analizi:" not in all_markdown
-    assert "Öncelikli Eylem:" in all_markdown
-
-    # Caption doğrulaması
-    all_captions = " ".join([c.value for c in at.caption])
-    assert "BAU - Müdahalesiz Senaryo" in all_captions
 

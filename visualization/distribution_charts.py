@@ -27,7 +27,7 @@ def create_ranking_bar_chart(
     # Yatay çubukta yukarıdan aşağıya doğru düzgün dizilim
     sorted_df = sorted_df.iloc[::-1]
     
-    label = "PM2.5" if pollutant == "pm25" else ("PM10" if pollutant == "pm10" else "NO₂")
+    label = "PM2.5"
     
     fig = px.bar(
         sorted_df,
@@ -76,7 +76,7 @@ def create_regional_boxplot(
     Medyan, çeyreklikler (Q1, Q3) ve aykırı değerleri görselleştirir.
     """
     val_col = pollutant if pollutant in df.columns else "pm25"
-    label = "PM2.5" if val_col == "pm25" else ("PM10" if val_col == "pm10" else "NO₂")
+    label = "PM2.5"
     
     # Bölgeleri ortalama kirliliğe göre yüksekten düşüğe doğru sırala
     order = df.groupby("bolge")[val_col].mean().sort_values(ascending=False).index.tolist()

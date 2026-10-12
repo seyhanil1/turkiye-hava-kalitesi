@@ -328,8 +328,8 @@ def render_shared_top_bar():
             if "city" in st.query_params:
                 del st.query_params["city"]
     with c2:
-        pol_options = ["PM2.5", "PM10", "NO₂"]
-        cur_pol_idx = pol_options.index(st.session_state["selected_pollutant"]) if st.session_state["selected_pollutant"] in pol_options else 0
+        pol_options = ["PM2.5"]
+        cur_pol_idx = 0
         new_pol = st.selectbox(
             "Kirletici:",
             pol_options,
@@ -337,8 +337,7 @@ def render_shared_top_bar():
             label_visibility="collapsed",
             key="_shared_pol_picker"
         )
-        if new_pol != st.session_state["selected_pollutant"]:
-            st.session_state["selected_pollutant"] = new_pol
+        st.session_state["selected_pollutant"] = "PM2.5"
     with c3:
         st.markdown(f"""
         <div style="background:#031b2e; border:1px solid #093452; border-radius:6px; padding:7px 12px; text-align:center; font-size:11.5px; color:#cbd5e1;">

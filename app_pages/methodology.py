@@ -29,7 +29,7 @@ def render_methodology_page(df: pd.DataFrame = None):
     # 1. Veri Kaynağı ve Türü
     st.markdown("### 1. Veri Kaynakları ve Veri Türü (Ölçüm vs. Model)")
     st.markdown(f"""
-    - **Hava Kalitesi Verisi:** Platformdaki partikül madde (PM2.5, PM10) ve azot dioksit (NO₂) verileri, 
+    - **Hava Kalitesi Verisi:** Platformdaki ince partikül madde (PM2.5) verileri, 
       **Copernicus Atmosphere Monitoring Service (CAMS)** atmosferik reanaliz modelleri ve Open-Meteo Air Quality API aracılığıyla elde edilmektedir.
       *Önemli Not:* Bu veriler zemin seviyesindeki fiziksel ölçüm istasyonu verisi değil; uydu gözlemleri, kimyasal taşınım modelleri ve meteorolojik verilerin harmanlandığı **0.1° (~11 km) çözünürlüklü ızgaralanmış atmosferik model tahmin/reanaliz verisidir**.
     - **Veri Dönemi:** `{date_info.get('date_range_str', '11.07.2026 – 10.10.2026')}` ({date_info.get('total_days', 92)} günlük doğrulanabilir gözlem dönemi). Canlı veya anlık veri iddiası taşımamaktadır.

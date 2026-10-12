@@ -4,7 +4,7 @@ HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 
 Özellikler:
 - Avrupa CAMS (Copernicus Atmosphere Monitoring Service) verileri.
-- 90 günlük geçmiş saatlik/günlük PM2.5, PM10, NO2 zaman serileri.
+- 90 günlük geçmiş saatlik/günlük PM2.5 zaman serileri.
 - Çevrimdışı ve önbellekli (cached) çalışma desteği.
 """
 
@@ -35,7 +35,7 @@ class OpenMeteoAirQualityConnector:
         params = {
             "latitude": lat,
             "longitude": lon,
-            "hourly": "pm10,pm2_5,nitrogen_dioxide",
+            "hourly": "pm2_5",
             "past_days": past_days,
             "timezone": "auto"
         }
@@ -50,9 +50,7 @@ class OpenMeteoAirQualityConnector:
                     
                 df_hourly = pd.DataFrame({
                     "datetime": pd.to_datetime(times),
-                    "pm25": hourly.get("pm2_5", []),
-                    "pm10": hourly.get("pm10", []),
-                    "no2": hourly.get("nitrogen_dioxide", [])
+                    "pm25": hourly.get("pm2_5", [])
                 })
                 
                 # Günlük agregasyon
@@ -60,17 +58,13 @@ class OpenMeteoAirQualityConnector:
                 df_daily = df_hourly.groupby("date").agg(
                     pm25=("pm25", "mean"),
                     pm25_min=("pm25", "min"),
-                    pm25_max=("pm25", "max"),
-                    pm10=("pm10", "mean"),
-                    no2=("no2", "mean")
+                    pm25_max=("pm25", "max")
                 ).reset_index()
                 
                 df_daily["date"] = pd.to_datetime(df_daily["date"])
                 df_daily = df_daily.sort_values("date")
                 df_daily["pm25_ma7"] = df_daily["pm25"].rolling(7, min_periods=1).mean().round(2)
                 df_daily["pm25"] = df_daily["pm25"].round(2)
-                df_daily["pm10"] = df_daily["pm10"].round(2)
-                df_daily["no2"] = df_daily["no2"].round(2)
                 return df_daily
         except Exception as e:
             # Ağ hatası veya zaman aşımında sessizce yakala
@@ -109,16 +103,12 @@ def get_national_timeseries(past_days: int = 90) -> pd.DataFrame:
     trend = np.sin(np.linspace(0, 3 * np.pi, len(dates))) * 6.0
     noise = np.random.normal(0, 2.8, len(dates))
     pm25_vals = np.clip(base_pm + trend + noise, 12.0, 75.0).round(2)
-    pm10_vals = (pm25_vals * 2.05 + np.random.normal(0, 3.0, len(dates))).clip(20.0, 160.0).round(2)
-    no2_vals = (24.0 + trend * 0.5 + np.random.normal(0, 2.0, len(dates))).clip(8.0, 60.0).round(2)
     
     df_fb = pd.DataFrame({
         "date": dates,
         "pm25": pm25_vals,
         "pm25_min": (pm25_vals * 0.75).round(2),
-        "pm25_max": (pm25_vals * 1.35).round(2),
-        "pm10": pm10_vals,
-        "no2": no2_vals
+        "pm25_max": (pm25_vals * 1.35).round(2)
     })
     df_fb["pm25_ma7"] = df_fb["pm25"].rolling(7, min_periods=1).mean().round(2)
     df_fb.to_csv(CACHE_FILE, index=False)

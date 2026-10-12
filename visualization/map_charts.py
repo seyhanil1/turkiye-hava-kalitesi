@@ -36,11 +36,9 @@ def create_turkey_choropleth_map(
         pollutant = "pm25"
         
     pollutant_labels = {
-        "pm25": "PM2.5 (µg/m³)",
-        "pm10": "PM10 (µg/m³)",
-        "no2": "NO₂ (µg/m³)"
+        "pm25": "PM2.5 (µg/m³)"
     }
-    label = pollutant_labels.get(pollutant, f"{pollutant.upper()} (µg/m³)")
+    label = pollutant_labels.get(pollutant, "PM2.5 (µg/m³)")
     
     # Özel Hover Şablonu
     # İl Adı, Değer, DSÖ Durumu, Bölge, Nüfus, Veri Kaynağı

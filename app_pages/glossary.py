@@ -37,16 +37,6 @@ def render_glossary_page(df: pd.DataFrame = None):
             "desc": "Çapı 2,5 mikrometre veya daha küçük ince partikül maddelerdir (saç telinin yaklaşık 30'da biri). Akciğer alveollerine ve doğrudan kan dolaşımına nüfuz edebildiği için halk sağlığı açısından en tehlikeli hava kirleticisidir."
         },
         {
-            "term": "PM10 (Kaba Partikül Madde)",
-            "cat": "Kirletici",
-            "desc": "Çapı 10 mikrometre veya daha küçük partiküllerdir. Toz, polen, yol tozu, inşaat faaliyetleri ve sanayi kaynaklıdır. Üst solunum yollarında ve bronşlarda birikerek solunum yolu tahrişine ve astım ataklarına yol açar."
-        },
-        {
-            "term": "NO₂ (Azot Dioksit)",
-            "cat": "Gaz Kirletici",
-            "desc": "Fosil yakıtlı motorlu araçlar, termik santraller ve endüstriyel tesislerin yüksek sıcaklıktaki yanma süreçlerinden salınan kahverengimsi, tahriş edici bir gazdır. Alt solunum yolu enfeksiyonlarını tetikler ve yer seviyesi ozon (O3) oluşumunda birincil rol oynar."
-        },
-        {
             "term": "SO₂ (Kükürt Dioksit)",
             "cat": "Gaz Kirletici",
             "desc": "Yüksek kükürtlü kömür ve fuel-oil yakılması sonucu oluşan, asit yağmurlarına yol açan boğucu gazdır."
@@ -106,7 +96,7 @@ def render_glossary_page(df: pd.DataFrame = None):
     # Arama kutusu - tekil key verilerek kararlı tutulur
     search = st.text_input(
         "Sözlükte Terim Ara:",
-        placeholder="Örn: PM2.5, NO2, SO2, DSÖ, CAMS, birim...",
+        placeholder="Örn: PM2.5, SO2, DSÖ, CAMS, birim...",
         label_visibility="collapsed",
         key="glossary_search_query"
     )

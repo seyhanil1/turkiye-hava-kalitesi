@@ -313,13 +313,13 @@ def render_ai_forecast_page(df: pd.DataFrame):
     st.markdown("""
     <div style='margin-bottom: 24px;'>
         <div style='display:flex; align-items:center; gap:12px;'>
-            <span style='font-size:32px;'>📈</span>
+            <span style='font-size:32px;'>📊</span>
             <div>
                 <h2 style='color:#f8fafc; margin:0; font-size:24px; font-weight:700;'>
-                    Mevcut Trend Projeksiyonu &amp; Risk Analizi (BAU - Müdahalesiz Senaryo)
+                    İstatistiksel Risk ve Anomali Analizi
                 </h2>
                 <p style='color:#94a3b8; margin:4px 0 0 0; font-size:14px;'>
-                    81 İl İçin Dinamik Çeyreklik (Quantile) Anomali Analizi, İstatistiksel Trend Modeli ve 5 Yıllık Projeksiyon (2026–2031)
+                    81 İl İçin Dinamik Çeyreklik (Quantile) Dağılımı ve Coğrafi/Sanayi Anomali Sınıflandırması
                 </p>
             </div>
         </div>
@@ -414,123 +414,17 @@ def render_ai_forecast_page(df: pd.DataFrame):
             cat_badge_html = "<span style='background:rgba(0,229,219,0.15); border:1px solid #00e5db; color:#38bdf8; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>✅ Normal / Dengeli Profil</span>"
 
         pm_val_now_str = f"{float(il_row['pm25']):.1f}".replace(".", ",")
+        dso_kat_val = round(float(il_row["pm25"]) / 5.0, 1)
+        dso_kat_str = f"{dso_kat_val:.1f}".replace(".", ",")
         st.markdown(
-            f"<div style='margin-top:28px; display:flex; align-items:center; gap:12px;'>"
+            f"<div style='margin-top:28px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;'>"
             f"{cat_badge_html}"
             f"<span style='color:#94a3b8; font-size:13px;'>"
-            f"Mevcut PM2.5: <strong style='color:#f8fafc;'>{pm_val_now_str} µg/m³</strong> &bull; "
+            f"Mevcut PM2.5: <strong style='color:#f8fafc;'>{pm_val_now_str} µg/m³</strong> ({dso_kat_str}× DSÖ) &bull; "
             f"OSB Sayısı: <strong style='color:#f8fafc;'>{int(il_row['osb_sayisi'])} Adet</strong>"
             f"</span></div>",
             unsafe_allow_html=True
         )
-
-    st.write("")
-
-    # 5 YILLIK TAHMİN MODELİ (2026-2031)
-    years, proj_values = build_projection_series(float(il_row["pm25"]), growth_rate)
-
-    # 3. VE 4. AŞAMA: PROJEKSİYON GRAFİĞİ + DİNAMİK UYARI VE ALINACAK ÖNLEMLER (REÇETE)
-    col_chart, col_recipe = st.columns([1.6, 1.4])
-
-    with col_chart:
-        fig = create_forecast_figure(
-            city_name=secilen_il,
-            category=category,
-            years=years,
-            values=proj_values,
-            growth_rate=growth_rate
-        )
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-        st.caption("Mevcut Trend Projeksiyonu & Risk Analizi (BAU - Müdahalesiz Senaryo): İstatistiksel Trend Modeli ile geçmiş ve mevcut dinamikler baz alınarak müdahalesiz gelişim öngörülmektedir.")
-
-    with col_recipe:
-        # Kategoriye göre pulsing glow sınıfı ve başlık renkleri
-        if category == "Kategori A":
-            pulse_cls = "pulse-box-a"
-            title_cls = "neon-amber-title"
-            
-            neden_sonuc_metni = (
-                f"{secilen_il} ilinde sanayi yoğunluğu düşük olmasına rağmen "
-                f"hava kirliliği tehlikeli boyuttadır. Bu durumun ana nedeni coğrafi çanak yapısı (rüzgar hapsi) "
-                f"ve kış aylarındaki kalitesiz yakıt kullanımıdır (Termal İnversiyon)."
-            )
-            onlem_metni = (
-                "Öncelikli Eylem: Doğalgaz ve temiz enerji altyapısı hızla yaygınlaştırılmalı, "
-                "rüzgar koridorlarını kesecek dikey yapılaşma sınırlandırılmalıdır."
-            )
-            
-        elif category == "Kategori B":
-            pulse_cls = "pulse-box-b"
-            title_cls = "neon-red-title"
-            
-            neden_sonuc_metni = (
-                f"{secilen_il} ilindeki partikül kirliliği doğrudan yoğun organize sanayi bölgeleri ve "
-                f"endüstriyel baca emisyonları kaynaklıdır."
-            )
-            onlem_metni = (
-                "Öncelikli Eylem: Fabrika bacalarına sürekli izleme ve filtre zorunluluğu getirilmeli, "
-                "yeni açılacak sanayi bölgeleri şehrin hakim rüzgar yönünün tersine planlanmalıdır."
-            )
-            
-        else:
-            pulse_cls = "pulse-box-normal"
-            title_cls = "neon-blue-title"
-            
-            neden_sonuc_metni = (
-                f"{secilen_il} ilinde sanayi yoğunluğu ve hava kirliliği göstergeleri "
-                f"dengeli/normal seyretmektedir. Aşırı uç bir jeolojik veya endüstriyel anomali saptanmamıştır."
-            )
-            onlem_metni = (
-                "Öncelikli Eylem: Mevcut emisyon denetimleri titizlikle sürdürülmeli, sanayi atık kontrolleri "
-                "ve yeşil enerji dönüşümü desteklenmelidir."
-            )
-
-        # 1. Bilgi Balonu: Neden-Sonuç Analizi
-        st.markdown(f"""
-        <div class='info-bubble'>
-            <div class='neon-blue-title'>
-                <span>🔬</span> İstatistiksel Neden-Sonuç Analizi
-            </div>
-            <p class='bubble-text'>{neden_sonuc_metni}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # 2. Bilgi Balonu: Alınacak Önlemler (Pulsing Glow ile Çerçevelenmiş Reçete)
-        st.markdown(f"""
-        <div class='info-bubble {pulse_cls}'>
-            <div class='{title_cls}'>
-                <span>🚨</span> Öncelikli Eylem ve Müdahale Planı
-            </div>
-            <p class='bubble-text'><strong>{onlem_metni}</strong></p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # 3. Bilgi Balonu: Projeksiyon Metrik Özeti
-        growth_pct = round(((proj_values[-1] - proj_values[0]) / proj_values[0]) * 100, 1)
-        sign = "+" if growth_pct > 0 else ""
-        v0_str = f"{proj_values[0]:.1f}".replace(".", ",")
-        vend_str = f"{proj_values[-1]:.1f}".replace(".", ",")
-        pct_str = f"{abs(growth_pct):.1f}".replace(".", ",")
-
-        st.markdown(f"""
-        <div class='info-bubble' style='margin-bottom:0;'>
-            <div style='color:#94a3b8; font-size:12px; margin-bottom:6px;'>5 Yıllık Projeksiyon Değişimi (2026 ➔ 2031)</div>
-            <div style='display:flex; justify-content:space-between; align-items:center;'>
-                <div>
-                    <span style='font-size:12px; color:#64748b;'>2026:</span>
-                    <strong style='font-size:15px; color:#f8fafc; margin-left:4px;'>{v0_str} µg/m³</strong>
-                </div>
-                <div style='color:#38bdf8; font-size:16px;'>➔</div>
-                <div>
-                    <span style='font-size:12px; color:#64748b;'>2031:</span>
-                    <strong style='font-size:15px; color:#f8fafc; margin-left:4px;'>{vend_str} µg/m³</strong>
-                </div>
-                <div style='background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:700;'>
-                    {sign}%{pct_str} Kümülatif
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
 
     # 4. AŞAMA ALT BÖLÜM: DİNAMİK OLARAK FİLTRELENEN TÜM KATEGORİ LİSTELERİ
     st.write("")
