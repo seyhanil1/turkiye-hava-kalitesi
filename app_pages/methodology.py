@@ -86,7 +86,6 @@ def render_methodology_page(df: pd.DataFrame = None):
     st.markdown("""
     - **Eksik Veri (Missing Data):** Günlük serilerde eksik veya sıfır bildirilmiş kayıtlar analize dahil edilmemekte (`dropna()`); ortalamalar yalnızca geçerli gözlem günleri üzerinden alınmaktadır.
     - **Model Çözünürlüğü:** CAMS ızgara çözünürlüğü (~11 km) genel bölgesel arka plan kirliliğini çok iyi yakalamakla birlikte; yoğun trafik arterleri, sokak kanyonları veya vadi tabanlarındaki mikro-ölçekli kirlilik birikimlerini yer istasyonları kadar hassas yansıtmayabilir.
-    - **Ekonomik ve Sağlık Tahmini:** Sitede sunulan sağlık maliyeti ve erken ölüm projeksiyonları epidemiyolojik senaryo modelleridir (İstatistiksel Yaşam Değeri - VSL ve DSÖ atfedilebilir risk metodolojisi). Bireysel vaka sayımı değil, makro tahmin aralığı olarak okunmalıdır.
     """)
 
     st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
@@ -95,5 +94,4 @@ def render_methodology_page(df: pd.DataFrame = None):
         - **CAMS Atmosphere Reanalysis:** European Centre for Medium-Range Weather Forecasts (ECMWF).
         - **TÜİK:** Ölüm ve Ölüm Nedeni İstatistikleri (2022, 2023, 2024).
         - **OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026)**
-        - **OECD & WHO:** *The Economic Consequences of Outdoor Air Pollution (2016)* ve VSL Metodolojisi.
         """)

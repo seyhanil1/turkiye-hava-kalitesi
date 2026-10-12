@@ -144,13 +144,9 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
                     <td><b>Sanayi Parsel Sayısı:</b></td>
                     <td style='text-align:right; color:#f8fafc; font-weight:700;'>{il_row['toplam_parsel']:,} Parsel</td>
                 </tr>
-                <tr style='border-bottom:1px solid #1e293b; height:32px;'>
+                <tr style='height:32px;'>
                     <td><b>TÜİK 2024 Solunum Ölümü:</b></td>
                     <td style='text-align:right; color:#ef4444; font-weight:700;'>{int(il_row['solunum_olum']):,} Kişi</td>
-                </tr>
-                <tr style='height:32px;'>
-                    <td><b>Ekonomik Maliyet Tahmini:</b></td>
-                    <td style='text-align:right; color:#94a3b8; font-size:11px;'>OECD VSL Modeli Doğrulanıyor</td>
                 </tr>
             </table>
             <div style='font-size:10.5px; color:#64748b; margin-top:10px; line-height:1.4;'>

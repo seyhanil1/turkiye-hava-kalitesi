@@ -10,7 +10,6 @@ from app_pages.correlation_page import render_correlation_page
 from app_pages.regions_page import render_regions_page
 from app_pages.green_page import render_green_page
 from app_pages.industry_page import render_industry_page
-from app_pages.economy_page import render_economy_page
 from app_pages.action_guide import render_action_guide_page
 
 __all__ = [
@@ -21,6 +20,5 @@ __all__ = [
     "render_regions_page",
     "render_green_page",
     "render_industry_page",
-    "render_economy_page",
     "render_action_guide_page",
 ]

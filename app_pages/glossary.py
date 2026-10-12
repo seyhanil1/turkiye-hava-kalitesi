@@ -64,7 +64,7 @@ def render_glossary_page(df: pd.DataFrame = None):
         {
             "term": "µg/m³ (Mikrogram / Metreküp)",
             "cat": "Ölçü Birimi",
-            "desc": "Bir metreküp havadaki kirletici kütlesini gösteren standart konsantrasyon birimidir. 1 mikrogram, 1 gramın milyonda biridir (10⁻⁶ g)."
+            "desc": "Bir metreküp havadaki kirletici kütlesini gösteren standart konsantrasyon birimidir. 1 mikrogram, bir gramın 10⁻⁶ katına (1/1.000.000 g) eşittir."
         },
         {
             "term": "DSÖ Kılavuz Değeri (WHO Guideline Value)",

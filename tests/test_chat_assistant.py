@@ -52,11 +52,10 @@ def test_button_2_temiz_3_sehir(master_df):
     assert "Artvin" in resp
 
 
-def test_button_3_saglik_faturasi(master_df):
-    resp = generate_local_response("💰 Ulusal Sağlık Faturası", master_df)
-    assert "Ulusal Sağlık Faturası" in resp or "Toplam Sağlık Maliyeti" in resp
-    assert "Milyon ₺" in resp
-    assert "Trilyon ₺" in resp
+def test_button_3_osb_sehirler(master_df):
+    resp = generate_local_response("🏭 En Çok OSB'li 3 İl", master_df)
+    assert "OSB" in resp
+    assert "Bursa" in resp
 
 
 def test_button_4_karsilastirma(master_df):
@@ -79,4 +78,4 @@ def test_unmatched_general_query_guide(master_df):
     resp = generate_local_response("Selam naber?", master_df)
     assert "HavaAtlası Yerel Veri Asistanı" in resp
     assert "Nasıl soru sorabilirsiniz" in resp or "kalıplarla soru sorabilirsiniz" in resp
-    assert "4 hazır buton" in resp
+    assert "hazır buton" in resp

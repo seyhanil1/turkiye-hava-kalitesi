@@ -71,15 +71,12 @@ def calculate_inaction_scenario(pm25: float, solunum_olum: float) -> dict:
     """
     2035 Eylemsizlik Senaryosu matematiksel modellemesi:
     - 10 Yıllık Önlenemeyen Ek Can Kaybı: int(solunum_olum * 1.45)
-    - Kümülatif Sağlık Harcaması Faturası: round(pm25 * 6.4, 1) Milyon TL
     - Kronikleşme Riski: 'Astım ve KOAH acil servis başvurularında +%38 kalıcı artış.'
     - Resmi Uyarı: 'Kritik inversiyon dönemlerinde yaşam süresinde 2.8 - 4.1 yıl kayıp projeksiyonu.'
     """
     ek_can_kaybi = int(max(0.0, solunum_olum) * 1.45)
-    kumulatif_fatura = round(max(0.0, pm25) * 6.4, 1)
     return {
         "ek_can_kaybi_10yil": ek_can_kaybi,
-        "kumulatif_fatura_milyon_tl": kumulatif_fatura,
         "kroniklesme_riski": "Astım ve KOAH acil servis başvurularında +%38 kalıcı artış.",
         "resmi_uyari": "Kritik inversiyon dönemlerinde yaşam süresinde 2.8 - 4.1 yıl kayıp projeksiyonu."
     }
@@ -88,13 +85,12 @@ def calculate_inaction_scenario(pm25: float, solunum_olum: float) -> dict:
 def simulate_green_policy(
     pm25: float,
     solunum_olum: float,
-    maliyet_milyon_tl: float,
     industry_pct: float,
     clean_energy_pct: float,
     diag_type: str = "sanayi"
 ) -> dict:
     """
-    İnteraktif Politika Simülatörü epidemiyolojik ve mali etki hesaplayıcısı.
+    İnteraktif Politika Simülatörü epidemiyolojik etki hesaplayıcısı.
     """
     # Ağırlıklı kirlilik azaltım oranı
     if diag_type == "sanayi":
@@ -113,15 +109,10 @@ def simulate_green_policy(
     else:
         saved_lives = 0
 
-    # Tasarruf edilecek sağlık bütçesi (Milyon TL)
-    base_cost = maliyet_milyon_tl if maliyet_milyon_tl > 0 else (pm25 * 6.4 * 1.5)
-    saved_budget = round(base_cost * (pm_reduction / 100.0) * 0.75, 1)
-
     return {
         "pm_reduction_pct": round(pm_reduction, 1),
         "new_pm25": new_pm25,
-        "saved_lives": saved_lives,
-        "saved_budget_milyon_tl": saved_budget
+        "saved_lives": saved_lives
     }
 
 
@@ -280,8 +271,6 @@ def render_green_page(df: pd.DataFrame):
         nufus = float(city_data.get("nufus", 500000))
         solunum_olum = solunum_olum_100k * (nufus / 100000.0)
 
-    maliyet = float(city_data.get("maliyet_milyon_tl", 0.0))
-
     with sel_col2:
         dso_kat = round(pm25 / 5.0, 1) if pm25 > 0 else 0
         st.markdown(f"""
@@ -353,10 +342,6 @@ def render_green_page(df: pd.DataFrame):
 <div class="metric-label">10 Yıllık Önlenemeyen Ek Can Kaybı</div>
 <div class="metric-val" style="color:#ef4444;">+{inaction['ek_can_kaybi_10yil']:,} Kişi</div>
 </div>
-<div class="metric-row">
-<div class="metric-label">Kümülatif Sağlık Harcaması Faturası</div>
-<div class="metric-val" style="color:#f59e0b;">{inaction['kumulatif_fatura_milyon_tl']:,.1f} Milyon TL</div>
-</div>
 <div class="metric-row" style="margin-bottom:0;">
 <div class="metric-label">Kronikleşme Riski</div>
 <div style="font-size:12px; color:#e2e8f0; margin-top:2px; font-weight:600;">{inaction['kroniklesme_riski']}</div>
@@ -375,7 +360,7 @@ def render_green_page(df: pd.DataFrame):
 </div>
 <div style="font-size:13px; color:#94a3b8; margin-bottom:20px;">
 Sanayi baca filtre denetimlerini ve temiz ısınma/enerji dönüşüm oranlarını ayarlayarak 
-kurtarılabilecek hayatları ve tasarruf edilecek kamu bütçesini simüle edin.
+kurtarılabilecek hayatları ve hava kalitesi iyileşme oranını simüle edin.
 </div>""", unsafe_allow_html=True)
 
     col_sim_ctrl, col_sim_kpis = st.columns([1.1, 1.9])
@@ -402,14 +387,13 @@ kurtarılabilecek hayatları ve tasarruf edilecek kamu bütçesini simüle edin.
     sim_res = simulate_green_policy(
         pm25=pm25,
         solunum_olum=solunum_olum,
-        maliyet_milyon_tl=maliyet,
         industry_pct=industry_filter,
         clean_energy_pct=clean_energy,
         diag_type=diag["type"]
     )
 
     with col_sim_kpis:
-        kpi1, kpi2, kpi3 = st.columns(3)
+        kpi1, kpi2 = st.columns(2)
 
         with kpi1:
             st.markdown(f"""<div class="sim-kpi-card" style="border-top:3px solid #10b981;">
@@ -419,13 +403,6 @@ kurtarılabilecek hayatları ve tasarruf edilecek kamu bütçesini simüle edin.
 </div>""", unsafe_allow_html=True)
 
         with kpi2:
-            st.markdown(f"""<div class="sim-kpi-card" style="border-top:3px solid #00f2fe;">
-<div style="font-size:11px; color:#8faec9; text-transform:uppercase; font-weight:700;">Tasarruf Bütçesi</div>
-<div style="font-size:24px; font-weight:900; color:#00f2fe; margin:6px 0;">{sim_res['saved_budget_milyon_tl']:,.1f}</div>
-<div style="font-size:11px; color:#94a3b8;">Milyon TL / Yıl (Sağlık)</div>
-</div>""", unsafe_allow_html=True)
-
-        with kpi3:
             st.markdown(f"""<div class="sim-kpi-card" style="border-top:3px solid #38bdf8;">
 <div style="font-size:11px; color:#8faec9; text-transform:uppercase; font-weight:700;">PM2.5 İyileşme Oranı</div>
 <div style="font-size:24px; font-weight:900; color:#38bdf8; margin:6px 0;">-%{sim_res['pm_reduction_pct']:.1f}</div>

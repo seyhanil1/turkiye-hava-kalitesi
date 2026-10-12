@@ -168,13 +168,13 @@ GRAY_PATH_DATA = {
         }
     },
     "2035 (Nihai Tablo)": {
-        "action_title": "Kritik Eşik Aşımı ve Yüksek Kamu Maliyeti",
-        "action_main": "Hava kalitesi geri döndürülemez eşiği aşıyor ve uzun vadeli halk sağlığı maliyeti kritik seviyeye ulaşıyor.",
-        "action_sub": "Sanayi ve topografik olarak kapalı illerde yıllık PM2.5 seviyelerinin yüksek kalması durumunda, erken kayıplar ve kamu sağlık harcamalarında derin ekonomik zarar tablosu oluşmaktadır.",
+        "action_title": "Kritik Eşik Aşımı ve Yüksek Risk",
+        "action_main": "Hava kalitesi geri döndürülemez eşiği aşıyor ve uzun vadeli halk sağlığı riski kritik seviyeye ulaşıyor.",
+        "action_sub": "Sanayi ve topografik olarak kapalı illerde yıllık PM2.5 seviyelerinin yüksek kalması durumunda, erken kayıplar ve sağlık sisteminde derin zarar tablosu oluşmaktadır.",
         "bullets": [
             "Sanayi ve çanak illerinde yıllık PM2.5 seviyelerinin yüksek seyretmesi.",
             "Önlenebilir kronik hastalıklara bağlı erken vefatların artması.",
-            "Hava kirliliğinin sağlık sistemi ve iş gücü üzerinde oluşturduğu yüksek maliyet."
+            "Hava kirliliğinin sağlık sistemi ve iş gücü üzerinde oluşturduğu yüksek yük."
         ],
         "metrics": {
             "pm_change": "+%116 Artış",
@@ -815,13 +815,7 @@ DSÖ 2021 PM2.5 Kılavuz Değeri: Yıllık 5,0 µg/m³. Kaynak: Dünya Sağlık 
 
         ---
 
-**4. Sağlık Bütçesi ve Ekonomik Yük Modeli:**
-        - PM2.5 kirliliğinin acil servis başvuruları, poliklinik yükü, kronik ilaç geri ödemeleri ve iş gücü verim kaybı kişi başına yıllık yaklaşık 400–550 TL / 10 µg/m³ olarak modellenmiştir.
-        - Kaynak: DSÖ Avrupa Sağlık Ekonomisi Değerlendirme Aracı (AirQ+) ve OECD Sağlık Harcamaları Göstergeleri.
-
-        ---
-
-**5. Beklenen Yaşam Süresi (Life Expectancy) Katsayısı:**
+**4. Beklenen Yaşam Süresi (Life Expectancy) Katsayısı:**
         - Doğumda beklenen yaşam süresi artışı veya kaybı, her 10 µg/m³ kalıcı PM2.5 değişimi başına yaklaşık 0,61 yıl katsayısı ile hesaplanmıştır.
         - Kaynak: Pope et al., *"Fine-Particulate Air Pollution and Life Expectancy in the United States"*, New England Journal of Medicine (2009).
         """)

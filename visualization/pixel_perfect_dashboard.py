@@ -3,8 +3,8 @@ Piksel Düzeyinde Referans Tasarıma Sadık & Tam Etkileşimli Platform Oluştur
 HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 
 Özellikler:
-- Sol Panel Navigasyonu: 8 modülün tamamı (Genel Bakış, Şehir Karnesi, Düello, Korelasyon,
-  Bölgeler, Yeşil Dönüşüm, Sanayi Profili, Ekonomi) kesintisiz, anında ve çalışan sayfa motoru ile bağlıdır.
+- Sol Panel Navigasyonu: 7 modülün tamamı (Genel Bakış, Şehir Karnesi, Düello, Korelasyon,
+  Bölgeler, Yeşil Dönüşüm, Sanayi Profili) kesintisiz, anında ve çalışan sayfa motoru ile bağlıdır.
 - Harita Pan & Zoom Motoru: Fareyle sürükleyip kaydırma (drag-to-pan), fare tekerleğiyle yakınlaştırma (wheel-zoom),
   + / - / sıfırla kontrolleri ve koordinat kilitlenmesini önleyen dinamik sınır koruması.
 - Bölge Seçici Dropdown: Türkiye Geneli ve 7 Coğrafi Bölgenin tamamını
@@ -470,7 +470,6 @@ def generate_pixel_perfect_dashboard_html(
                 "solunum_olum_100k": round(float(r.get("solunum_olum_100k", 0.0)), 1) if pd.notna(r.get("solunum_olum_100k")) else 0.0,
                 "solunum_olum": int(r.get("solunum_olum", 0)) if pd.notna(r.get("solunum_olum")) else 0,
                 "dso_kat": round(float(r.get("dso_limit_kat", 0.0)), 1) if pd.notna(r.get("dso_limit_kat")) else 0.0,
-                "maliyet": round(float(r.get("maliyet_milyon_tl", 0.0)), 1) if pd.notna(r.get("maliyet_milyon_tl")) else 0.0,
             })
     
     # Varsayılan PM2.5 değerleri
@@ -2125,11 +2124,6 @@ html, body {{
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                     <span>Sanayi Profili</span>
                 </div></li>
-                
-                <li><div class="nav-item" data-view="ekonomi" onclick="switchView('ekonomi')">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    <span>Ekonomi</span>
-                </div></li>
             </ul>
 
             <div class="nav-section-title">GELECEK</div>
@@ -2572,27 +2566,6 @@ html, body {{
                 <!-- JS ile render edilir -->
             </div>
         </div>
-        
-        <!-- ========================================================
-             MODÜL 8: EKONOMİ VE SAĞLIK MALİYETİ (ECONOMY)
-             ======================================================== -->
-        <div id="view-ekonomi" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">💰</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">Sağlık Ekonomisi & Kirlilik Maliyet Modeli</div>
-                        <div style="font-size:11px; color:#6d8fae;">Hava kirliliğinin sağlık sistemine ve iş gücüne yıllık tahmini faturası</div>
-                    </div>
-                    <span class="module-badge">Ekonomik Yük Analizi</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;" id="economyModuleContent">
-                <!-- JS ile render edilir -->
-            </div>
-        </div>
 
         <!-- ========================================================
              MODÜL 9: YAPAY ZEKA İÇGÖRÜ & TAHMİN MOTORU (AI FORECAST)
@@ -2751,7 +2724,6 @@ function switchView(viewName) {{
     else if (viewName === 'bolgeler') renderRegionsModule();
     else if (viewName === 'yesil_donusum') renderGreenModule();
     else if (viewName === 'sanayi_profili') renderIndustryModule();
-    else if (viewName === 'ekonomi') renderEconomyModule();
     else if (viewName === 'ai_tahmin') renderAIForecastModule();
     else if (viewName === 'chat_assistant') renderChatAssistantModule();
 }}
@@ -3362,9 +3334,6 @@ function renderCityReportCard(cityName) {{
                 <h4 style="font-size:14px; font-weight:700; color:#ffffff; margin-bottom:12px;">🏥 Sağlık Etkisi ve Azaltım Potansiyeli</h4>
                 <div style="font-size:13px; color:#cbd5e1; line-height:1.6;">
                     ${{reductionHtml}}
-                    <div style="margin-top:10px; padding:8px 12px; background:rgba(15,23,42,0.6); border:1px dashed #334155; border-radius:6px; font-size:11px; color:#94a3b8; line-height:1.4;">
-                        ℹ️ <strong>Mali Yük Göstergesi:</strong> Resmi OECD/DSÖ VSL katsayıları ve Türkiye sağlık harcama modelleri doğrulanana kadar tahmini ekonomik maliyet kartı metodolojik güvenlik gereği askıya alınmıştır.
-                    </div>
                     <div style="margin-top:14px; display:flex; gap:10px;">
                         <button class="back-to-overview-btn" onclick="startDuelWithCity('${{c.il}}')">⚔️ Bu İli Düelloya Gönder</button>
                     </div>
@@ -3754,7 +3723,6 @@ function renderGreenModule(targetCity) {{
     const cityPm = cityObj.pm25 || 0;
     const cityOsb = cityObj.osb_sayisi || 0;
     const citySolunumOlum = cityObj.solunum_olum || Math.round((cityObj.solunum_olum_100k || 0) * (cityObj.nufus || 500000) / 100000);
-    const cityMaliyet = cityObj.maliyet || 0;
     const dsoKat = (cityPm / 5.0).toFixed(1);
 
     // Kök Neden Teşhisi:
@@ -3795,7 +3763,6 @@ function renderGreenModule(targetCity) {{
 
     // 2035 Eylemsizlik Senaryosu
     const inactionDeaths = Math.floor(citySolunumOlum * 1.45);
-    const inactionCost = (cityPm * 6.4).toFixed(1);
 
     // Simülasyon Değerleri (Slider state saklama)
     window.greenSimInd = window.greenSimInd !== undefined ? window.greenSimInd : 30;
@@ -3812,8 +3779,6 @@ function renderGreenModule(targetCity) {{
     pmReduction = Math.min(82.0, Math.max(0, pmReduction));
     const newPm25 = Math.max(5.0, (cityPm * (1.0 - pmReduction / 100.0))).toFixed(1);
     const savedLives = citySolunumOlum > 0 && pmReduction > 0 ? Math.max(1, Math.floor(citySolunumOlum * (pmReduction / 100.0) * 0.70)) : 0;
-    const baseCost = cityMaliyet > 0 ? cityMaliyet : (cityPm * 6.4 * 1.5);
-    const savedBudget = (baseCost * (pmReduction / 100.0) * 0.75).toFixed(1);
 
     const sortedCities = [...CITIES].sort((a,b) => a.il.localeCompare(b.il, 'tr'));
     const cityOptionsHtml = sortedCities.map(c => 
@@ -3877,11 +3842,6 @@ function renderGreenModule(targetCity) {{
                         <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase;">10 Yıllık Önlenemeyen Ek Can Kaybı</div>
                         <div style="font-size:17px; font-weight:800; color:#ef4444;">+${{fmt(inactionDeaths)}} Kişi</div>
                     </div>
-                    
-                    <div style="background:rgba(2, 18, 32, 0.7); border-radius:8px; padding:8px 12px; margin-bottom:6px;">
-                        <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase;">Kümülatif Sağlık Harcaması Faturası</div>
-                        <div style="font-size:17px; font-weight:800; color:#f59e0b;">${{inactionCost}} Milyon TL</div>
-                    </div>
 
                     <div style="background:rgba(2, 18, 32, 0.7); border-radius:8px; padding:8px 12px;">
                         <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase;">Kronikleşme Riski</div>
@@ -3901,7 +3861,7 @@ function renderGreenModule(targetCity) {{
                 <span>🎛️</span> İnteraktif Yeşil Politika Simülatörü
             </div>
             <div style="font-size:12px; color:#8faec9; margin-bottom:18px;">
-                Sanayi baca filtre denetimlerini ve temiz enerji oranını ayarlayarak önlenebilecek tahmini ölümleri senaryo bazında simüle edin.
+                Sanayi baca filtre denetimlerini ve temiz enerji oranını ayarlayarak önlenebilecek tahmini ölümleri ve kirlilik iyileşmesini senaryo bazında simüle edin.
             </div>
 
             <div style="display:grid; grid-template-columns:1.2fr 1.8fr; gap:20px; align-items:center;">
@@ -3922,19 +3882,12 @@ function renderGreenModule(targetCity) {{
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
                     <div style="background:rgba(2, 18, 32, 0.85); border-radius:10px; padding:16px 12px; text-align:center; border-top:3px solid #10b981; border-left:1px solid rgba(255,255,255,0.05); border-right:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
                         <div style="font-size:22px;">🫁</div>
                         <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase; font-weight:700; margin-top:2px;">Önlenebilir Tahmini Ölüm</div>
                         <div style="font-size:22px; font-weight:900; color:#10b981; margin:4px 0;">~${{fmt(savedLives)}}</div>
                         <div style="font-size:10px; color:#94a3b8;">Kişi / Yıl (Tahmini Projeksiyon)</div>
-                    </div>
-
-                    <div style="background:rgba(2, 18, 32, 0.85); border-radius:10px; padding:16px 12px; text-align:center; border-top:3px solid #00f2fe; border-left:1px solid rgba(255,255,255,0.05); border-right:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size:22px;">💰</div>
-                        <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase; font-weight:700; margin-top:2px;">Tasarruf Bütçesi</div>
-                        <div style="font-size:22px; font-weight:900; color:#00f2fe; margin:4px 0;">${{savedBudget}}</div>
-                        <div style="font-size:10px; color:#94a3b8;">Milyon TL / Yıl (Sağlık)</div>
                     </div>
 
                     <div style="background:rgba(2, 18, 32, 0.85); border-radius:10px; padding:16px 12px; text-align:center; border-top:3px solid #38bdf8; border-left:1px solid rgba(255,255,255,0.05); border-right:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -4059,7 +4012,7 @@ function renderIndustryModule() {{
                             </div>
                         </div>
                         <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                            Hızlı sanayileşme, tekstil ve gıda işleme tesisleri nedeniyle partikül madde (PM10/PM2.5) yükünün en yüksek olduğu OSB bölgesi. 1 Milyon+ hektar üretim havzasıyla meteorolojik inversiyon riski taşımaktadır.
+                            Hızlı sanayileşme, tekstil ve gıda işleme tesisleri nedeniyle partikül madde yükünün en yüksek olduğu OSB bölgesi. Geniş üretim havzasıyla meteorolojik inversiyon riski taşımaktadır.
                         </div>
                         <div style="margin-top:8px; font-size:11px; color:#fbbf24; font-weight:600;">
                             • Çözüm: Kömür yakıtlı sanayi kazanlarının dönüşümü ve organize sanayi hava koridoru koruması.
@@ -4112,209 +4065,6 @@ function renderIndustryModule() {{
             yaxis: {{
                 tickfont: {{ color: '#ffffff', size: 12 }}
             }}
-        }}, {{ responsive: true, displayModeBar: false }});
-    }}
-}}
-
-function renderEconomyModule() {{
-    const cont = document.getElementById('economyModuleContent');
-    const totalCost = CITIES.reduce((a, b) => a + (b.maliyet || 0), 0);
-    const costMortality = (totalCost * 0.78).toFixed(1).replace('.', ',');
-    const costHealth = (totalCost * 0.16).toFixed(1).replace('.', ',');
-    const costLabor = (totalCost * 0.06).toFixed(1).replace('.', ',');
-    const totalCostStr = fmt(totalCost);
-
-    cont.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:20px; padding-bottom:30px;">
-            <!-- 1. ÜST KISIM - DEV BİLANÇO (HERO CARD) -->
-            <div style="background:linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(239, 68, 68, 0.12) 50%, rgba(11, 19, 43, 0.95) 100%);
-                        border:1px solid rgba(245, 158, 11, 0.45);
-                        border-radius:16px;
-                        padding:24px 28px;
-                        box-shadow:0 12px 36px rgba(0, 0, 0, 0.35);
-                        position:relative;
-                        overflow:hidden;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
-                    <div>
-                        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.4); padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; color:#fde047; margin-bottom:12px; letter-spacing:0.5px;">
-                            RESMİ EPİDEMİYOLOJİK BİLANÇO
-                        </div>
-                        <div style="font-size:22px; font-weight:900; color:#ffffff; letter-spacing:-0.3px; line-height:1.3;">
-                            TÜRKİYE GENELİ TAHMİNİ EKONOMİK YÜK: <span style="background:linear-gradient(90deg, #fbbf24, #f43f5e); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${{totalCostStr}} MİLYON ₺</span>
-                        </div>
-                        <div style="font-size:12.5px; color:#cbd5e1; margin-top:8px; line-height:1.5; max-width:950px;">
-                            Türkiye genelinde hava kirliliğine atfedilen yıllık ~42.000 erken ölümün İstatistiki Yaşam Değeri (VSL) analizi, SGK solunum/dolaşım tedavi giderleri ve kayıp iş günü maliyetlerinin birleşik hesaplamasıdır.
-                        </div>
-                    </div>
-                    <div style="background:rgba(2, 18, 32, 0.7); border:1px solid rgba(255, 255, 255, 0.08); border-radius:12px; padding:12px 18px; text-align:right; min-width:170px;">
-                        <div style="font-size:11px; color:#8faec9; text-transform:uppercase; font-weight:600;">Kişi Başı Yıllık Yük</div>
-                        <div style="font-size:20px; font-weight:800; color:#38bdf8;">13.338 ₺</div>
-                        <div style="font-size:10.5px; color:#64748b;">Nüfus: 85,3 Milyon</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. ORTA KISIM - ÜÇLÜ MALİYET BÖLÜNMESİ (st.columns(3)) -->
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
-                <!-- KART 1: ERKEN VEFAT MALİYETLERİ (VSL) -->
-                <div style="background:rgba(17, 26, 46, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:14px; padding:20px; box-shadow:0 8px 24px rgba(245, 158, 11, 0.12); display:flex; flex-direction:column; justify-content:space-between;">
-                    <div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                            <span style="background:rgba(245, 158, 11, 0.15); color:#f59e0b; border:1px solid rgba(245, 158, 11, 0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:800; font-family:monospace;">BEŞERİ SERMAYE</span>
-                            <span style="background:rgba(245, 158, 11, 0.15); color:#f59e0b; border:1px solid rgba(245, 158, 11, 0.5); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">
-                                %78 PAY • VSL MODELİ
-                            </span>
-                        </div>
-                        <div style="font-size:13px; color:#8faec9; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
-                            ERKEN VEFAT MALİYETLERİ (VSL)
-                        </div>
-                        <div style="font-size:24px; font-weight:900; color:#ffffff; margin:6px 0 2px 0;">
-                            ${{costMortality}} <span style="font-size:14px; color:#f59e0b; font-weight:700;">Milyon ₺</span>
-                        </div>
-                        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.5; margin-top:8px;">
-                            DSÖ ve OECD VSL (İstatistiki Yaşam Değeri) yaklaşımıyla hava kirliliğine atfedilen ~42.000 önlenebilir erken vefatın sosyo-ekonomik maliyeti.
-                        </div>
-                    </div>
-                    <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255, 255, 255, 0.06); font-size:11px; color:#fcd34d;">
-                        • Türkiye genelinde hava kirliliğine atfedilen yıllık ~42.000 erken ölüm baz alınmıştır
-                    </div>
-                </div>
-
-                <!-- KART 2: DOĞRUDAN SAĞLIK GİDERLERİ -->
-                <div style="background:rgba(17, 26, 46, 0.9); border:1px solid rgba(244, 63, 94, 0.45); border-radius:14px; padding:20px; box-shadow:0 8px 24px rgba(244, 63, 94, 0.12); display:flex; flex-direction:column; justify-content:space-between;">
-                    <div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                            <span style="background:rgba(244, 63, 94, 0.15); color:#f43f5e; border:1px solid rgba(244, 63, 94, 0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:800; font-family:monospace;">KLİNİK TEDAVİ</span>
-                            <span style="background:rgba(244, 63, 94, 0.15); color:#f43f5e; border:1px solid rgba(244, 63, 94, 0.5); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">
-                                %16 PAY • KLİNİK YÜK
-                            </span>
-                        </div>
-                        <div style="font-size:13px; color:#8faec9; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
-                            DOĞRUDAN SAĞLIK GİDERLERİ
-                        </div>
-                        <div style="font-size:24px; font-weight:900; color:#ffffff; margin:6px 0 2px 0;">
-                            ${{costHealth}} <span style="font-size:14px; color:#f43f5e; font-weight:700;">Milyon ₺</span>
-                        </div>
-                        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.5; margin-top:8px;">
-                            SGK ve kamu hastanelerindeki astım, KOAH, solunum yetmezliği yatışları ve ilaç giderleri.
-                        </div>
-                    </div>
-                    <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255, 255, 255, 0.06); font-size:11px; color:#fca5a5;">
-                        • SGK solunum reçeteleri ve kamu yataklı tedavi bütçe yükü
-                    </div>
-                </div>
-
-                <!-- KART 3: İŞ GÜCÜ & VERİMLİLİK KAYBI -->
-                <div style="background:rgba(17, 26, 46, 0.9); border:1px solid rgba(0, 242, 254, 0.45); border-radius:14px; padding:20px; box-shadow:0 8px 24px rgba(0, 242, 254, 0.12); display:flex; flex-direction:column; justify-content:space-between;">
-                    <div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                            <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid rgba(0, 242, 254, 0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:800; font-family:monospace;">REEL SEKTÖR</span>
-                            <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid rgba(0, 242, 254, 0.5); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">
-                                %6 PAY • ÜRETİM KAYBI
-                            </span>
-                        </div>
-                        <div style="font-size:13px; color:#8faec9; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
-                            İŞ GÜCÜ &amp; VERİMLİLİK KAYBI
-                        </div>
-                        <div style="font-size:24px; font-weight:900; color:#ffffff; margin:6px 0 2px 0;">
-                            ${{costLabor}} <span style="font-size:14px; color:#00f2fe; font-weight:700;">Milyon ₺</span>
-                        </div>
-                        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.5; margin-top:8px;">
-                            Kirlilik kaynaklı hastalık izinleri ve kayıp iş günlerinin reel sektöre getirdiği üretim kaybı.
-                        </div>
-                    </div>
-                    <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255, 255, 255, 0.06); font-size:11px; color:#7dd3fc;">
-                        • Kirlilik pik günlerinde iş günü devamsızlığı ve fabrika verim düşüşü
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. SAĞ KISIM - DONUT GRAFİK & DSÖ KAZANIM KARTI (3:2) -->
-            <div style="display:grid; grid-template-columns:3fr 2fr; gap:20px; align-items:start;">
-                <!-- SOL: PLOTLY DONUT GRAFİĞİ -->
-                <div style="background:rgba(17, 26, 46, 0.9); border:1px solid rgba(245, 158, 11, 0.3); border-radius:14px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
-                    <div style="font-size:15px; font-weight:800; color:#ffffff; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
-                        Hava Kirliliğinin Yıllık Tahmini Ekonomik Maliyet Dağılımı
-                    </div>
-                    <div style="font-size:12px; color:#8faec9; margin-bottom:10px;">
-                        DSÖ &amp; OECD sağlık ekonomisi modellerine göre 3 temel maliyet kalemi
-                    </div>
-                    <div id="economyDonutChart" style="height:320px; width:100%;"></div>
-                </div>
-
-                <!-- SAĞ: DSÖ KAZANIM KARTI -->
-                <div style="background:linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 78, 59, 0.3) 100%);
-                            border:1px solid rgba(16, 185, 129, 0.55);
-                            border-radius:14px;
-                            padding:22px;
-                            box-shadow:0 10px 30px rgba(16, 185, 129, 0.18);
-                            backdrop-filter:blur(10px);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <span style="font-size:11px; font-weight:800; color:#34d399; font-family:monospace; background:rgba(16, 185, 129, 0.15); padding:3px 8px; border-radius:5px; border:1px solid rgba(16, 185, 129, 0.3);">PROJEKSİYON</span>
-                        <span style="background:rgba(16, 185, 129, 0.2); color:#34d399; border:1px solid #10b981; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700;">
-                            DSÖ HEDEF KAZANIMI
-                        </span>
-                    </div>
-                    <div style="font-size:16px; font-weight:800; color:#ffffff; margin-bottom:8px;">
-                        DSÖ Standartlarına Geçilseydi Ne Olurdu?
-                    </div>
-                    <p style="font-size:12.5px; color:#cbd5e1; line-height:1.55; margin-bottom:14px;">
-                        Hava kalitesinin DSÖ kılavuz sınırına (5 µg/m³) getirilmesi durumunda, kamu bütçesinde yıllık milyarlarca liralık tasarruf ve iş gücü kaybında devasa azalma sağlanacaktır.
-                    </p>
-                    <div style="display:flex; flex-direction:column; gap:9px;">
-                        <div style="background:rgba(2, 18, 32, 0.75); border:1px solid rgba(16, 185, 129, 0.4); border-radius:8px; padding:9px 12px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:11.5px; color:#cbd5e1;">Önlenebilir Tahmini Hayat:</span>
-                            <span style="font-size:14px; font-weight:800; color:#34d399;">+18.500 Can Kurtarılırdı</span>
-                        </div>
-                        <div style="background:rgba(2, 18, 32, 0.75); border:1px solid rgba(16, 185, 129, 0.4); border-radius:8px; padding:9px 12px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:11.5px; color:#cbd5e1;">Yıllık Kamu Tasarrufu:</span>
-                            <span style="font-size:14px; font-weight:800; color:#38bdf8;">~170 Milyar TL Tasarruf</span>
-                        </div>
-                        <div style="background:rgba(2, 18, 32, 0.75); border:1px solid rgba(16, 185, 129, 0.4); border-radius:8px; padding:9px 12px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:11.5px; color:#cbd5e1;">İlaç ve Tedavi İndirimi:</span>
-                            <span style="font-size:14px; font-weight:800; color:#facc15;">-%75 Kronik İlaç Gideri</span>
-                        </div>
-                    </div>
-                    <div style="font-size:10.5px; color:#6ee7b7; margin-top:12px; font-style:italic;">
-                        * DSÖ 2021 Kılavuzu &amp; OECD İstatistiki Yaşam Değeri (VSL) yaklaşımı.
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Plotly Donut grafiği çizimi
-    if (window.Plotly) {{
-        Plotly.newPlot('economyDonutChart', [{{
-            type: 'pie',
-            hole: 0.62,
-            labels: ['Erken Vefat Maliyetleri (VSL)', 'Doğrudan Sağlık Giderleri', 'İş Gücü & Verimlilik Kaybı'],
-            values: [totalCost * 0.78, totalCost * 0.16, totalCost * 0.06],
-            marker: {{
-                colors: ['#f59e0b', '#f43f5e', '#00f2fe'],
-                line: {{ color: '#07192b', width: 2 }}
-            }},
-            textinfo: 'percent',
-            hoverinfo: 'label+value+percent'
-        }}], {{
-            height: 310,
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: {{ t: 10, l: 10, r: 10, b: 40 }},
-            showlegend: true,
-            legend: {{
-                orientation: 'h',
-                y: -0.15,
-                x: 0.5,
-                xanchor: 'center',
-                font: {{ color: '#cbd5e1', size: 10.5 }}
-            }},
-            annotations: [{{
-                text: '<b>1,14 Trilyon ₺</b><br><span style=\"font-size:10.5px;color:#8faec9;\">Yıllık Toplam</span>',
-                x: 0.5, y: 0.5,
-                font: {{ size: 15, color: '#ffffff' }},
-                showarrow: false
-            }}]
         }}, {{ responsive: true, displayModeBar: false }});
     }}
 }}
@@ -4592,7 +4342,7 @@ function renderChatAssistantModule() {{
             <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
                 <button onclick="sendQuickPrompt('en kirli iller hangileri?')" style="background:#07253d; border:1px solid #ef444455; color:#f87171; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🚨 En Kirli İller</button>
                 <button onclick="sendQuickPrompt('havası en temiz iller hangileri?')" style="background:#07253d; border:1px solid #00e59955; color:#00e599; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🌿 En Temiz İller</button>
-                <button onclick="sendQuickPrompt('toplam sağlık maliyeti ne kadar?')" style="background:#07253d; border:1px solid #facc1555; color:#facc15; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">💰 Sağlık Maliyeti</button>
+                <button onclick="sendQuickPrompt('İstanbul ve Ankara hava kalitesi farkı')" style="background:#07253d; border:1px solid #facc1555; color:#facc15; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">⚖️ İstanbul vs Ankara</button>
                 <button onclick="sendQuickPrompt('en çok osb olan sanayi illeri')" style="background:#07253d; border:1px solid #38bdf855; color:#38bdf8; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🏭 Sanayi İlleri</button>
             </div>
 
@@ -4603,7 +4353,7 @@ function renderChatAssistantModule() {{
 
             <!-- Giriş Çubuğu -->
             <div style="display:flex; gap:10px; margin-top:14px; border-top:1px solid #07253d; padding-top:14px;">
-                <input type="text" id="chatInputBar" placeholder="Hava kalitesi veya şehirler hakkında bir soru sorun... (örn: en kirli, temiz, maliyet)" 
+                <input type="text" id="chatInputBar" placeholder="Hava kalitesi veya şehirler hakkında bir soru sorun... (örn: en kirli, temiz, sanayi)" 
                     style="flex:1; background:#021220; border:1px solid #093452; border-radius:8px; padding:10px 16px; color:#ffffff; font-size:13px; outline:none;" 
                     onkeydown="if(event.key==='Enter') executeChatSubmit();" />
                 <button onclick="executeChatSubmit()" style="background:#00e5db; border:none; border-radius:8px; padding:0 20px; color:#021220; font-weight:700; font-size:13px; cursor:pointer;">
@@ -4702,15 +4452,7 @@ function answerUserQuery(userQuery) {{
         return `🌿 <strong>Türkiye Genelinde Havası En Temiz Olan 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Analiz Notu:</em> Tunceli, Artvin ve Rize kırsalında sanayi yoğunluğunun düşüklüğü ve güçlü hava koridorları partikül madde konsantrasyonunu ulusal ortalamaların oldukça altında tutmaktadır.`;
     }}
 
-    // 3. Sağlık ve Ekonomik Maliyet
-    if (q.includes('maliyet') || q.includes('fatura') || q.includes('ekonomi') || q.includes('tl') || q.includes('para') || q.includes('harcama')) {{
-        const total = CITIES.reduce((a, b) => a + (b.maliyet || 0), 0);
-        const trilyon = (total / 1000000).toFixed(2);
-        const maxCostCity = [...CITIES].sort((a,b) => (b.maliyet || 0) - (a.maliyet || 0))[0];
-        return `💰 <strong>Hava Kirliliğinin Türkiye Sağlık Sistemine Toplam Tahmini Maliyeti:</strong><br><br>• <strong>Yıllık Toplam Maliyet:</strong> <strong>${{Math.round(total).toLocaleString('tr-TR')}} Milyon ₺</strong> (yaklaşık <strong>${{trilyon}} Trilyon ₺</strong>)<br>• <strong>En Yüksek Sağlık Faturasına Sahip İl:</strong> <strong>${{maxCostCity.il}}</strong> (${{Math.round(maxCostCity.maliyet).toLocaleString('tr-TR')}} Milyon ₺)<br><br>💡 <em>Metodoloji:</em> TÜİK solunum sistemi kaynaklı ölüm verileri ve OECD İstatistiki Yaşam Değeri (VSL) yaklaşımı baz alınarak modellenmiştir.`;
-    }}
-
-    // 4. Şehir Bazlı Eşleşme
+    // 3. Şehir Bazlı Eşleşme
     for (let c of CITIES) {{
         const cNorm = c.il.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
         if (q.includes(cNorm)) {{
@@ -4719,15 +4461,15 @@ function answerUserQuery(userQuery) {{
         }}
     }}
 
-    // 5. Sanayi / OSB
-    if (q.includes('sanayi') || q.includes('osb') || q.includes('fabrika') || q.includes('endustri')) {{
+    // 4. Sanayi / OSB
+    if (q.includes('osb') || q.includes('sanayi') || q.includes('fabrika') || q.includes('endustri')) {{
         const top3Osb = [...CITIES].sort((a,b) => b.osb_sayisi - a.osb_sayisi).slice(0, 3);
         const list = top3Osb.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong>: ${{c.osb_sayisi}} OSB (${{c.osb.toFixed(0)}} hektar) &bull; PM2.5: <code>${{c.pm25.toFixed(1)}} µg/m³</code>`).join('<br>');
         return `🏭 <strong>Türkiye'de En Çok Organize Sanayi Bölgesine (OSB) Sahip 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Bilgi:</em> OSB alanları (OSB verileri: OSBÜK, indirme tarihi: GG.AA.2026) hava kirliliği göstergeleriyle orta-yüksek düzeyde pozitif korelasyon göstermektedir.`;
     }}
 
-    // 6. Genel Karşılama
-    return `👋 Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>.<br><br>Platform veritabanındaki 81 ilin hava kalitesi, sanayi ve sağlık göstergelerini gerçek zamanlı sorgulayabilirim.<br><br>Deneyebileceğiniz bazı sorular:<br>• <em>'En kirli iller hangileri?'</em> veya <em>'kötü'</em><br>• <em>'Havası en temiz iller'</em> veya <em>'temiz'</em><br>• <em>'Toplam sağlık maliyeti ne kadar?'</em> veya <em>'maliyet'</em><br>• <em>'İstanbul'un durumu ne?'</em>, <em>'Bursa'</em>, <em>'Iğdır'</em>`;
+    // 5. Genel Karşılama
+    return `👋 Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>.<br><br>Platform veritabanındaki 81 ilin hava kalitesi, sanayi ve sağlık göstergelerini gerçek zamanlı sorgulayabilirim.<br><br>Deneyebileceğiniz bazı sorular:<br>• <em>'En kirli iller hangileri?'</em> veya <em>'kötü'</em><br>• <em>'Havası en temiz iller'</em> veya <em>'temiz'</em><br>• <em>'En çok OSB olan sanayi illeri'</em> veya <em>'sanayi'</em><br>• <em>'İstanbul\\'un durumu ne?'</em>, <em>'Bursa'</em>, <em>'Iğdır'</em>`;
 }}
 
 // ==========================================

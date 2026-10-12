@@ -43,10 +43,6 @@ def test_calculate_inaction_scenario_formulas():
     assert res["ek_can_kaybi_10yil"] == int(125 * 1.45)
     assert res["ek_can_kaybi_10yil"] == 181
 
-    # Kümülatif Sağlık Harcaması Faturası: round(pm25 * 6.4, 1) = round(82.1 * 6.4, 1) = 525.4
-    assert res["kumulatif_fatura_milyon_tl"] == round(82.1 * 6.4, 1)
-    assert res["kumulatif_fatura_milyon_tl"] == 525.4
-
     # Kronikleşme Riski & Resmi Uyarı metin kontrolü
     assert "+%38" in res["kroniklesme_riski"]
     assert "2.8 - 4.1 yıl" in res["resmi_uyari"]
@@ -57,7 +53,6 @@ def test_simulate_green_policy_calculations():
     sim = simulate_green_policy(
         pm25=82.1,
         solunum_olum=125,
-        maliyet_milyon_tl=4276.2,
         industry_pct=30,
         clean_energy_pct=25,
         diag_type="canak"
@@ -66,26 +61,22 @@ def test_simulate_green_policy_calculations():
     assert sim["pm_reduction_pct"] > 0
     assert sim["new_pm25"] < 82.1
     assert sim["saved_lives"] > 0
-    assert sim["saved_budget_milyon_tl"] > 0
 
     # Uç değerler: 0% / 0%
     sim_zero = simulate_green_policy(
         pm25=82.1,
         solunum_olum=125,
-        maliyet_milyon_tl=4276.2,
         industry_pct=0,
         clean_energy_pct=0,
         diag_type="canak"
     )
     assert sim_zero["pm_reduction_pct"] == 0.0
     assert sim_zero["saved_lives"] == 0
-    assert sim_zero["saved_budget_milyon_tl"] == 0.0
 
     # %100 / %100
     sim_max = simulate_green_policy(
         pm25=82.1,
         solunum_olum=125,
-        maliyet_milyon_tl=4276.2,
         industry_pct=100,
         clean_energy_pct=100,
         diag_type="canak"
@@ -97,9 +88,9 @@ def test_simulate_green_policy_calculations():
 def test_render_green_page_structure():
     # Mini test dataframe
     test_df = pd.DataFrame([
-        {"il": "Iğdır", "pm25": 82.1, "osb_sayisi": 1, "solunum_olum": 125, "solunum_olum_100k": 61.2, "nufus": 204000, "maliyet_milyon_tl": 4276.2},
-        {"il": "Osmaniye", "pm25": 83.6, "osb_sayisi": 10, "solunum_olum": 517, "solunum_olum_100k": 94.3, "nufus": 548000, "maliyet_milyon_tl": 18007.3},
-        {"il": "İstanbul", "pm25": 38.4, "osb_sayisi": 8, "solunum_olum": 11143, "solunum_olum_100k": 71.0, "nufus": 15655000, "maliyet_milyon_tl": 178398.7}
+        {"il": "Iğdır", "pm25": 82.1, "osb_sayisi": 1, "solunum_olum": 125, "solunum_olum_100k": 61.2, "nufus": 204000},
+        {"il": "Osmaniye", "pm25": 83.6, "osb_sayisi": 10, "solunum_olum": 517, "solunum_olum_100k": 94.3, "nufus": 548000},
+        {"il": "İstanbul", "pm25": 38.4, "osb_sayisi": 8, "solunum_olum": 11143, "solunum_olum_100k": 71.0, "nufus": 15655000}
     ])
 
     # Should run without raising exceptions

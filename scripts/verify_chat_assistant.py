@@ -32,13 +32,13 @@ def verify_chat_assistant():
         # 4 Hazır Butonun Varlığını Kontrol Et
         btn_riskli = page.locator("button:has-text('🚨 En Riskli 3 Şehir')")
         btn_temiz = page.locator("button:has-text('🌿 En Temiz 3 Şehir')")
-        btn_fatura = page.locator("button:has-text('💰 Ulusal Sağlık Faturası')")
+        btn_osb = page.locator("button:has-text('🏭 En Çok OSB\\'li 3 İl')")
         btn_vs = page.locator("button:has-text('⚖️ İstanbul vs Ankara Kıyasla')")
 
         btn_riskli.wait_for(timeout=10000)
         assert btn_riskli.is_visible(), "🚨 En Riskli 3 Şehir butonu görünmüyor!"
         assert btn_temiz.is_visible(), "🌿 En Temiz 3 Şehir butonu görünmüyor!"
-        assert btn_fatura.is_visible(), "💰 Ulusal Sağlık Faturası butonu görünmüyor!"
+        assert btn_osb.is_visible(), "🏭 En Çok OSB'li 3 İl butonu görünmüyor!"
         assert btn_vs.is_visible(), "⚖️ İstanbul vs Ankara Kıyasla butonu görünmüyor!"
         print("✓ 4 hazır buton eksiksiz ve görünür durumda.")
 
@@ -60,14 +60,14 @@ def verify_chat_assistant():
         assert "Tunceli" in txt and "Artvin" in txt, "En temiz 3 şehir yanıtı eksik!"
         print("✓ Buton 2 başarılı (Tunceli, Artvin listelendi).")
 
-        # Test Buton 3: 💰 Ulusal Sağlık Faturası
-        print("\nButon 3 tıklanıyor: '💰 Ulusal Sağlık Faturası'...")
-        btn_fatura.click()
-        page.locator("text=Yıllık Toplam Sağlık Maliyeti").first.wait_for(timeout=15000)
+        # Test Buton 3: 🏭 En Çok OSB'li 3 İl
+        print("\nButon 3 tıklanıyor: '🏭 En Çok OSB\\'li 3 İl'...")
+        btn_osb.click()
+        page.locator("text=OSB").first.wait_for(timeout=15000)
         time.sleep(1)
         txt = page.locator("body").inner_text()
-        assert "Milyon ₺" in txt or "Trilyon ₺" in txt, "Sağlık faturası tutarı bulunamadı!"
-        print("✓ Buton 3 başarılı (Ulusal sağlık faturası hesaplandı).")
+        assert "Bursa" in txt, "OSB listesi bulunamadı!"
+        print("✓ Buton 3 başarılı (En çok OSB'li iller listelendi).")
 
         # Test Buton 4: ⚖️ İstanbul vs Ankara Kıyasla
         print("\nButon 4 tıklanıyor: '⚖️ İstanbul vs Ankara Kıyasla'...")

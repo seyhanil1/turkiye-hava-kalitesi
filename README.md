@@ -15,13 +15,13 @@
 
 HavaAtlası, yalnızca görsel bir dashboard olmanın ötesinde; Python istatistik motoru (`scipy`, `statsmodels`) ile donatılmış, bilimsel hipotez testleri çalıştıran (t-Testi, Mann-Whitney U, Tek Yönlü ANOVA, Kruskal-Wallis, Levene, Shapiro-Wilk) ve nedensellik ayrımını gözeten tam teşekküllü bir veri bilimi platformudur.
 
-Koyu lacivert ve camgöbeği/neon yeşil tasarım diliyle geliştirilen arayüz; Türkiye'nin 81 ilini kapsayan gerçek GeoJSON haritası, 7/30/90 günlük zaman serisi projeksiyonları, şehir düelloları ve çevresel maliyet modellemeleri sunar.
+Koyu lacivert ve camgöbeği/neon yeşil tasarım diliyle geliştirilen arayüz; Türkiye'nin 81 ilini kapsayan gerçek GeoJSON haritası, 7/30/90 günlük zaman serisi projeksiyonları, şehir düelloları ve sektörel analizler sunar.
 
 ---
 
 ## 2. Özellikler
 
-HavaAtlası 8 tam fonksiyonel modülden oluşmaktadır:
+HavaAtlası modüler bir analitik mimariden oluşmaktadır:
 
 1. **🏠 Genel Bakış (Overview):**
    - 4 Özet Metrik Kartı (Ortalama PM2.5, En Yüksek İl, En Düşük İl, 81/81 İl Kapsamı).
@@ -48,13 +48,10 @@ HavaAtlası 8 tam fonksiyonel modülden oluşmaktadır:
 6. **🌱 Yeşil Dönüşüm (Green Transition):**
    - İllerin çok kriterli Yeşil Skor (0-100) endeksi sıralaması.
    - DSÖ yıllık 5 µg/m³ kılavuz limitine uyum oranları.
-   - Temiz Hava Eylem Planı politika simülatörü (Kirlilik %X azaltılırsa kurtarılabilecek hayat ve ekonomik tasarruf).
+   - Temiz Hava Eylem Planı politika simülatörü (Kirlilik %X azaltılırsa kurtarılabilecek hayat ve iyileşme projeksiyonu).
 7. **🏭 Sanayi Profili (Industrial Profile):**
    - OSB dizini analizi: OSBÜK (indirme tarihi: GG.AA.2026) (toplam OSB, faal OSB, hektar ve parsel).
    - İllerin sanayi kümelenmesi (Ağır Sanayi Metropolü, Gelişmekte Olan Sanayi, Tarım/Hizmet).
-8. **📊 Ekonomi & Sağlık Yükü:**
-   - DSÖ ve OECD epidemiyolojik modellerine dayalı yıllık hava kirliliği ekonomik yük hesaplaması (Milyon TL / Yıl).
-   - İl bazlı toplam maliyet ve kişi başı yıllık çevresel maliyet sıralaması.
 
 ---
 
@@ -172,8 +169,6 @@ HavaAtlası'nda kullanılan istatistiksel modeller doğrudan Python tarafında h
 4. **Korelasyon ve Regresyon:**
    - Pearson ($r$) doğrusal korelasyonu ve Spearman ($\rho$) monotonik sıra korelasyonu.
    - En Küçük Kareler (OLS) Doğrusal Regresyonu ($y = \beta_0 + \beta_1 x + \epsilon$, $R^2$).
-5. **Ekonomik Sağlık Maliyeti Modeli:**
-   $$\text{Maliyet (Milyon TL)} = \left(\frac{\text{PM2.5}}{10}\right) \times \left(\frac{\text{Solunum Ölümü (100k)}}{30}\right) \times \left(\frac{\text{Nüfus}}{100.000}\right) \times 125$$
 
 ---
 
@@ -189,12 +184,11 @@ havakirliligi/
 │   ├── __init__.py
 │   ├── overview.py                # 1. Genel Bakış modülü
 │   ├── report_card.py             # 2. Şehir Karnesi modülü
-│   ├── duel.py                    # 3. Şehir Düellosu ve Hipotez Testi
+│   ├── duel.py                    # 3. Şehir Düellosu modülü
 │   ├── correlation_page.py        # 4. Korelasyon ve Regresyon modülü
 │   ├── regions_page.py            # 5. Coğrafi Bölgeler ve ANOVA modülü
 │   ├── green_page.py              # 6. Yeşil Dönüşüm ve Simülasyon
-│   ├── industry_page.py           # 7. Sanayi Profili ve OSB Analizi
-│   └── economy_page.py            # 8. Ekonomi ve Maliyet Modeli
+│   └── industry_page.py           # 7. Sanayi Profili ve OSB Analizi
 ├── data/
 │   ├── daily_air_quality_90d.csv  # 90 günlük Copernicus CAMS zaman serisi
 │   ├── hava_kirliligi.xlsx        # Kara Rapor 2025 PM2.5 ölçümleri

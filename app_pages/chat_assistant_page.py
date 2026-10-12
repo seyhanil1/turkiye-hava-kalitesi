@@ -9,14 +9,14 @@ Tamamen yerel (offline), harici kütüphane veya API anahtarı olmadan çalışa
 2. 4 Hazır Buton (st.button):
    - 🚨 En Riskli 3 Şehir
    - 🌿 En Temiz 3 Şehir
-   - 💰 Ulusal Sağlık Faturası
+   - 🏭 En Çok OSB'li 3 İl
    - ⚖️ İstanbul vs Ankara Kıyasla
 3. Akıllı Sorgu Eşleme:
    - Türkçe karakter duyarlı il tarama (İ/i, I/ı, Ğ/g, Ü/u, Ş/s, Ö/o, Ç/c ve ekler)
    - İki il geçerse yan yana detaylı karşılaştırma tablosu
    - Tek il geçerse PM2.5, DSÖ durumu ve OSB sayısı karne formatında
    - 'en kirli' / 'en temiz' sorgularında ilk 3 ili listeleme
-   - 'maliyet' veya 'fatura' sorgularında ulusal toplam sağlık maliyeti
+   - 'osb' / 'sanayi' sorgularında en çok OSB'ye sahip 3 ili listeleme
    - Eşleşmeyen sorularda kullanıcı rehberi
 4. st.session_state.messages geçmiş yönetimi ve st.chat_message arayüzü
 """
@@ -96,19 +96,10 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             osb1 = int(r1.get("osb_sayisi", 0))
             osb2 = int(r2.get("osb_sayisi", 0))
 
-            maliyet1 = float(r1.get("maliyet_milyon_tl", 0.0))
-            maliyet2 = float(r2.get("maliyet_milyon_tl", 0.0))
-
-            if pm1 < pm2:
-                fark = pm2 - pm1
-                oran = (fark / pm2) * 100.0 if pm2 > 0 else 0
-                eval_note = f"🌿 **{c1}**, {c2}'ye kıyasla `{fark:.1f} µg/m³` (%{oran:.0f}) daha temiz bir havaya sahiptir."
-            elif pm2 < pm1:
-                fark = pm1 - pm2
-                oran = (fark / pm1) * 100.0 if pm1 > 0 else 0
-                eval_note = f"🌿 **{c2}**, {c1}'e kıyasla `{fark:.1f} µg/m³` (%{oran:.0f}) daha temiz bir havaya sahiptir."
+            if pm1 > pm2:
+                eval_note = f"{c1}, {c2} iline kıyasla daha yüksek PM2.5 kirlilik yüküne sahiptir."
             else:
-                eval_note = "⚖️ Her iki ilin ortalama PM2.5 konsantrasyonu birbirine eşittir."
+                eval_note = f"{c2}, {c1} iline kıyasla daha yüksek PM2.5 kirlilik yüküne sahiptir."
 
             return (
                 f"⚖️ **{c1} vs {c2} Karşılaştırmalı Hava Kalitesi ve Sanayi Analizi**\n\n"
@@ -118,8 +109,7 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
                 f"| **PM2.5 Kirlilik Değeri** | `{pm1:.1f} µg/m³` | `{pm2:.1f} µg/m³` |\n"
                 f"| **DSÖ Hedefine Oran (5 µg/m³)** | **{kat1:.1f}x** ({r1.get('dso_risk', '-')}) | **{kat2:.1f}x** ({r2.get('dso_risk', '-')}) |\n"
                 f"| **Organize Sanayi Bölgesi (OSB)** | {osb1} adet ({r1.get('osb_alani_hektar', 0):.0f} ha) | {osb2} adet ({r2.get('osb_alani_hektar', 0):.0f} ha) |\n"
-                f"| **Solunum Kaynaklı Vefat (100k)** | {r1.get('solunum_olum_100k', 0):.1f} | {r2.get('solunum_olum_100k', 0):.1f} |\n"
-                f"| **Yıllık Sağlık Maliyeti** | {maliyet1:,.1f} Milyon ₺ | {maliyet2:,.1f} Milyon ₺ |\n\n"
+                f"| **Solunum Kaynaklı Vefat (100k)** | {r1.get('solunum_olum_100k', 0):.1f} | {r2.get('solunum_olum_100k', 0):.1f} |\n\n"
                 f"💡 **Değerlendirme:** {eval_note}"
             )
 
@@ -141,8 +131,7 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
                 f"- **DSÖ Durumu (Dünya Sağlık Örgütü):** **{dso_status}** (DSÖ 5 µg/m³ yıllık kılavuzunun **{kat:.1f} katı**)\n"
                 f"- **Organize Sanayi Bölgesi (OSB) Sayısı:** **{osb_count} adet** ({r.get('osb_alani_hektar', 0):.0f} hektar)\n"
                 f"- **Bölge & Plaka:** {r.get('bolge', '-')} &bull; Plaka Kodu: {int(r.get('plaka', 0)):02d}\n"
-                f"- **Solunum Kaynaklı Vefat Oranı:** `{r.get('solunum_olum_100k', 0):.1f} / 100 bin kişi`\n"
-                f"- **Tahmini Yıllık Sağlık Maliyeti:** `{r.get('maliyet_milyon_tl', 0):,.1f} Milyon ₺`"
+                f"- **Solunum Kaynaklı Vefat Oranı:** `{r.get('solunum_olum_100k', 0):.1f} / 100 bin kişi`"
             )
 
     # 3. KURAL: 'EN KİRLİ' / 'EN RİSKLİ' SORGUSU (İLK 3 İLİ LİSTELE)
@@ -174,18 +163,19 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             + "\n\n*Analiz Notu:* Yüksek rakım, güçlü rüzgar koridorları ve sanayi yoğunluğunun düşüklüğü bu illerde temiz hava kalitesini korumaktadır."
         )
 
-    # 5. KURAL: 'MALİYET' VEYA 'FATURA' GEÇERSE TOPLAM SAĞLIK MALİYETİNİ SÖYLE
-    if any(k in p_norm for k in ["maliyet", "fatura", "saglik maliyet", "ulusal saglik", "butce", "ekonomi", "tl", "harcama", "para"]):
-        total_maliyet = df["maliyet_milyon_tl"].sum() if "maliyet_milyon_tl" in df.columns else 0.0
-        trilyon = total_maliyet / 1000000.0
-        max_city_row = df.loc[df["maliyet_milyon_tl"].idxmax()] if "maliyet_milyon_tl" in df.columns else None
-        max_city_text = f"**{max_city_row['il']}** ({max_city_row['maliyet_milyon_tl']:,.0f} Milyon ₺)" if max_city_row is not None else "-"
-
+    # 5. KURAL: 'SANAYİ' / 'OSB' SORGUSU (EN ÇOK OSB'Lİ 3 İL)
+    if any(k in p_norm for k in ["osb", "sanayi", "organize sanayi"]):
+        col_osb = "toplam_osb" if "toplam_osb" in df.columns else "osb_sayisi"
+        top3_osb = df.sort_values(by=col_osb, ascending=False).head(3)
+        lines = []
+        for i, (_, r) in enumerate(top3_osb.iterrows()):
+            lines.append(
+                f"{i+1}. **{r['il']}** ({r['bolge']}): **{int(r[col_osb])} OSB** ({r.get('osb_alani_hektar', 0):.0f} ha) &bull; PM2.5: `{r['pm25']:.1f} µg/m³`"
+            )
         return (
-            "**Ulusal Sağlık Faturası (Hava Kirliliğinin Türkiye Sağlık Sistemine Toplam Maliyeti):**\n\n"
-            f"- **Yıllık Toplam Sağlık Maliyeti:** **{total_maliyet:,.0f} Milyon ₺** (yaklaşık **{trilyon:.2f} Trilyon ₺**)\n"
-            f"- **En Yüksek Sağlık Faturasına Sahip İl:** {max_city_text} — Yüksek nüfus ve yoğun maruziyet nedeniyle.\n\n"
-            "*Açıklama:* Bu tutar, TÜİK solunum sistemi kaynaklı ölüm verileri ve OECD İstatistiki Yaşam Değeri (VSL) yaklaşımı baz alınarak modellenmiştir."
+            "**Türkiye'de En Çok Organize Sanayi Bölgesine (OSB) Sahip 3 İl:**\n\n"
+            + "\n".join(lines)
+            + "\n\n*Bilgi:* OSB alanları üretim havzaları ve emisyon odakları açısından izlenmektedir."
         )
 
     # 6. KURAL: EŞLEŞMEYEN GENEL SORULARDA REHBER SUN
@@ -194,10 +184,10 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
         "Sorunuzu sistem veritabanındaki 81 il ile eşleştiremedim. Bana şu kalıplarla soru sorabilirsiniz:\n\n"
         "- **Risk Sorgusu:** *'En riskli 3 şehir hangileri?'* veya *'en kirli iller'*\n"
         "- **Temiz Hava Sorgusu:** *'En temiz iller hangileri?'* veya *'havası en temiz şehirler'*\n"
-        "- **Maliyet Sorgusu:** *'Ulusal sağlık faturası ne kadar?'* veya *'toplam maliyet'*\n"
+        "- **Sanayi Sorgusu:** *'En çok OSB olan iller'* veya *'sanayi bölgeleri'*\n"
         "- **Tek Şehir Karnesi:** *'İstanbul hava kalitesi'*, *'Iğdır'*, *'Ankara durumu'*\n"
         "- **İki Şehir Kıyaslama:** *'İstanbul vs Ankara'*, *'Bursa ile İzmir kıyasla'*\n\n"
-        "Ayrıca yukarıdaki **4 hazır butona** tıklayarak anında detaylı analiz alabilirsiniz!"
+        "Ayrıca yukarıdaki **hazır butonlara** tıklayarak anında detaylı analiz alabilirsiniz!"
     )
 
 
@@ -295,7 +285,7 @@ def render_chat_assistant_page(df: pd.DataFrame):
                     "role": "assistant",
                     "content": (
                         "Merhaba! Ben **HavaAtlası Yerel Veri Asistanı**.\n\n"
-                        "81 ilimizin PM2.5 hava kirliliği, Organize Sanayi Bölgesi (OSB) sayıları ve TÜİK sağlık maliyeti verileriyle "
+                        "81 ilimizin PM2.5 hava kirliliği, Organize Sanayi Bölgesi (OSB) sayıları ve TÜİK solunum sağlık verileriyle "
                         "tamamen çevrimdışı ve yerel olarak çalışıyorum.\n\n"
                         "Aşağıdaki **4 hazır butonu** seçebilir ya da merak ettiğiniz şehri doğrudan yazabilirsiniz."
                     )
@@ -310,13 +300,13 @@ def render_chat_assistant_page(df: pd.DataFrame):
                 "role": "assistant",
                 "content": (
                     "Merhaba! Ben **HavaAtlası Yerel Veri Asistanı**.\n\n"
-                    "81 ilimizin PM2.5 hava kirliliği, Organize Sanayi Bölgesi (OSB) sayıları ve TÜİK sağlık faturası verileriyle "
+                    "81 ilimizin PM2.5 hava kirliliği, Organize Sanayi Bölgesi (OSB) sayıları ve TÜİK solunum sağlık verileriyle "
                     "tamamen çevrimdışı ve yerel olarak çalışıyorum.\n\n"
                     "Aşağıdaki **4 hazır butonu** kullanabilir ya da dilediğiniz ili yazıp analiz edebilirsiniz:\n"
                     "- *'İstanbul vs Ankara Kıyasla'* (İki ili yan yana karşılaştırır)\n"
                     "- *'Iğdır hava kirliliği'* (İl çevre ve sağlık karnesini döker)\n"
                     "- *'En riskli 3 şehir'* veya *'En temiz iller'*\n"
-                    "- *'Ulusal sağlık faturası ne kadar?'*"
+                    "- *'En çok OSB olan iller'*"
                 )
             }
         ]
@@ -343,8 +333,8 @@ def render_chat_assistant_page(df: pd.DataFrame):
 
     with c3:
         st.markdown("<div class='quick-btn-box'>", unsafe_allow_html=True)
-        if st.button("Ulusal Sağlık Faturası", key="btn_saglik_faturasi", use_container_width=True):
-            btn_prompt = "Ulusal Sağlık Faturası"
+        if st.button("En Çok OSB'li 3 İl", key="btn_osb_3", use_container_width=True):
+            btn_prompt = "En Çok OSB'li 3 İl"
         st.markdown("</div>", unsafe_allow_html=True)
 
     with c4:
@@ -354,7 +344,7 @@ def render_chat_assistant_page(df: pd.DataFrame):
         st.markdown("</div>", unsafe_allow_html=True)
 
     # Sohbet Giriş Kutusu (st.chat_input)
-    user_input = st.chat_input("Hava kalitesi, şehir kıyaslaması veya sağlık faturası hakkında bir soru sorun...")
+    user_input = st.chat_input("Hava kalitesi, şehir kıyaslaması veya sanayi dağılımı hakkında bir soru sorun...")
 
     # Aktif Girdi: Buton tıklandıysa butonun metni, yoksa metin girişi
     active_prompt = btn_prompt if btn_prompt else user_input

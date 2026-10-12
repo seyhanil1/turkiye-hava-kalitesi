@@ -189,7 +189,7 @@ def render_future_showcase_section():
                 </div>
                 <div style="background:rgba(255, 75, 75, 0.1); border-left:3px solid #ff4b4b; border-radius:6px; padding:12px; margin-bottom:12px;">
                     <div style="font-size:14px; font-weight:800; color:#ff4b4b;">
-                        Eylemsizlik Riski: 10 Yıllık Kümülatif ~120.000 – 160.000 Ek Önlenebilir Vefat Riski | 180 – 240 Milyar TL Ek Sağlık Maliyeti
+                        Eylemsizlik Riski: 10 Yıllık Kümülatif ~120.000 – 160.000 Ek Önlenebilir Vefat Riski
                     </div>
                 </div>
                 <p style="font-size:12.5px; color:#cbd5e1; line-height:1.55; margin:0;">

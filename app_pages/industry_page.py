@@ -247,7 +247,7 @@ def render_industry_page(df: pd.DataFrame):
                     </div>
                 </div>
                 <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                    Hızlı sanayileşme, tekstil ve gıda işleme tesisleri nedeniyle partikül madde (PM10/PM2.5) yükünün en yüksek olduğu OSB bölgesi. 1 Milyon+ hektar üretim havzasıyla meteorolojik inversiyon riski taşımaktadır.
+                    Hızlı sanayileşme, tekstil ve gıda işleme tesisleri nedeniyle partikül madde yükünün en yüksek olduğu OSB bölgesi. Geniş üretim havzasıyla meteorolojik inversiyon riski taşımaktadır.
                 </div>
                 <div style="margin-top:8px; font-size:11px; color:#fbbf24; font-weight:600; display:flex; align-items:center; gap:4px;">
                     <span>•</span> Acil Müdahale: Kömür yakıtlı endüstriyel kazanların kapatılması ve arıtma çamuru bertaraf denetimi.

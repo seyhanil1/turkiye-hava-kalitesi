@@ -243,13 +243,7 @@ def build_master_dataset() -> pd.DataFrame:
     
     df_master["yesil_skor"] = (100.0 - pm_ceza - sanayi_ceza).clip(5.0, 98.0).round(1)
     
-    # 7. Ekonomik Sağlık Maliyeti Tahmini (Milyon TL / Yıl)
-    # DSÖ & OECD metodolojisi: PM2.5 artışına atfedilen erken ölümlerin sosyo-ekonomik maliyeti
-    df_master["maliyet_milyon_tl"] = (
-        (df_master["pm25"] / 10.0) * (df_master["solunum_olum_100k"] / 30.0) * (df_master["nufus"] / 100_000) * 125.0
-    ).round(1)
-    
-    # 8. Sanayi Profili Sınıflandırması
+    # 7. Sanayi Profili Sınıflandırması
     def sanayi_profili(row) -> str:
         if row["toplam_osb"] >= 8 or row["toplam_parsel"] >= 1500:
             return "Ağır Sanayi Metropolü"
@@ -269,4 +263,4 @@ if __name__ == "__main__":
     print("Master dataset başarıyla oluşturuldu:")
     print(df.info())
     print("\nİlk 5 satır:")
-    print(df[["plaka", "il", "bolge", "pm25", "pm10", "no2", "solunum_olum_100k", "yesil_skor", "maliyet_milyon_tl"]].head())
+    print(df[["plaka", "il", "bolge", "pm25", "pm10", "no2", "solunum_olum_100k", "yesil_skor"]].head())

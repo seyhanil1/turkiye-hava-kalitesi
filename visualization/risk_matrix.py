@@ -68,7 +68,6 @@ def create_strategic_risk_matrix(df: pd.DataFrame, height: int = 590) -> go.Figu
         dso_kat,
         df.get("dso_risk", pd.Series(["Kritik" if p > 35 else "Orta" for p in df["pm25"]])),
         df[death_col].round(1),
-        df.get("maliyet_milyon_tl", pd.Series([0.0] * len(df))).round(1),
         df["osb_sayisi"]
     ), axis=-1)
 
@@ -79,8 +78,7 @@ def create_strategic_risk_matrix(df: pd.DataFrame, height: int = 590) -> go.Figu
         "• <b>PM2.5 Kirlilik:</b> <span style='color:#f8fafc; font-weight:700;'>%{y:.1f} µg/m³</span><br>"
         "• <b>DSÖ Sınır Katı:</b> <span style='color:#facc15; font-weight:700;'>%{customdata[2]}x</span> (%{customdata[3]})<br>"
         "• <b>OSB Sayısı:</b> <span style='color:#38bdf8; font-weight:700;'>%{x} adet</span><br>"
-        "• <b>Solunum Vefat:</b> <span style='color:#ff4b4b; font-weight:700;'>%{customdata[4]} / 100k</span><br>"
-        "• <b>Tahmini Sağlık Maliyeti:</b> <span style='color:#a78bfa; font-weight:700;'>%{customdata[5]:,.0f} Milyon ₺</span>"
+        "• <b>Solunum Vefat:</b> <span style='color:#ff4b4b; font-weight:700;'>%{customdata[4]} / 100k</span>"
         "</div>"
         "</div><extra></extra>"
     )
