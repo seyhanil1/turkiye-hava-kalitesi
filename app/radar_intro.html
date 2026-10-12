@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Hava Kirliliği Radar Taraması</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 95vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #container {
+            display: flex;
+            width: 90%;
+            height: 80%;
+            border: 2px solid #004400;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+        }
+        #radar-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        #data-section {
+            flex: 1;
+            border-left: 1px solid #004400;
+            padding-left: 20px;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .radar {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 2px solid #00ff00;
+            position: relative;
+            background: 
+                radial-gradient(circle at center, rgba(0,255,0,0.1) 0%, transparent 70%),
+                repeating-radial-gradient(transparent 0%, transparent 10%, #002200 10%, #002200 11%);
+            box-shadow: 0 0 15px #00ff00;
+            display: none;
+        }
+        .radar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00);
+            transform-origin: 0 50%;
+            animation: scan 2s linear infinite;
+        }
+        .radar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 70%, rgba(0, 255, 0, 0.5) 100%);
+            animation: scan-bg 2s linear infinite;
+        }
+        @keyframes scan { 100% { transform: rotate(360deg); } }
+        @keyframes scan-bg { 100% { transform: rotate(360deg); } }
+        
+        .dot {
+            width: 6px;
+            height: 6px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 8px red;
+            display: none;
+        }
+        #btn-start {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background-color: transparent;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.3s;
+            position: absolute;
+            z-index: 10;
+        }
+        #btn-start:hover {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        .line {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            text-shadow: 0 0 2px #00ff00;
+        }
+        .alert {
+            color: red;
+            text-shadow: 0 0 5px red;
+            font-weight: bold;
+        }
+        #status-text {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="radar-section">
+            <button id="btn-start">🛰️ RADARI BAŞLAT</button>
+            <div class="radar" id="radar-display"></div>
+            <div id="status-text">TÜRKİYE AĞI TARANIYOR...</div>
+        </div>
+        <div id="data-section">
+            <h3 style="border-bottom: 1px solid #00ff00; padding-bottom: 10px; margin-top: 0;">SİSTEM LOGLARI</h3>
+            <div id="log-container"></div>
+        </div>
+    </div>
+    <script>
+        const btnStart = document.getElementById('btn-start');
+        const radar = document.getElementById('radar-display');
+        const logContainer = document.getElementById('log-container');
+        const statusText = document.getElementById('status-text');
+        const cities = ["Adana", "Ankara", "İstanbul", "İzmir", "Bursa", "Iğdır", "Zonguldak", "Kocaeli", "Gaziantep", "Kayseri", "Kahramanmaraş"];
+
+        btnStart.addEventListener('click', () => {
+            btnStart.style.display = 'none';
+            radar.style.display = 'block';
+            statusText.style.display = 'block';
+            
+            // Kırmızı noktaları rastgele yerleştir
+            for(let i=0; i<6; i++) {
+                let dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.top = Math.random() * 250 + 20 + 'px';
+                dot.style.left = Math.random() * 250 + 20 + 'px';
+                radar.appendChild(dot);
+                setTimeout(() => { dot.style.display = 'block'; }, Math.random() * 3000);
+            }
+
+            let count = 0;
+            const logInterval = setInterval(() => {
+                const city = cities[Math.floor(Math.random() * cities.length)];
+                const pm = (Math.random() * 80 + 10).toFixed(1);
+                const pLine = document.createElement('div');
+                pLine.className = 'line';
+                
+                if(pm > 50) {
+                    pLine.innerHTML = `<span class="alert">[KRİTİK RİSK]</span> ${city} - PM2.5: ${pm} µg/m³`;
+                } else {
+                    pLine.innerHTML = `[GÜVENLİ] ${city} - PM2.5: ${pm} µg/m³`;
+                }
+                
+                logContainer.prepend(pLine);
+                if(logContainer.children.length > 25) { logContainer.removeChild(logContainer.lastChild); }
+
+                count++;
+                if(count > 30) {
+                    clearInterval(logInterval);
+                    statusText.innerHTML = "✅ TARAMA TAMAMLANDI! VERİ TABANINA BAĞLANIYOR...";
+                    statusText.style.color = "#00ff00";
+                    radar.style.borderColor = "red";
+                    radar.style.boxShadow = "0 0 20px red";
+                }
+            }, 200);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+=== AUDIT SUMMARY ===
+
+Pattern: [Canlı\s*Veri] -> 1 occurrences
+  .\visualization\pixel_perfect_dashboard.py:2269 | <span>Canlı Veri</span>
+
+Pattern: [canlı] -> 8 occurrences
+  .\visualization\pixel_perfect_dashboard.py:174 | [0.35, "#0284c7"],  # canlı koyu mavi
+  .\visualization\pixel_perfect_dashboard.py:780 | /* Canlı Arama Kutusu */
+  .\visualization\pixel_perfect_dashboard.py:820 | /* Canlı Arama Sonuç Dropdown'ı */
+  .\visualization\pixel_perfect_dashboard.py:2206 | <span>Canlı Çevre Bildirimleri</span>
+  .\visualization\pixel_perfect_dashboard.py:2269 | <span>Canlı Veri</span>
+  .\visualization\pixel_perfect_dashboard.py:2468 | <span class="module-badge">Canlı Karne</span>
+  .\visualization\pixel_perfect_dashboard.py:2645 | <span class="module-badge" style="background:rgba(0,229,219,0.15); border-color:#00e5db; color:#00e5db;">Canlı Chatbot</span>
+  .\visualization\pixel_perfect_dashboard.py:4482 | // Canlı Arama Autocomplete
+
+Pattern: [anlık] -> 11 occurrences
+  .\README.md:67 | - Tamamen şeffaf arka planlı, ince ızgaralı Plotly karanlık grafikleri.
+  .\README.md:224 | │   ├── theme.py                   # Plotly karanlık teması ve renk skalaları
+  .\app_pages\industry_page.py:77 | SANAYİ SİCİLİ • BAKANLIK VERİSİ
+  .\app_pages\industry_page.py:92 | Bakanlık siciline kayıtlı 81 ilde faal ({toplam_faal} aktif) ve tescilli organize sanayi bölgesi. Toplam {toplam_parsel:,} endüstriyel üreti
+  .\visualization\components.py:11 | Ekran görüntüsündeki lüks karanlık analitik dashboard hissini
+  .\visualization\pixel_perfect_dashboard.py:2582 | <span class="module-badge">Bakanlık OSB Sicili</span>
+  .\visualization\pixel_perfect_dashboard.py:2690 | <label style="font-size:12px; font-weight:700; color:#cbd5e1; display:block; margin-bottom:6px;">Uzmanlık / Rol:</label>
+  .\visualization\pixel_perfect_dashboard.py:3615 | Sanayi baca filtre denetimlerini ve temiz enerji oranını ayarlayarak kurtarılabilecek hayatları anlık simüle edin.
+  .\visualization\pixel_perfect_dashboard.py:3678 | SANAYİ SİCİLİ • BAKANLIK VERİSİ
+  .\visualization\pixel_perfect_dashboard.py:3692 | Bakanlık siciline kayıtlı 81 ilde faal ve tescilli Organize Sanayi Bölgeleri (toplam 64.220 aktif üretim parseli).
+  .\visualization\theme.py:38 | """Plotly için özel karanlık ve minimalist temayı varsayılan yapar."""
+
+Pattern: [şu an] -> 1 occurrences
+  .\data_sources\openaq_connector.py:32 | "Platform şu anda Kara Rapor 2025 ve Copernicus CAMS resmi ölçümlerini kullanmaktadır."
+
+Pattern: [bugün] -> 11 occurrences
+  .\app_pages\future_fork_page.py:41 | "2026 (Bugün)",
+  .\app_pages\future_fork_page.py:48 | "2026 (Bugün)": {
+  .\app_pages\future_fork_page.py:119 | "2026 (Bugün)": {
+  .\app_pages\future_fork_page.py:202 | # 1. Gözlenen Temel Veriler (Bugün)
+  .\app_pages\future_fork_page.py:220 | "2026 (Bugün)": {"clean_pct": -0.08, "gray_pct": 0.14, "clean_deaths": 3200, "gray_deaths": 24000, "clean_cost": 12.4, "gray_cost": 38.0, "c
+  .\app_pages\future_fork_page.py:225 | r = rates.get(year, rates["2026 (Bugün)"])
+  .\app_pages\future_fork_page.py:591 | <!-- Bölüm A: Bugün (Gözlenen Veri) -->
+  .\app_pages\future_fork_page.py:593 | <div class="data-section-title">Bugün (Gözlenen Temel Durum)</div>
+  .\app_pages\future_fork_page.py:686 | <!-- Bölüm A: Bugün (Gözlenen Veri) -->
+  .\app_pages\future_fork_page.py:688 | <div class="data-section-title">Bugün (Gözlenen Temel Durum)</div>
+  .\data_sources\cams_city_connector.py:7 | - Bugün ve sonrası (tamamlanmamış gün / tahmin) dışarıda bırakılır.
+
+Pattern: [güncel] -> 11 occurrences
+  .\app_pages\overview.py:28 | st.warning("⚠️ Seçilen filtreye uygun şehir bulunamadı. Lütfen filtreleri güncelleyin.")
+  .\data_sources\cams_city_connector.py:120 | return "skipped", f"CAMS önbelleği {mins} dk önce güncellendi; tekrar istek gönderilmedi."
+  .\data_sources\cams_city_connector.py:126 | return "ok", (f"CAMS verisi güncellendi: {n_city} il, "
+  .\data_sources\cams_city_connector.py:129 | logger.error("CAMS güncellemesi başarısız: %s", exc)
+  .\data_sources\cams_city_connector.py:139 | if __name__ == "__main__":  # Manuel güncelleme: python -m data_sources.cams_city_connector
+  .\data_sources\local_official_data.py:104 | # 2024 veya en güncel geçerli yılı ve 2022-2025 ortalamalarını hesapla
+  .\src\generate_data.py:2 | Veri Birleştirme ve Güncelleme Betiği (Geriye Dönük Uyumluluk)
+  .\tests\test_health_shield.py:23 | assert "Türkiye Güncel Ortalaması: <strong style='color:#ffffff; margin-left:3px;'>36.3 µg/m³</strong>" in source
+  .\visualization\health_shield.py:9 | - 🔴 Türkiye Güncel Ortalaması: 36.3 µg/m³ (DSÖ Sınırının ~7.2 Katı!)
+  .\visualization\health_shield.py:154 | <span>🔴</span> Türkiye Güncel Ortalaması: <strong style='color:#ffffff; margin-left:3px;'>36.3 µg/m³</strong> <span style='font-size:11.5px;
+  .\visualization\pixel_perfect_dashboard.py:2662 | <span>Güncelleme: 10.10.2025</span>
+
+Pattern: [mg/m[³3]] -> 0 occurrences
+
+Pattern: [2026\s*\(Bugün\)] -> 5 occurrences
+  .\app_pages\future_fork_page.py:41 | "2026 (Bugün)",
+  .\app_pages\future_fork_page.py:48 | "2026 (Bugün)": {
+  .\app_pages\future_fork_page.py:119 | "2026 (Bugün)": {
+  .\app_pages\future_fork_page.py:220 | "2026 (Bugün)": {"clean_pct": -0.08, "gray_pct": 0.14, "clean_deaths": 3200, "gray_deaths": 24000, "clean_cost": 12.4, "gray_cost": 38.0, "c
+  .\app_pages\future_fork_page.py:225 | r = rates.get(year, rates["2026 (Bugün)"])
+
+Pattern: [Güvenli\s*Eşik] -> 7 occurrences
+  .\tests\test_health_shield.py:21 | assert "DSÖ Yıllık Güvenli Eşik: <strong style='color:#ffffff; margin-left:3px;'>5 µg/m³</strong>" in source
+  .\tests\test_pixel_perfect_dashboard.py:36 | assert ("DSÖ Güvenli Eşik" in bar_html) or ("DS\\u00d6 G\\u00fcvenli E\\u015fik" in bar_html)
+  .\visualization\future_showcase.py:174 | ✓ PM2.5 Seviyesinde %72 Azalma (10.2 µg/m³ Güvenli Eşik)
+  .\visualization\health_shield.py:7 | - 🟢 DSÖ Yıllık Güvenli Eşik: 5 µg/m³
+  .\visualization\health_shield.py:148 | <span>🟢</span> DSÖ Yıllık Güvenli Eşik: <strong style='color:#ffffff; margin-left:3px;'>5 µg/m³</strong>
+  .\visualization\pixel_perfect_dashboard.py:183 | # 5 µg/m³ seviyesine kesikli kırmızı çizgiyle 'DSÖ Güvenli Eşik (5 µg/m³)'
+  .\visualization\pixel_perfect_dashboard.py:189 | annotation_text="DSÖ Güvenli Eşik (5 µg/m³)",
+
+Pattern: [güvenli\s*eşik] -> 7 occurrences
+  .\tests\test_health_shield.py:21 | assert "DSÖ Yıllık Güvenli Eşik: <strong style='color:#ffffff; margin-left:3px;'>5 µg/m³</strong>" in source
+  .\tests\test_pixel_perfect_dashboard.py:36 | assert ("DSÖ Güvenli Eşik" in bar_html) or ("DS\\u00d6 G\\u00fcvenli E\\u015fik" in bar_html)
+  .\visualization\future_showcase.py:174 | ✓ PM2.5 Seviyesinde %72 Azalma (10.2 µg/m³ Güvenli Eşik)
+  .\visualization\health_shield.py:7 | - 🟢 DSÖ Yıllık Güvenli Eşik: 5 µg/m³
+  .\visualization\health_shield.py:148 | <span>🟢</span> DSÖ Yıllık Güvenli Eşik: <strong style='color:#ffffff; margin-left:3px;'>5 µg/m³</strong>
+  .\visualization\pixel_perfect_dashboard.py:183 | # 5 µg/m³ seviyesine kesikli kırmızı çizgiyle 'DSÖ Güvenli Eşik (5 µg/m³)'
+  .\visualization\pixel_perfect_dashboard.py:189 | annotation_text="DSÖ Güvenli Eşik (5 µg/m³)",
+
+Pattern: [kurtarılan\s*can] -> 1 occurrences
+  .\visualization\future_showcase.py:166 | 2035 Hedefi: +18.500 Kurtarılan Can | 85 Milyar TL Sağlık Tasarrufu
+
+Pattern: [Kurtarılan\s*Can] -> 1 occurrences
+  .\visualization\future_showcase.py:166 | 2035 Hedefi: +18.500 Kurtarılan Can | 85 Milyar TL Sağlık Tasarrufu
+
+Pattern: [Kurtarılan\s*tahmini\s*can] -> 0 occurrences
+
+Pattern: [toksik\s*afet] -> 1 occurrences
+  .\visualization\future_showcase.py:200 | ⚠️ PM2.5 Seviyesinde >75 µg/m³ Toksik Afet Sıçraması
+
+Pattern: [zafer] -> 1 occurrences
+  .\visualization\future_showcase.py:162 | 🌱 Temiz Yol — 2035 Zaferi
+
+Pattern: [erken\s*ölüm\s*faturası] -> 0 occurrences
+
+Pattern: [önceki\s*30\s*gün] -> 2 occurrences
+  .\analytics\time_series.py:37 | # Karşılaştırma için bir önceki dönemi al (örneğin son 30 güne karşılık önceki 30 gün)
+  .\visualization\pixel_perfect_dashboard.py:2294 | <span class="stat-subtext">(önceki 30 gün)</span>
+
+Pattern: [son\s*30\s*gün] -> 6 occurrences
+  .\analytics\time_series.py:37 | # Karşılaştırma için bir önceki dönemi al (örneğin son 30 güne karşılık önceki 30 gün)
+  .\app_pages\duel.py:113 | # İki ilin son 30 günlük zaman serilerini oluşturup karşılaştıralım
+  .\app_pages\report_card.py:165 | title=f"{secilen_il} Son 30 Günlük PM2.5 Seyri (Tahmini CAMS Reanaliz)"
+  .\data_processing\dashboard_state.py:226 | errors.append("Tarih biçimi geçersiz; son 30 gün kullanıldı.")
+  .\data_processing\dashboard_state.py:229 | errors.append("Başlangıç tarihi bitiş tarihinden sonra olamaz; son 30 gün kullanıldı.")
+  .\visualization\pixel_perfect_dashboard.py:3178 | (currentPeriod === '90G' ? 'Son 90 günde hava kalitesi' : 'Son 30 günde hava kalitesi');

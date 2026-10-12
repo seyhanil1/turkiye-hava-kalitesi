@@ -1,0 +1,41 @@
+Total occurrences: 40
+app\app.py:634 -> st.caption("* DSÖ 2021 Kılavuzu & T.C. Sağlık Bakanlığı tedavi maliyet simülasyonu.")
+app\app.py:835 -> # 3. Resmi Veri Kaynakları Rozetleri
+app\app.py:842 -> <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='Çevre ve Şehircilik Bakanlığı 2025 Kara Rapor'>ÇŞİDB</span>
+app_pages\action_guide.py:13 -> DSÖ ve Çevre, Şehircilik ve İklim Değişikliği Bakanlığı kılavuzlarına dayalı pratik adımlar.
+app_pages\action_guide.py:28 -> Dünya Sağlık Örgütü (DSÖ) 2021 Küresel Hava Kalitesi Kılavuzları ve T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı Temiz Hava Eylem Planı standartlarına dayalı pratik adımlar.
+app_pages\chat_assistant_page.py:188 -> "*Açıklama:* Bu tutar, TÜİK solunum sistemi kaynaklı mortalite istatistikleri ve Sağlık Bakanlığı hastane yatış katsayıları baz alınarak erken ölüm ve iş gücü kaybı modeliyle hesaplanmıştır."
+app_pages\economy_page.py:254 -> st.caption("* DSÖ 2021 Kılavuzu & T.C. Sağlık Bakanlığı tedavi maliyet simülasyonu.")
+app_pages\future_fork_page.py:799 -> - **Mevcut PM2.5 Ortalaması:** {calc['observed_pm25']} µg/m³ (Çevre ve Şehircilik Bakanlığı Sürekli İzleme Merkezi ve Copernicus CAMS modeli 81 il ağırlıklı ortalaması).
+app_pages\glossary.py:95 -> "term": "ÇŞİDB (T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı)",
+app_pages\glossary.py:155 -> - **T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı:** *Hava Kalitesi Değerlendirme ve Yönetimi Yönetmeliği (HKDYY).*
+app_pages\green_page.py:131 -> Sağlık Bakanlığı / Çevre Bakanlığı düzeyinde kurumsal karar destek arayüzü.
+app_pages\green_page.py:343 -> <div style="margin-top:12px; font-size:11.5px; color:#64748b; font-style:italic;">* Çevre, Şehircilik ve İklim Değişikliği Bakanlığı ile İl Mahalli Çevre Kurulu direktifleriyle uyumlu.</div>
+app_pages\health_guide.py:12 -> Dünya Sağlık Örgütü (DSÖ) ve T.C. Sağlık Bakanlığı ilkeleri doğrultusunda,
+app_pages\health_guide.py:152 -> - **T.C. Sağlık Bakanlığı Halk Sağlığı Genel Müdürlüğü:** *Çevre Sağlığı ve Hava Kirliliğinin Sağlık Etkileri Rehberi*.
+app_pages\industry_page.py:18 -> Sanayi ve Teknoloji Bakanlığı resmi OSB verileri ve hava kirliliği kesişimini
+app_pages\industry_page.py:49 -> T.C. Sanayi ve Teknoloji Bakanlığı resmi sicil kayıtlarına göre Organize Sanayi Bölgeleri (OSB), üretim havzaları ve emisyon odakları.
+app_pages\industry_page.py:72 -> SANAYİ SİCİLİ • BAKANLIK VERİSİ
+app_pages\industry_page.py:86 -> Bakanlık siciline kayıtlı 81 ilde faal ({toplam_faal} aktif) ve tescilli organize sanayi bölgesi. Toplam {toplam_parsel:,} endüstriyel üretim parselini barındırmaktadır.
+app_pages\methodology.py:38 -> - **Sanayi ve OSB Verisi:** T.C. Sanayi ve Teknoloji Bakanlığı Organize Sanayi Bölgeleri (OSB) resmi sicil veritabanı (81 ildeki faal/onaylı OSB sayıları ve hektar büyüklükleri).
+app_pages\methodology.py:97 -> - **T.C. Sanayi ve Teknoloji Bakanlığı:** Organize Sanayi Bölgeleri İstatistik Bülteni (2024).
+app_pages\overview.py:99 -> <b>Veri Kaynakları:</b> Temiz Hava Hakkı Platformu (Kara Rapor 2025) &bull; TÜİK Ölüm ve Nüfus İstatistikleri (2022-2025) &bull; T.C. Sanayi ve Teknoloji Bakanlığı OSB Bilgi Sistemi &bull; Copernicus CAMS / Open-Meteo &bull; DSÖ 2021 Kılavuz Limitleri
+app_pages\overview.py:101 -> <i>Son Veri Eşitleme: 2026-10-10 &bull; Analitik Motor: Python Statsmodels & Scipy &bull; Durum: Doğrulanmış Resmi Veri</i>
+visualization\pixel_perfect_dashboard.py:2162 -> <span class="source-chip" title="Çevre ve Şehircilik Bakanlığı 2025 Kara Rapor">ÇŞİDB</span>
+visualization\pixel_perfect_dashboard.py:2566 -> <span class="module-badge">Bakanlık OSB Sicili</span>
+visualization\pixel_perfect_dashboard.py:2644 -> <span>Kaynak: T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı & Copernicus CAMS</span>
+visualization\pixel_perfect_dashboard.py:3866 -> * Çevre Bakanlığı ve İl Mahalli Çevre Kurulu direktifleriyle uyumlu.
+visualization\pixel_perfect_dashboard.py:3967 -> SANAYİ SİCİLİ • BAKANLIK VERİSİ
+visualization\pixel_perfect_dashboard.py:3981 -> Bakanlık siciline kayıtlı 81 ilde faal ve tescilli Organize Sanayi Bölgeleri (toplam 64.220 aktif üretim parseli).
+visualization\pixel_perfect_dashboard.py:4279 -> * DSÖ 2021 Kılavuzu &amp; Sağlık Bakanlığı tedavi maliyet simülasyonu.
+visualization\pixel_perfect_dashboard.py:4710 -> return `💰 <strong>Hava Kirliliğinin Türkiye Sağlık Sistemine Toplam Tahmini Maliyeti:</strong><br><br>• <strong>Yıllık Toplam Maliyet:</strong> <strong>${{Math.round(total).toLocaleString('tr-TR')}} Milyon ₺</strong> (yaklaşık <strong>${{trilyon}} Trilyon ₺</strong>)<br>• <strong>En Yüksek Sağlık Faturasına Sahip İl:</strong> <strong>${{maxCostCity.il}}</strong> (${{Math.round(maxCostCity.maliyet).toLocaleString('tr-TR')}} Milyon ₺)<br><br>💡 <em>Metodoloji:</em> TÜİK solunum sistemi kaynaklı ölüm istatistikleri ve Sağlık Bakanlığı hastane yatış katsayıları baz alınarak modellenmiştir.`;
+visualization\pixel_perfect_dashboard.py:4726 -> return `🏭 <strong>Türkiye'de En Çok Organize Sanayi Bölgesine (OSB) Sahip 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Bilgi:</em> Sanayi Bakanlığı siciline kayıtlı OSB alanları hava kirliliği göstergeleriyle orta-yüksek düzeyde pozitif korelasyon göstermektedir.`;
+data_sources\constants.py:5 -> - T.C. İçişleri Bakanlığı İller İdaresi Genel Müdürlüğü
+data_sources\constants.py:307 -> "istasyon": "T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı (ÇŞİDB) & Kara Rapor 2025",
+data_sources\constants.py:310 -> "sanayi": "T.C. Sanayi ve Teknoloji Bakanlığı Resmi OSB Envanteri"
+data_sources\local_official_data.py:2 -> Yerel Resmi Veri Yükleyici ve Ayrıştırıcı Modülü
+data_sources\local_official_data.py:8 -> 3. T.C. Sanayi ve Teknoloji Bakanlığı OSB Bilgi Sistemi -> data/sanayi.txt
+data_sources\local_official_data.py:120 -> Sanayi ve Teknoloji Bakanlığı resmi OSB tablosunu ayrıştırır.
+data_processing\dashboard_state.py:121 -> master: pd.DataFrame                    # 81 il yıllık resmi veri + sanayi + sağlık
+src\generate_data.py:18 -> print("[*] Resmi veriler ayrıştırılıyor ve analitik master veri tablosu oluşturuluyor...")
+src\generate_data.py:22 -> print(f"[+] BASARILI! 81 ilin dogrulanmis resmi verileri '{output_path}' dosyasina kaydedildi.")
