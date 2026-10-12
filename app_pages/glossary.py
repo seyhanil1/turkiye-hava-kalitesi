@@ -25,7 +25,7 @@ def render_glossary_page(df: pd.DataFrame = None):
             Hava Kalitesi ve Çevre Sözlüğü
         </h2>
         <p style="margin:4px 0 0 0; font-size:13px; color:#cbd5e1;">
-            Platformda yer alan teknik terimler, kirletici tanımları ve uluslararası standartlar.
+            Platformda kullanılan teknik terimler, kirletici tanımları ve DSÖ hava kalitesi standartları kılavuzu.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -34,7 +34,7 @@ def render_glossary_page(df: pd.DataFrame = None):
         {
             "term": "PM2.5 (İnce Partikül Madde)",
             "cat": "Kirletici",
-            "desc": "Çapı 2,5 mikrometre veya daha küçük olan mikroskobik partiküllerdir (saç telinin yaklaşık 30'da biri). Akciğer alveollerine kadar nüfuz ederek doğrudan dolaşım sistemine karışabildiği için halk sağlığı açısından en tehlikeli hava kirleticisidir."
+            "desc": "Çapı 2,5 mikrometre veya daha küçük ince partikül maddelerdir (saç telinin yaklaşık 30'da biri). Akciğer alveollerine ve doğrudan kan dolaşımına nüfuz edebildiği için halk sağlığı açısından en tehlikeli hava kirleticisidir."
         },
         {
             "term": "PM10 (Kaba Partikül Madde)",
@@ -131,20 +131,20 @@ def render_glossary_page(df: pd.DataFrame = None):
                 esc_term = html.escape(item["term"])
                 esc_cat = html.escape(item["cat"])
                 esc_desc = html.escape(item["desc"])
-                cards_html.append(f"""
-                <div style="background:#031b2e; border:1px solid #093452; border-radius:8px; padding:16px; margin-bottom:12px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                        <strong style="color:#ffffff; font-size:15px;">{esc_term}</strong>
-                        <span style="background:rgba(0,210,238,0.12); color:#00d2ee; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; border:1px solid rgba(0,210,238,0.3);">
-                            {esc_cat}
-                        </span>
-                    </div>
-                    <p style="font-size:13px; color:#cbd5e1; margin:0; line-height:1.55;">
-                        {esc_desc}
-                    </p>
-                </div>
-                """)
-            
+                card_markup = (
+                    f'<div style="background: rgba(3, 27, 46, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); '
+                    f'border: 1px solid rgba(0, 210, 238, 0.22); border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; '
+                    f'box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);">'
+                    f'<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">'
+                    f'<strong style="color: #ffffff; font-size: 15px; font-weight: 700;">{esc_term}</strong>'
+                    f'<span style="background: rgba(0, 210, 238, 0.12); color: #00d2ee; font-size: 11px; font-weight: 700; '
+                    f'padding: 3px 10px; border-radius: 6px; border: 1px solid rgba(0, 210, 238, 0.3);">{esc_cat}</span>'
+                    f'</div>'
+                    f'<p style="font-size: 13.5px; color: #cbd5e1; margin: 0; line-height: 1.6;">{esc_desc}</p>'
+                    f'</div>'
+                )
+                cards_html.append(card_markup)
+
             st.markdown(f'<div id="glossary-items">{"".join(cards_html)}</div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)

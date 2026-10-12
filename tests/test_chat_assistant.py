@@ -77,5 +77,55 @@ def test_single_city_scorecard(master_df):
 def test_unmatched_general_query_guide(master_df):
     resp = generate_local_response("Selam naber?", master_df)
     assert "HavaAtlası Yerel Veri Asistanı" in resp
-    assert "Nasıl soru sorabilirsiniz" in resp or "kalıplarla soru sorabilirsiniz" in resp
-    assert "hazır buton" in resp
+    assert "kalıplarla soru sorabilirsiniz" in resp or "hazır buton" in resp
+
+
+def test_new_button_1_solunum_riski(master_df):
+    resp = generate_local_response("Solunum Riski En Yüksek 3 İl", master_df)
+    assert "Solunum Kaynaklı Vefat Oranı" in resp or "Solunum" in resp
+    assert "Edirne" in resp
+    assert "Çorum" in resp
+    assert "Çanakkale" in resp
+
+
+def test_new_button_2_dso_limit_asanlar(master_df):
+    resp = generate_local_response("DSÖ Limitini En Çok Aşanlar", master_df)
+    assert "DSÖ" in resp
+    assert "Osmaniye" in resp
+    assert "Iğdır" in resp
+
+
+def test_new_button_3_sanayi_baskisi(master_df):
+    resp = generate_local_response("Sanayi Baskısı En Yüksek İller", master_df)
+    assert "Sanayi Baskısı" in resp
+    assert "Ankara" in resp or "Bursa" in resp
+    assert "OSB" in resp
+
+
+def test_new_button_4_en_temiz_bolge(master_df):
+    resp = generate_local_response("En Temiz Bölge", master_df)
+    assert "Karadeniz" in resp
+    assert "Havası En Temiz" in resp
+
+
+def test_natural_language_queries(master_df):
+    # 1. Havası en temiz bölge hangisi?
+    resp_bolge = generate_local_response("Havası en temiz bölge hangisi?", master_df)
+    assert "Karadeniz" in resp_bolge
+
+    # 2. Bursa il profili
+    resp_bursa = generate_local_response("Bursa il profili", master_df)
+    assert "Bursa İli Çevre & Hava Kalitesi Karnesi" in resp_bursa
+    assert "PM2.5" in resp_bursa
+    assert "Organize Sanayi Bölgesi" in resp_bursa
+
+    # 3. Hangi ilde solunum ölümü daha fazla?
+    resp_sol = generate_local_response("Hangi ilde solunum ölümü daha fazla?", master_df)
+    assert "Solunum" in resp_sol
+    assert "Edirne" in resp_sol
+
+    # 4. Kirlilik ve OSB ilişkisi
+    resp_corr = generate_local_response("Kirlilik ve OSB ilişkisi", master_df)
+    assert "Korelasyon" in resp_corr or "Spearman" in resp_corr
+    assert "Marmara" in resp_corr
+

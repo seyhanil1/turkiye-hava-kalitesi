@@ -18,6 +18,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 from typing import Optional
 import pandas as pd
 import streamlit as st
@@ -54,13 +55,27 @@ def get_base64_image(rel_path: str) -> str:
     return ""
 
 
-def load_turkey_svg_content() -> str:
-    """assets/turkey_map.svg dosyasını okur."""
+def load_turkey_svg_content(df: Optional[pd.DataFrame] = None) -> str:
+    """assets/turkey_map.svg dosyasını okur ve df verilmişse rozetleri master_data değerleriyle senkronize eder."""
     svg_path = os.path.join(ROOT_DIR, "assets", "turkey_map.svg")
-    if os.path.exists(svg_path):
-        with open(svg_path, "r", encoding="utf-8") as f:
-            return f.read()
-    return ""
+    if not os.path.exists(svg_path):
+        return ""
+    with open(svg_path, "r", encoding="utf-8") as f:
+        svg = f.read()
+
+    if df is not None and not df.empty and "il" in df.columns and "pm25" in df.columns:
+        for _, r in df.iterrows():
+            c_name = str(r.get("il", ""))
+            raw_v = r.get("pm25")
+            if pd.notna(raw_v):
+                try:
+                    v = round(float(raw_v))
+                    col = "#00e599" if v <= 15 else ("#facc15" if v <= 30 else ("#f97316" if v <= 50 else ("#f87171" if v <= 70 else "#ef4444")))
+                    pattern = rf'(<text[^>]*>{re.escape(c_name)}</text>\s*<text[^>]*fill=")[^"]*("[^>]*>)[^<]*(</text>)'
+                    svg = re.sub(pattern, rf'\g<1>{col}\g<2>{v} µg/m³\g<3>', svg)
+                except Exception:
+                    pass
+    return svg
 
 
 def _calculate_science_note(df: pd.DataFrame, pollutant: str = "pm25") -> dict:
@@ -376,7 +391,7 @@ def generate_pixel_perfect_dashboard_html(
     dashboard HTML çıktısını üretir.
     """
     hero_bg_uri = get_base64_image(os.path.join("assets", "hero_bg.jpg"))
-    turkey_map_svg = load_turkey_svg_content()
+    turkey_map_svg = load_turkey_svg_content(df)
     
     # Gerçek veri dönemi ve son güncelleme tarihi
     from data_sources.constants import get_dataset_date_info
@@ -534,7 +549,7 @@ def generate_pixel_perfect_dashboard_html(
     if not available_pols:
         available_pols = [("PM2.5", "pm25", "PM2.5")]
     pollutant_tabs_html = "".join([
-        f'<button class="tab-pill {"active" if active_pollutant == p[0] else ""}" data-pol="{p[0]}">{p[2]}</button>'
+        f'<button class="tab-pill notranslate {"active" if active_pollutant == p[0] else ""}" translate="no" data-pol="{p[0]}"><span class="notranslate" translate="no">{p[2]}</span></button>'
         for p in available_pols
     ])
 
@@ -542,9 +557,10 @@ def generate_pixel_perfect_dashboard_html(
     regional_bar_chart_html, clusters_card_html = _generate_overview_analytics_components(df)
 
     html = f"""<!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="notranslate" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HavaAtlası — Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu</title>
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
@@ -2121,13 +2137,9 @@ html, body {{
             <section class="hero-banner">
                 <div class="hero-text-side">
                     <div class="hero-header-row">
-                        <h1 class="hero-h1">Havanın hikâyesini <span>veriler</span> anlatır</h1>
-                        <div class="live-badge">
-                            <span class="live-dot" style="background:#00d2ee;"></span>
-                            <span style="font-size:11px; font-weight:700;">Veri Dönemi: {period_label_str}</span>
-                        </div>
+                        <h1 class="hero-h1">Havanın Hikâyesini <span>Veriler</span> Anlatıyor</h1>
                     </div>
-                    <p class="hero-sub">81 ilin PM2.5 ölçümleri: {period_label_str}</p>
+                    <p class="hero-sub">Türkiye geneli 81 ilin partikül madde ve hava kalitesi göstergeleri</p>
                 </div>
             </section>
             
@@ -2139,7 +2151,7 @@ html, body {{
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label" id="card1Label" title="81 ilin düz (nüfus ağırlıksız) aritmetik ortalaması (Dönem: {period_label_str}, Birim: µg/m³)">81 İlin Ortalaması ⓘ</span>
+                            <span class="stat-label notranslate" translate="no" id="card1Label" title="81 ilin aritmetik ortalaması (Dönem: {period_label_str}, Birim: µg/m³)">81 İlin Ortalaması ⓘ</span>
                             <div class="stat-value" id="card1Value">{pm25_ort_str}<span>µg/m³</span></div>
                         </div>
                     </div>
@@ -2175,7 +2187,7 @@ html, body {{
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label" title="Dönemin en düşük ortalamasına sahip ili (Birim: µg/m³)">En Düşük İl ⓘ</span>
+                            <span class="stat-label notranslate" translate="no" id="card3Label" title="Dönemin en temiz / en düşük ortalamasına sahip ili (Birim: µg/m³)">En Temiz İl (En Düşük) ⓘ</span>
                             <div class="stat-value" id="card3Value" style="color: #00e599;">{min_val_str}<span>µg/m³</span></div>
                         </div>
                     </div>
@@ -2792,7 +2804,7 @@ function renderRankingTable() {{
     let html = `
     <div class="rank-table-head">
         <span style="width:44px;">#</span>
-        <span style="width:130px; margin-left:6px;">Sıra / İl</span>
+        <span style="width:130px; margin-left:6px;">İl (Plaka)</span>
         <span style="flex:1; text-align:right;">Ortalama (µg/m³)</span>
     </div>
     `;
@@ -2992,7 +3004,7 @@ function updateKpiCards() {{
     let minCity = CITIES.reduce((p, c) => (c[polKey] < p[polKey] ? c : p), CITIES[0]);
     
     const card1 = document.getElementById('card1Label');
-    if (card1) card1.innerHTML = '81 ilin ortalaması ⓘ';
+    if (card1) card1.innerHTML = '81 İlin Ortalaması ⓘ';
     const card1Val = document.getElementById('card1Value');
     if (card1Val) card1Val.innerHTML = fmt(mean) + '<span>µg/m³</span>';
     
@@ -3003,6 +3015,8 @@ function updateKpiCards() {{
     const card2Diff = document.getElementById('card2Diff');
     if (card2Diff) card2Diff.textContent = '(ortalamanın +' + fmt(maxCity[polKey] - mean) + ' µg/m³ üzerinde)';
     
+    const card3Label = document.getElementById('card3Label');
+    if (card3Label) card3Label.innerHTML = 'En Temiz İl (En Düşük) ⓘ';
     const card3Val = document.getElementById('card3Value');
     if (card3Val) card3Val.innerHTML = fmt(minCity[polKey]) + '<span>µg/m³</span>';
     const card3City = document.getElementById('card3City');
@@ -3036,10 +3050,21 @@ function updateMapValues() {{
                 const cityNode = parent.querySelector('text:first-of-type');
                 if (cityNode) {{
                     const cName = cityNode.textContent.trim();
-                    if (cityMap[cName]) {{
-                        const v = cityMap[cName][polKey];
-                        t.textContent = Math.round(v) + ' µg/m³';
-                        t.setAttribute('fill', getColor(v, currentPollutant));
+                    let cityObj = cityMap[cName];
+                    if (!cityObj) {{
+                        cityObj = Object.values(cityMap).find(c => 
+                            c.il.localeCompare(cName, 'tr', {{ sensitivity: 'accent' }}) === 0 ||
+                            c.il.toLowerCase() === cName.toLowerCase() ||
+                            (cName.toLowerCase().indexOf('zmir') !== -1 && c.il.toLowerCase().indexOf('zmir') !== -1)
+                        );
+                    }}
+                    if (cityObj) {{
+                        const rawVal = cityObj[polKey];
+                        if (rawVal !== undefined && rawVal !== null && !isNaN(rawVal)) {{
+                            const numVal = Number(rawVal);
+                            t.textContent = Math.round(numVal) + ' µg/m³';
+                            t.setAttribute('fill', getColor(numVal, currentPollutant));
+                        }}
                     }}
                 }}
             }}

@@ -15,8 +15,8 @@ def test_glossary_definitions_content():
     source = inspect.getsource(render_glossary_page)
     
     # PM2.5 academic definition check
-    assert "Çapı 2,5 mikrometre veya daha küçük olan mikroskobik partiküllerdir" in source
-    assert "Akciğer alveollerine kadar nüfuz ederek doğrudan dolaşım sistemine karışabildiği" in source
+    assert "Çapı 2,5 mikrometre veya daha küçük ince partikül maddelerdir" in source
+    assert "Akciğer alveollerine ve doğrudan kan dolaşımına nüfuz edebildiği için" in source
     
     # NO2 academic definition check
     assert "Fosil yakıtlı motorlu araçlar, termik santraller ve endüstriyel tesislerin yüksek sıcaklıktaki yanma süreçlerinden" in source
