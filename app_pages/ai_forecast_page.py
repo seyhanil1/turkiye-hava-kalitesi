@@ -114,6 +114,7 @@ def create_forecast_figure(
         annotation_text="DSÖ Yıllık Kılavuz Eşiği (5 µg/m³)",
         annotation_position="top right",
         annotation_yshift=8,
+        annotation_yanchor="bottom",
         annotation_font=dict(color="#10b981", size=10)
     )
 
@@ -126,6 +127,7 @@ def create_forecast_figure(
         annotation_text="DSÖ IT-1 Geçiş Eşiği (35 µg/m³)",
         annotation_position="top right",
         annotation_yshift=8,
+        annotation_yanchor="bottom",
         annotation_font=dict(color="#f59e0b", size=10)
     )
 
@@ -158,8 +160,8 @@ def create_forecast_figure(
     # Koyu Tema ve Glassmorphic Düzen
     fig.update_layout(
         title=dict(
-            text=f"<b>{city_name}</b> — 5 Yıllık Trend Projeksiyonu (2026–2031) <span style='font-size:12px; color:{theme_color};'>[{badge_text}]</span>",
-            font=dict(color="#f8fafc", size=15, family="Inter, Segoe UI, sans-serif")
+            text=f"<b>{city_name}</b> — 5 Yıllık Trend Projeksiyonu (2026–2031) <span style='font-size:11px; color:{theme_color};'>[{badge_text}]</span>",
+            font=dict(color="#f8fafc", size=12.5, family="Inter, Segoe UI, sans-serif")
         ),
         paper_bgcolor="#0b1324",
         plot_bgcolor="#070d17",

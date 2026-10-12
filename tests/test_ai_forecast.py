@@ -82,9 +82,13 @@ def test_create_forecast_figure():
     assert fig.data[0].line.dash == "dash"
     # Başlıktaki kırık parantez düzeltmesini doğrula
     assert "[Kategori B (Ağır Sanayi Baskısı) — Yıllık +%5 Artış Trendi]" in fig.layout.title.text
-    # Çizgi etiketlerinin yshift ile kaydırıldığını doğrula
+    # Çizgi etiketlerinin yshift ve yanchor='bottom' ile kaydırıldığını doğrula
     assert fig.layout.annotations[0].yshift == 8
     assert fig.layout.annotations[1].yshift == 8
+    assert fig.layout.annotations[0].yanchor == "bottom"
+    assert fig.layout.annotations[1].yanchor == "bottom"
+    # Başlık fontunun kesilmeyecek boyutta olduğunu doğrula
+    assert fig.layout.title.font.size <= 13
 
 
 def test_ai_forecast_page_apptest_rendering():
