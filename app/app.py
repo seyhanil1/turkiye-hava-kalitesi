@@ -527,9 +527,9 @@ with st.sidebar:
         <div style='font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #648ba8; margin-bottom: 5px;'>
             Veri Kaynakları
         </div>
-        <div style='display: flex; flex-wrap: wrap; gap: 4px;'>
+        <div style='display: flex; flex-wrap: wrap; gap: 4px;' class="notranslate" translate="no">
             <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='Çevre ve Şehircilik Bakanlığı 2025 Kara Rapor'>ÇŞİDB</span>
-            <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='Copernicus CAMS Atmosfer Modeli'>CAMS</span>
+            <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='Copernicus CAMS Atmosfer Modeli' class="notranslate" translate="no">CAMS</span>
             <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='TÜİK Sağlık ve Ölüm İstatistikleri'>TÜİK</span>
             <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='DSÖ 2021 Kılavuz Sınırları'>DSÖ</span>
         </div>

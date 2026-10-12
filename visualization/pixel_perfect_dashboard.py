@@ -619,23 +619,11 @@ html, body {{
 }}
 
 /* ========================================================
-   1. SOL KENAR ÇUBUĞU (SIDEBAR) — 240px
+   1. SOL KENAR ÇUBUĞU (SIDEBAR) — KALDIRILDI
    ======================================================== */
 .sidebar {{
-    width: 240px;
-    min-width: 240px;
-    background-color: var(--bg-surface);
-    border-right: 1px solid var(--border-subtle);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 20px 14px 14px 16px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
-    z-index: 100;
+    display: none !important;
+    width: 0 !important;
 }}
 
 .brand-box {{
@@ -1042,6 +1030,10 @@ html, body {{
 
 .view-section.active {{
     display: block;
+}}
+
+.view-section:not(#view-genel_bakis) {{
+    display: none !important;
 }}
 
 /* MODÜL İÇİ ÜST GERİ DÖNÜŞ BAŞLIĞI */
@@ -2075,92 +2067,7 @@ html, body {{
 </head>
 <body>
 
-<div class="app-wrapper">
-    <!-- 1. SOL KENAR ÇUBUĞU (SIDEBAR) -->
-    <aside class="sidebar">
-        <div>
-            <div class="brand-box" onclick="switchView('genel_bakis')">
-                <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-                </svg>
-                <div class="brand-text">
-                    <span class="brand-title">HavaAtlası</span>
-                    <span class="brand-sub">TÜRKİYE HAVA KALİTESİ PLATFORMU</span>
-                </div>
-            </div>
-            
-            <div class="nav-section-title">KEŞFET</div>
-            <ul class="nav-list">
-                <li><div class="nav-item active" data-view="genel_bakis" onclick="switchView('genel_bakis')">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    <span>Genel Bakış</span>
-                </div></li>
-                
-                <li><div class="nav-item" data-view="sehir_karnesi" onclick="switchView('sehir_karnesi')">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                    <span>Şehir Karnesi</span>
-                </div></li>
-                
-                <li><div class="nav-item" data-view="duello" onclick="switchView('duello')">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14.5 12.5-8 8a2.12 2.12 0 1 1-3-3l8-8"/><path d="m16 8 2-2 4 4-2 2"/><path d="m9.5 7.5 8 8a2.12 2.12 0 1 0 3-3l-8-8"/><path d="m8 16-2 2-4-4 2-2"/></svg>
-                    <span>Düello</span>
-                </div></li>
-            </ul>
-
-            <div class="nav-section-title">ANALİZ</div>
-            <ul class="nav-list">
-                <li><div class="nav-item" data-view="korelasyon" onclick="switchView('korelasyon')">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    <span>Korelasyon</span>
-                </div></li>
-                
-                <li><div class="nav-item" data-view="bolgeler" onclick="switchView('bolgeler')">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-                    <span>Bölgeler</span>
-                </div></li>
-                
-                <li><div class="nav-item" data-view="sanayi_profili" onclick="switchView('sanayi_profili')">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                    <span>Sanayi Profili</span>
-                </div></li>
-            </ul>
-
-            <div class="nav-section-title">GELECEK</div>
-            <ul class="nav-list">
-                <li><div class="nav-item" data-view="ai_tahmin" onclick="switchView('ai_tahmin')" title="Yapay Zeka İçgörü & Tahmin Motoru">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg>
-                    <span>AI Tahmin</span>
-                </div></li>
-                
-                <li><div class="nav-item" data-view="yesil_donusum" onclick="switchView('yesil_donusum')">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    <span>Senaryolar</span>
-                </div></li>
-            </ul>
-
-            <div class="nav-section-title">REHBER</div>
-            <ul class="nav-list">
-                <li><div class="nav-item" data-view="chat_assistant" onclick="switchView('chat_assistant')" title="AI Veri Asistanı">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    <span>AI Asistan</span>
-                </div></li>
-            </ul>
-            
-            <div class="sources-section">
-                <span class="sources-label">
-                    <svg style="width:11px; height:11px; color:#557896;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                    Veri Kaynakları
-                </span>
-                <div class="sources-chips">
-                    <span class="source-chip" title="Çevre ve Şehircilik Bakanlığı 2025 Kara Rapor">ÇŞİDB</span>
-                    <span class="source-chip" title="Copernicus CAMS Atmosfer Modeli">CAMS</span>
-                    <span class="source-chip" title="TÜİK Sağlık ve Ölüm İstatistikleri">TÜİK</span>
-                    <span class="source-chip" title="DSÖ 2021 Kılavuz Sınırları">DSÖ</span>
-                </div>
-            </div>
-        </div>
-    </aside>
+    <!-- İÇ NAVİGASYON KALDIRILDI: Tek ve ana navigasyon Streamlit sol sidebarıdır. -->
     
     <!-- 2. SAĞ ANA ALAN (MAIN CONTENT) -->
     <main class="main-content">
@@ -2226,7 +2133,7 @@ html, body {{
             
             <!-- 4 DÖRT İSTATİSTİK KARTI (KPI CARDS - VERIFIED & DENGELİ) -->
             <section class="stat-cards-grid">
-                <div class="stat-card" id="cardMean" onclick="switchView('sehir_karnesi')">
+                <div class="stat-card" id="cardMean">
                     <div class="stat-top-row">
                         <div class="stat-icon-circle green">
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
@@ -2244,7 +2151,7 @@ html, body {{
                     </div>
                 </div>
                 
-                <div class="stat-card" id="cardMax" onclick="openCityReportCard('{max_il}')">
+                <div class="stat-card" id="cardMax">
                     <div class="stat-top-row">
                         <div class="stat-icon-circle red">
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
@@ -2262,7 +2169,7 @@ html, body {{
                     </div>
                 </div>
                 
-                <div class="stat-card" id="cardMin" onclick="openCityReportCard('{min_il}')">
+                <div class="stat-card" id="cardMin">
                     <div class="stat-top-row">
                         <div class="stat-icon-circle green">
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
@@ -2280,7 +2187,7 @@ html, body {{
                     </div>
                 </div>
                 
-                <div class="stat-card" onclick="switchView('sehir_karnesi')">
+                <div class="stat-card" id="cardCount">
                     <div class="stat-top-row">
                         <div class="stat-icon-circle cyan">
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -2422,7 +2329,7 @@ html, body {{
             <footer class="overview-footer">
                 <span><strong>HavaAtlası</strong> v2.1.0</span>
                 <span class="footer-sep">•</span>
-                <span>Veri Kaynağı: Copernicus CAMS Yeniden Analiz Modeli &amp; ÇŞİDB İstasyon Envanteri</span>
+                <span>Veri Kaynağı: Copernicus <span class="notranslate" translate="no">CAMS</span> Yeniden Analiz Modeli &amp; ÇŞİDB İstasyon Envanteri</span>
                 <span class="footer-sep">•</span>
                 <span>Veri Dönemi: {period_label_str}</span>
                 <span class="footer-sep">•</span>
@@ -2441,7 +2348,7 @@ html, body {{
                     <span style="font-size:22px;">🏙️</span>
                     <div>
                         <div style="font-size:16px; font-weight:800; color:#ffffff;">Şehir Karnesi & İl Çevre Profili</div>
-                        <div style="font-size:11px; color:#6d8fae;">81 ilin hava kalitesi, sanayi baskısı ve sağlık göstergeleri</div>
+                        <div style="font-size:11px; color:#6d8fae;">Türkiye'nin 81 ilinin hava kalitesi, sanayi baskısı ve solunum sağlığı profili karnesi.</div>
                     </div>
                     <span class="module-badge">Şehir Karnesi</span>
                 </div>
@@ -2697,35 +2604,11 @@ function getStatusBadge(val, pol) {{
 // 2. MODÜL VE SAYFA GEÇİŞ MOTORU (SPA VIEW SWITCHER)
 // ==========================================
 function switchView(viewName) {{
-    currentView = viewName;
+    // Tek navigasyon Streamlit sol sidebarıdır. Genel Bakış saf modda çalışır.
+    currentView = 'genel_bakis';
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    
-    const targetSection = document.getElementById('view-' + viewName);
-    if (targetSection) {{
-        targetSection.classList.add('active');
-    }} else {{
-        document.getElementById('view-genel_bakis').classList.add('active');
-    }}
-    
-    const targetNav = document.querySelector('.nav-item[data-view="' + viewName + '"]');
-    if (targetNav) targetNav.classList.add('active');
-    
-    window.scrollTo({{ top: 0, behavior: 'smooth' }});
-    try {{
-        const newUrl = window.location.pathname + '?page=' + viewName;
-        window.history.pushState({{ page: viewName }}, '', newUrl);
-    }} catch(e) {{}}
-    
-    // Alt modül çizimlerini tetikle
-    if (viewName === 'sehir_karnesi') populateCitySelect();
-    else if (viewName === 'duello') renderDuelModule();
-    else if (viewName === 'korelasyon') renderCorrelationModule();
-    else if (viewName === 'bolgeler') renderRegionsModule();
-    else if (viewName === 'yesil_donusum') renderGreenModule();
-    else if (viewName === 'sanayi_profili') renderIndustryModule();
-    else if (viewName === 'ai_tahmin') renderAIForecastModule();
-    else if (viewName === 'chat_assistant') renderChatAssistantModule();
+    const gb = document.getElementById('view-genel_bakis');
+    if (gb) gb.classList.add('active');
 }}
 
 function scrollToHealthShield() {{
@@ -2859,7 +2742,6 @@ document.querySelectorAll('.province-path').forEach(p => {{
                     ${{currentPollutant}}: <strong>${{fmt(c[polKey])}} µg/m³</strong>
                 </div>
                 <div style="font-size:11px; color:#cbd5e1; margin-top:3px;">Bölge: ${{c.bolge}} &bull; OSB: ${{c.osb_sayisi}} Adet</div>
-                <div style="font-size:10px; color:#94a3b8; margin-top:3px; border-top:1px solid #062842; padding-top:3px;">Tıklayarak Şehir Karnesini Açın</div>
             `;
             tooltip.style.display = 'block';
         }}
@@ -3247,12 +3129,16 @@ function openCityReportCard(cityName) {{
             window.parent.history.replaceState({{}}, '', pUrl.toString());
         }}
     }} catch(e) {{}}
-    switchView('sehir_karnesi');
-    const sel = document.getElementById('reportCardCitySelect');
-    if (sel) {{
-        sel.value = cityName;
-        renderCityReportCard(cityName);
-    }}
+    // Haritada ili vurgula
+    document.querySelectorAll('.province-path').forEach(el => {{
+        if (el.getAttribute('data-name') === cityName) {{
+            el.style.stroke = '#00f2fe';
+            el.style.strokeWidth = '2px';
+        }} else {{
+            el.style.stroke = '#031b2e';
+            el.style.strokeWidth = '0.7px';
+        }}
+    }});
 }}
 
 function renderCityReportCard(cityName) {{
@@ -3287,7 +3173,7 @@ function renderCityReportCard(cityName) {{
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
                 <div style="font-size:12px; color:#8faec9;">PM2.5 Kirliliği</div>
                 <div style="font-size:26px; font-weight:800; color:#ef4444; margin-top:4px;">${{fmt(c.pm25)}} <span style="font-size:12px; color:#94a3b8;">µg/m³</span></div>
-                <div style="font-size:11px; color:#ef4444; margin-top:4px;">DSÖ Kılavuzunun ${{fmt(c.pm25 / 5)}} katı</div>
+                <div style="font-size:11px; color:#ef4444; margin-top:4px;">DSÖ Eşiğinin ${{fmt(c.pm25 / 5)}} Katı</div>
             </div>
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
                 <div style="font-size:12px; color:#8faec9;">Solunum Ölüm Oranı</div>
@@ -3298,13 +3184,13 @@ function renderCityReportCard(cityName) {{
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
                 <div style="font-size:12px; color:#8faec9;">Sanayi Baskısı (OSB)</div>
                 <div style="font-size:26px; font-weight:800; color:#00e599; margin-top:4px;">${{c.osb_sayisi}} Adet</div>
-                <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${{fmt(c.osb)}} Hektar Sanayi Alanı</div>
+                <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${{fmt(c.osb / 10)}} Hektar Sanayi Alanı</div>
             </div>
         </div>
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px;">
-                <h4 style="font-size:14px; font-weight:700; color:#ffffff; margin-bottom:12px;">📊 Türkiye ve Bölge Ortalaması ile Kıyaslama</h4>
+                <h4 style="font-size:14px; font-weight:700; color:#ffffff; margin-bottom:12px;">📊 Bölge ve Türkiye Ortalamasının Karşılaştırması</h4>
                 <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
                     <div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
@@ -3397,14 +3283,14 @@ function runDuelComparison() {{
                 <h3 style="color:#00e5db; font-size:18px; margin-bottom:14px;">${{cA.il}} Profili</h3>
                 <p>• <strong>PM2.5:</strong> ${{fmt(cA.pm25)}} µg/m³</p>
                 <p style="margin-top:6px;">• <strong>PM10:</strong> ${{fmt(cA.pm10)}} µg/m³</p>
-                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cA.osb)}} Hektar</p>
+                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cA.osb / 10)}} Hektar</p>
                 <p style="margin-top:6px;">• <strong>Solunum Ölümü:</strong> ${{fmt(cA.solunum_olum_100k)}} / 100k</p>
             </div>
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:20px;">
                 <h3 style="color:#38bdf8; font-size:18px; margin-bottom:14px;">${{cB.il}} Profili</h3>
                 <p>• <strong>PM2.5:</strong> ${{fmt(cB.pm25)}} µg/m³</p>
                 <p style="margin-top:6px;">• <strong>PM10:</strong> ${{fmt(cB.pm10)}} µg/m³</p>
-                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cB.osb)}} Hektar</p>
+                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cB.osb / 10)}} Hektar</p>
                 <p style="margin-top:6px;">• <strong>Solunum Ölümü:</strong> ${{fmt(cB.solunum_olum_100k)}} / 100k</p>
             </div>
         </div>
@@ -4570,9 +4456,8 @@ document.addEventListener('DOMContentLoaded', () => {{
     
     if (city) {{
         openCityReportCard(city);
-    }} else {{
-        switchView(p);
     }}
+    switchView('genel_bakis');
 }});
 
 // Doğrudan çalıştırma
@@ -4582,9 +4467,7 @@ updateKpiCards();
 updateMapValues();
 renderTimeSeriesChart();
 initTimeline();
-if (currentView && currentView !== 'genel_bakis') {{
-    switchView(currentView);
-}}
+switchView('genel_bakis');
 </script>
 
 </body>

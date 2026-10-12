@@ -19,7 +19,7 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
     """
     st.markdown("### Şehir Karnesi & İl Çevre Profili")
     st.markdown(
-        "<p style='color:#94a3b8;'>Türkiye'nin 81 iline ait hava kalitesi, sanayi baskısı ve TÜİK sağlık göstergelerinin derinlemesine karnesi.</p>",
+        "<p style='color:#94a3b8;'>Türkiye'nin 81 ilinin hava kalitesi, sanayi baskısı ve solunum sağlığı profili karnesi.</p>",
         unsafe_allow_html=True
     )
     
@@ -74,7 +74,7 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
             title="DSÖ Risk Sınıfı",
             value=il_row["dso_risk"],
             unit="",
-            delta=f"Kılavuzun {il_row['dso_limit_kat']:.1f}x katı",
+            delta=f"DSÖ Eşiğinin {il_row['dso_limit_kat']:.1f} Katı",
             delta_type="positive" if il_row['pm25'] > 15 else "neutral"
         )
     with c3:
@@ -100,7 +100,7 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
     col_chart, col_details = st.columns([1.3, 1.0])
     
     with col_chart:
-        st.markdown("#### Bölge ve Türkiye Ortalamasıyla Karşılaştırma")
+        st.markdown("#### Bölge ve Türkiye Ortalamasının Karşılaştırması")
         comp_df = pd.DataFrame({
             "Kategori": [f"{secilen_il}", f"{bolge} Bölgesi", "Türkiye Geneli"],
             "PM2.5 (µg/m³)": [il_row["pm25"], bolge_ort_pm25, turkiye_ort_pm25],
@@ -138,7 +138,7 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
                 </tr>
                 <tr style='border-bottom:1px solid #1e293b; height:32px;'>
                     <td><b>Toplam OSB Alanı:</b></td>
-                    <td style='text-align:right; color:#f8fafc; font-weight:700;'>{il_row['osb_alani_hektar']:,.1f} Hektar</td>
+                    <td style='text-align:right; color:#f8fafc; font-weight:700;'>{il_row['osb_alani_hektar'] / 10.0:,.1f} Hektar</td>
                 </tr>
                 <tr style='border-bottom:1px solid #1e293b; height:32px;'>
                     <td><b>Sanayi Parsel Sayısı:</b></td>
