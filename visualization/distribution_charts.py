@@ -260,3 +260,195 @@ def create_duel_radar_chart(
     )
     
     return fig
+
+
+def create_duel_dumbbell_chart(
+    df: pd.DataFrame, 
+    city_a: pd.Series, 
+    city_b: pd.Series
+) -> go.Figure:
+    """
+    81 il içindeki yüzdelik konumu (Percentile Rank: 0-100, yüksek = daha olumlu)
+    gösteren yatay dumbbell (nokta-çizgi) karşılaştırma grafiği.
+    Ham veriden doğrudan hesaplanır (PM2.5, Solunum Ölümü, Sanayi Baskısı).
+    Kaynaksız göstergeler (Yeşil Skor vb.) içermez.
+    """
+    # 1. Hava Temizliği: PM2.5 düşük olan daha yüksek yüzdelik alır (ters rank)
+    pm_rank_series = df["pm25"].rank(ascending=False, pct=True) * 100.0
+    pct_pm_a = float(pm_rank_series[df["il"] == city_a["il"]].iloc[0])
+    pct_pm_b = float(pm_rank_series[df["il"] == city_b["il"]].iloc[0])
+
+    # 2. Solunum Sağlığı: 100k ölüm hızı düşük olan daha yüksek yüzdelik alır (ters rank)
+    sol_rank_series = df["solunum_olum_100k"].rank(ascending=False, pct=True) * 100.0
+    pct_sol_a = float(sol_rank_series[df["il"] == city_a["il"]].iloc[0])
+    pct_sol_b = float(sol_rank_series[df["il"] == city_b["il"]].iloc[0])
+
+    # 3. Düşük Sanayi Baskısı: Kişi başına OSB sayısı düşük olan daha yüksek yüzdelik alır (ters rank)
+    osb_per_cap = df["toplam_osb"] / (df["nufus"] / 1_000_000)
+    osb_rank_series = osb_per_cap.rank(ascending=False, pct=True) * 100.0
+    pct_osb_a = float(osb_rank_series[df["il"] == city_a["il"]].iloc[0])
+    pct_osb_b = float(osb_rank_series[df["il"] == city_b["il"]].iloc[0])
+
+    categories = [
+        "Sanayi Baskısı (Düşük OSB/Kişi)",
+        "Solunum Sağlığı (Düşük Ölüm)",
+        "Hava Temizliği (Düşük PM2.5)"
+    ]
+    vals_a = [pct_osb_a, pct_sol_a, pct_pm_a]
+    vals_b = [pct_osb_b, pct_sol_b, pct_pm_b]
+
+    # Ham metinler
+    osb_m_a = float(city_a["toplam_osb"]) / (float(city_a["nufus"]) / 1_000_000)
+    osb_m_b = float(city_b["toplam_osb"]) / (float(city_b["nufus"]) / 1_000_000)
+    raw_a = [
+        f"{osb_m_a:.1f} OSB / Milyon".replace(".", ","),
+        f"{float(city_a['solunum_olum_100k']):.1f} / 100k".replace(".", ","),
+        f"{float(city_a['pm25']):.1f} µg/m³".replace(".", ",")
+    ]
+    raw_b = [
+        f"{osb_m_b:.1f} OSB / Milyon".replace(".", ","),
+        f"{float(city_b['solunum_olum_100k']):.1f} / 100k".replace(".", ","),
+        f"{float(city_b['pm25']):.1f} µg/m³".replace(".", ",")
+    ]
+
+    fig = go.Figure()
+
+    # Bağlantı çizgileri (Dumbbell bar)
+    for cat, va, vb in zip(categories, vals_a, vals_b):
+        fig.add_trace(go.Scatter(
+            x=[va, vb],
+            y=[cat, cat],
+            mode="lines",
+            line=dict(color="#334155", width=3.5),
+            showlegend=False,
+            hoverinfo="none"
+        ))
+
+    # Şehir A noktaları (Mavi)
+    fig.add_trace(go.Scatter(
+        x=vals_a,
+        y=categories,
+        mode="markers+text",
+        name=city_a["il"],
+        marker=dict(color="#38bdf8", size=13, line=dict(color="#ffffff", width=1.5)),
+        text=[f"%{va:.0f}" for va in vals_a],
+        textposition="top center",
+        textfont=dict(color="#38bdf8", size=10),
+        customdata=raw_a,
+        hovertemplate=f"<b>{city_a['il']}</b><br>%{{y}}<br>Yüzdelik Konum: %{{x:.1f}} / 100<br>Ham Değer: %{{customdata}}<extra></extra>"
+    ))
+
+    # Şehir B noktaları (Yeşil)
+    fig.add_trace(go.Scatter(
+        x=vals_b,
+        y=categories,
+        mode="markers+text",
+        name=city_b["il"],
+        marker=dict(color="#10b981", size=13, line=dict(color="#ffffff", width=1.5)),
+        text=[f"%{vb:.0f}" for vb in vals_b],
+        textposition="bottom center",
+        textfont=dict(color="#10b981", size=10),
+        customdata=raw_b,
+        hovertemplate=f"<b>{city_b['il']}</b><br>%{{y}}<br>Yüzdelik Konum: %{{x:.1f}} / 100<br>Ham Değer: %{{customdata}}<extra></extra>"
+    ))
+
+    fig.update_layout(
+        title=dict(
+            text="<b>81 İl İçindeki Yüzdelik Konum (0–100, Yüksek = Daha Olumlu)</b>",
+            font=dict(size=13, color="#f8fafc")
+        ),
+        height=320,
+        margin=dict(t=40, l=30, r=30, b=30),
+        xaxis=dict(
+            title=dict(
+                text="81 İl İçindeki Yüzdelik Sıralama (Percentile)",
+                font=dict(color="#94a3b8", size=11)
+            ),
+            range=[-5, 105],
+            gridcolor="#1e293b",
+            tickfont=dict(color="#94a3b8", size=10),
+            zeroline=False
+        ),
+        yaxis=dict(
+            tickfont=dict(color="#f8fafc", size=11),
+            gridcolor="#1e293b"
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.28,
+            xanchor="center",
+            x=0.5,
+            font=dict(color="#f8fafc", size=11)
+        ),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+
+    return fig
+
+
+def create_single_metric_comparison_bar(
+    metric_title: str,
+    unit_label: str,
+    val_a: float,
+    val_b: float,
+    name_a: str,
+    name_b: str,
+    text_a: str,
+    text_b: str
+) -> go.Figure:
+    """
+    Tek bir birim için bağımsız, ölçeği karışmayan küçük çubuk grafik (Small Multiple).
+    """
+    max_val = max(val_a, val_b, 1.0)
+    upper_limit = max_val * 1.25
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=[name_a],
+        y=[val_a],
+        name=name_a,
+        text=[text_a],
+        textposition="outside",
+        textfont=dict(color="#f8fafc", size=11),
+        marker_color="#38bdf8",
+        hovertemplate=f"<b>{name_a}</b><br>{metric_title}: {text_a}<extra></extra>"
+    ))
+    fig.add_trace(go.Bar(
+        x=[name_b],
+        y=[val_b],
+        name=name_b,
+        text=[text_b],
+        textposition="outside",
+        textfont=dict(color="#f8fafc", size=11),
+        marker_color="#10b981",
+        hovertemplate=f"<b>{name_b}</b><br>{metric_title}: {text_b}<extra></extra>"
+    ))
+
+    fig.update_layout(
+        title=dict(
+            text=f"<b>{metric_title}</b>",
+            font=dict(size=12, color="#f8fafc")
+        ),
+        height=260,
+        margin=dict(t=35, l=15, r=15, b=20),
+        yaxis=dict(
+            title=dict(
+                text=unit_label,
+                font=dict(color="#94a3b8", size=10)
+            ),
+            range=[0, upper_limit],
+            gridcolor="#1e293b",
+            tickfont=dict(color="#94a3b8", size=9)
+        ),
+        xaxis=dict(
+            tickfont=dict(color="#f8fafc", size=11),
+            gridcolor="#1e293b"
+        ),
+        showlegend=False,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+
+    return fig
