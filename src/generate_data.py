@@ -21,7 +21,7 @@ def verileri_birlestir():
     df_master.to_csv(output_path, index=False, encoding="utf-8")
     print(f"[+] BASARILI! 81 ilin dogrulanmis resmi verileri '{output_path}' dosyasina kaydedildi.")
     print("\nMaster Tablosundan Ilk 5 Satir:")
-    print(df_master[["plaka", "il", "bolge", "pm25", "pm10", "no2", "solunum_olum_100k", "yesil_skor"]].head())
+    print(df_master[["plaka", "il", "bolge", "pm25", "solunum_olum_100k", "yesil_skor"]].head())
     return df_master
 
 if __name__ == "__main__":

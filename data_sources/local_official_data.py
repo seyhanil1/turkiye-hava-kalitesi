@@ -184,17 +184,7 @@ def build_master_dataset() -> pd.DataFrame:
     # 1. Hava Kirliliği Verisi
     df_master = pd.merge(df_master, df_kara[["il", "pm25"]], on="il", how="left")
     
-    # 2. PM10 ve NO2 Tahmini / İlişkili Gerçekçi Göstergeler (CAMS & Kara Rapor standart oranları)
-    # Literatür: Türkiye kentsel PM10/PM2.5 oranı ortalama ~ 1.8 - 2.2 aralığındadır.
-    np.random.seed(42)
-    pm10_ratio = 1.95 + (df_master["pm25"] / df_master["pm25"].max() * 0.3)
-    df_master["pm10"] = (df_master["pm25"] * pm10_ratio).round(1)
-    
-    # NO2: Ulaşım ve OSB yoğunluğuna bağlı konsantrasyon (µg/m³)
-    osb_factor = np.log1p(df_master["nufus"] / 100000) * 4.5
-    df_master["no2"] = (12.0 + osb_factor + (df_master["pm25"] * 0.25)).round(1)
-    
-    # 3. Sanayi Verisi
+    # 2. Sanayi Verisi
     df_master = pd.merge(df_master, df_sanayi, on="il", how="left")
     df_master["toplam_osb"] = df_master["toplam_osb"].fillna(0).astype(int)
     df_master["faal_osb"] = df_master["faal_osb"].fillna(0).astype(int)
@@ -263,4 +253,4 @@ if __name__ == "__main__":
     print("Master dataset başarıyla oluşturuldu:")
     print(df.info())
     print("\nİlk 5 satır:")
-    print(df[["plaka", "il", "bolge", "pm25", "pm10", "no2", "solunum_olum_100k", "yesil_skor"]].head())
+    print(df[["plaka", "il", "bolge", "pm25", "solunum_olum_100k", "yesil_skor"]].head())

@@ -422,7 +422,7 @@ def generate_pixel_perfect_dashboard_html(
         daily_records = {}
         for d, sub in daily_df.groupby("date"):
             daily_records[d] = {
-                r["il"]: [round(float(r["pm25"]), 1), round(float(r["pm10"]), 1), round(float(r["no2"]), 1)]
+                r["il"]: [round(float(r["pm25"]), 1)]
                 for _, r in sub.iterrows()
             }
         daily_data_json = json.dumps(daily_records)
@@ -478,8 +478,6 @@ def generate_pixel_perfect_dashboard_html(
                 "pm25": round(float(r.get("pm25", 0.0)), 1) if pd.notna(r.get("pm25")) else 0.0,
                 "bolge_pm25": bolge_pm25_map.get(c_bolge, turkiye_pm25_ort),
                 "turkiye_pm25": turkiye_pm25_ort,
-                "pm10": round(float(r.get("pm10", 0.0)), 1) if pd.notna(r.get("pm10")) else 0.0,
-                "no2": round(float(r.get("no2", 0.0)), 1) if pd.notna(r.get("no2")) else 0.0,
                 "osb": round(float(r.get("osb_alani_hektar", 0.0)), 1) if pd.notna(r.get("osb_alani_hektar")) else 0.0,
                 "osb_sayisi": int(r.get("osb_sayisi", 0)) if pd.notna(r.get("osb_sayisi")) else 0,
                 "solunum_olum_100k": round(float(r.get("solunum_olum_100k", 0.0)), 1) if pd.notna(r.get("solunum_olum_100k")) else 0.0,
@@ -544,14 +542,9 @@ def generate_pixel_perfect_dashboard_html(
     total_cities = il_count
     prev_30_period_str = "16.08–14.09.2026 dönemine göre"
     
-    pollutants_map = [("PM2.5", "pm25", "PM2.5"), ("PM10", "pm10", "PM10"), ("NO2", "no2", "NO₂")]
-    available_pols = [p for p in pollutants_map if p[1] in df.columns]
-    if not available_pols:
-        available_pols = [("PM2.5", "pm25", "PM2.5")]
-    pollutant_tabs_html = "".join([
-        f'<button class="tab-pill notranslate {"active" if active_pollutant == p[0] else ""}" translate="no" data-pol="{p[0]}"><span class="notranslate" translate="no">{p[2]}</span></button>'
-        for p in available_pols
-    ])
+    pollutants_map = [("PM2.5", "pm25", "PM2.5")]
+    available_pols = [("PM2.5", "pm25", "PM2.5")]
+    pollutant_tabs_html = ""
 
     # Genel Bakış Alt Paneli (Plotly Horizontal Bar ve Ulusal Kümeler Kartı)
     regional_bar_chart_html, clusters_card_html = _generate_overview_analytics_components(df)
