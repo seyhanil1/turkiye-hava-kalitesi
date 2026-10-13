@@ -109,13 +109,13 @@ def render_industry_page(df: pd.DataFrame):
                 </span>
             </div>
             <div style="font-size: 13px; color: #8faec9; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                Toplam Tahsisli OSB Üretim Alanı
+                Toplam OSB Sanayi Alanı
             </div>
             <div style="font-size: 38px; font-weight: 900; color: #ffffff; margin: 4px 0; text-shadow: 0 0 20px rgba(255, 159, 61, 0.4);">
                 {toplam_hektar_str} <span style="font-size:20px; color:#ff9f3d; font-weight:700;">Hektar</span>
             </div>
             <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-top: 6px;">
-                Ağır sanayi, kimya, otomotiv, tekstil ve metalurji tesislerine tahsis edilmiş resmi üretim üssü alanı (~41.306 km² endüstriyel etki sahası).
+                Sanayi ve Teknoloji Bakanlığı onaylı organize sanayi bölgelerinin resmi yüzölçümü toplamı (OSBÜK verisi).
             </div>
         </div>
         """).strip(), unsafe_allow_html=True)
@@ -192,7 +192,7 @@ def render_industry_page(df: pd.DataFrame):
     with col_decisions:
         st.markdown(strip_html("""
         <div style="font-size:15px; font-weight:700; color:#ffffff; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-            <span>⚠️</span> Kritik Sanayi & Emisyon Baskı Kararları
+            <span>📊</span> Yüksek OSB ve Kirlilik Göstergeleri
         </div>
         """).strip(), unsafe_allow_html=True)
 
@@ -211,7 +211,7 @@ def render_industry_page(df: pd.DataFrame):
                     </span>
                     <div style="display:flex; gap:6px;">
                         <span style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;">
-                            KRİTİK BASKI
+                            YÜKSEK OSB
                         </span>
                         <span style="background: rgba(0, 242, 254, 0.15); color: #00f2fe; border: 1px solid #00f2fe; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;">
                             SANAYİ SİCİLİ
@@ -219,10 +219,10 @@ def render_industry_page(df: pd.DataFrame):
                     </div>
                 </div>
                 <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                    İnce partikül (PM2.5) emisyonlarının en yüksek yoğunluğa ulaştığı bölge. 100 OSB ve 12.434 aktif üretim parseliyle kimya, petrokimya ve otomotiv sanayisi kaynaklı partikül yükünün %38'i bu koridorda yoğunlaşmaktadır.
+                    Marmara bölgesi genelinde 100 OSB ve 12.434 parsel yer almakta olup yüksek OSB yoğunluğuna sahip iller bu koridorda bulunmaktadır.
                 </div>
                 <div style="margin-top:8px; font-size:11px; color:#f87171; font-weight:600; display:flex; align-items:center; gap:4px;">
-                    <span>•</span> Acil Müdahale: Online SEÖS baca filtresi zorunluluğu ve ağır tonaj lojistik koridoru düzenlemesi.
+                    <span>•</span> Gösterge Notu: OSB sayısı ve sanayi parseli bakımından en yoğun bölgedir.
                 </div>
             </div>
 
@@ -239,7 +239,7 @@ def render_industry_page(df: pd.DataFrame):
                     </span>
                     <div style="display:flex; gap:6px;">
                         <span style="background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid #f59e0b; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;">
-                            AĞIR EMİSYON
+                            YÜKSEK PM2,5
                         </span>
                         <span style="background: rgba(0, 242, 254, 0.15); color: #00f2fe; border: 1px solid #00f2fe; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;">
                             SANAYİ SİCİLİ
@@ -247,10 +247,10 @@ def render_industry_page(df: pd.DataFrame):
                     </div>
                 </div>
                 <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                    Hızlı sanayileşme, tekstil ve gıda işleme tesisleri nedeniyle partikül madde yükünün en yüksek olduğu OSB bölgesi. Geniş üretim havzasıyla meteorolojik inversiyon riski taşımaktadır.
+                    Gaziantep 8 OSB ve yüksek PM2.5 seviyesiyle bölgenin en yüksek sanayi altyapısına sahip ilidir.
                 </div>
                 <div style="margin-top:8px; font-size:11px; color:#fbbf24; font-weight:600; display:flex; align-items:center; gap:4px;">
-                    <span>•</span> Acil Müdahale: Kömür yakıtlı endüstriyel kazanların kapatılması ve arıtma çamuru bertaraf denetimi.
+                    <span>•</span> Gösterge Notu: Bölgede 35 OSB yer almakta olup ortalama PM2.5 38,7 µg/m³ seviyesindedir.
                 </div>
             </div>
         </div>

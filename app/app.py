@@ -28,7 +28,6 @@ from app_pages.regions_page import render_regions_page
 from app_pages.industry_page import render_industry_page
 from app_pages.ai_forecast_page import render_ai_forecast_page
 from app_pages.chat_assistant_page import render_chat_assistant_page
-from app_pages.scenarios_page import render_scenarios_page
 from app_pages.health_guide import render_health_guide_page
 from app_pages.glossary import render_glossary_page
 from app_pages.methodology import render_methodology_page
@@ -135,19 +134,27 @@ st.session_state.setdefault("selected_pollutant", "PM2.5")
 st.session_state.setdefault("selected_region", "Türkiye Geneli")
 
 # Dinamik Kategori ve Sayfa Yapılandırması
-CATEGORIES = ["Keşfet", "Analiz", "Gelecek", "Rehber"]
+CATEGORIES = ["Keşfet", "Analiz", "Rehber"]
 CATEGORY_PAGES = {
     "Keşfet": ["Genel Bakış", "Şehir Karnesi", "Düello"],
-    "Analiz": ["Bölgeler", "Korelasyon", "Sanayi Profili"],
-    "Gelecek": ["AI Tahmin", "Senaryolar"],
+    "Analiz": ["Bölgeler", "Korelasyon", "Sanayi Profili", "İl Grupları"],
     "Rehber": ["Yapılması Gerekenler", "Terimler Sözlüğü", "AI Asistan", "Veri ve Yöntem", "Sürüm Notları"],
 }
 PAGE_TO_CATEGORY = {p: c for c, pages in CATEGORY_PAGES.items() for p in pages}
 
 # URL query parameter üzerinden sayfa yönlendirme desteği
 query_page = st.query_params.get("page") or st.query_params.get("sayfa")
-if query_page and query_page in PAGE_TO_CATEGORY:
-    st.session_state["active_page"] = query_page
+DEPRECATED_PAGES = ["Senaryolar", "AI Tahmin", "scenarios", "ai_forecast", "gelecek_yol_ayrimi", "yesil_donusum"]
+
+if query_page:
+    if query_page in DEPRECATED_PAGES:
+        st.session_state["active_page"] = query_page
+        st.session_state["page_not_found"] = True
+    elif query_page in PAGE_TO_CATEGORY:
+        st.session_state["active_page"] = query_page
+        st.session_state["page_not_found"] = False
+else:
+    st.session_state["page_not_found"] = False
 
 if "active_page" not in st.session_state:
     st.session_state["active_page"] = "Genel Bakış"
@@ -394,14 +401,9 @@ def view_industry():
     render_industry_page(df_master)
 
 
-def view_ai_forecast():
+def view_city_groups():
     render_shared_top_bar()
     render_ai_forecast_page(df_master)
-
-
-def view_scenarios():
-    render_shared_top_bar()
-    render_scenarios_page(df_master)
 
 
 def view_health_guide():
@@ -438,8 +440,7 @@ PAGE_ROUTING = {
     "Bölgeler": view_regions,
     "Korelasyon": view_correlation,
     "Sanayi Profili": view_industry,
-    "AI Tahmin": view_ai_forecast,
-    "Senaryolar": view_scenarios,
+    "İl Grupları": view_city_groups,
     "Yapılması Gerekenler": view_action_guide,
     "Terimler Sözlüğü": view_glossary,
     "AI Asistan": view_chat_assistant,
@@ -540,7 +541,8 @@ with st.sidebar:
 # 7. SAYFA ÇAĞRISI VE GÜVENLİ YÖNLENDİRME
 # ==========================================
 active_page = st.session_state.get("active_page", "Genel Bakış")
-render_func = PAGE_ROUTING.get(active_page)
+is_not_found = st.session_state.get("page_not_found", False)
+render_func = PAGE_ROUTING.get(active_page) if not is_not_found else None
 
 if render_func:
     try:
@@ -549,10 +551,10 @@ if render_func:
         st.error(f"Sayfa yüklenirken bir hata oluştu: {e}")
 else:
     st.markdown(f"""
-    <div style="padding: 48px 24px; text-align: center; background: #031b2e; border: 1px dashed #093452; border-radius: 12px; margin-top: 24px;">
-        <h3 style="color: #ffffff; margin: 0 0 8px 0; font-size: 20px; font-weight: 700;">İçerik Hazırlanıyor</h3>
-        <p style="color: #8faec9; font-size: 14px; margin: 0;">
-            <strong>{active_page}</strong> modülü için veri ve analizler hazırlanma aşamasındadır.
+    <div style="padding: 48px 24px; text-align: center; background: #031b2e; border: 1px dashed #ef4444; border-radius: 12px; margin-top: 24px;">
+        <h3 style="color: #ef4444; margin: 0 0 8px 0; font-size: 20px; font-weight: 700;">Sayfa bulunamadı</h3>
+        <p style="color: #cbd5e1; font-size: 14px; margin: 0;">
+            Aradığınız <strong>{active_page}</strong> sayfası veya modülü yürürlükten kaldırılmıştır veya mevcut değildir.
         </p>
     </div>
     """, unsafe_allow_html=True)

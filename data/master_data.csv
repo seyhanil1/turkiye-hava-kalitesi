@@ -1,20 +1,20 @@
 il,plaka,bolge,lat,lon,nufus,pm25,toplam_osb,faal_osb,osb_alani_hektar,toplam_parsel,osb_sayisi,solunum_olum,toplam_olum,solunum_olum_ortalama,solunum_olum_100k,dso_risk,dso_limit_kat,sanayi_tipi
 Adana,1,Akdeniz,37.0017,35.3289,2270298,36.97,6,3,4199.6,950,6,2117.0,13413.0,2036.25,93.2,Yüksek Risk,7.4,Gelişmekte Olan Sanayi
 Adıyaman,2,Güneydoğu Anadolu,37.7648,38.2786,604978,20.46,5,4,1627.0,727,5,357.0,2697.0,453.0,59.0,Orta Risk,4.1,Gelişmekte Olan Sanayi
-Afyonkarahisar,3,Ege,38.7569,30.5387,751344,33.94,11,7,3143.8,842,11,1082.0,5497.0,958.25,144.0,Yüksek Risk,6.8,Ağır Sanayi Metropolü
+Afyonkarahisar,3,Ege,38.7569,30.5387,751344,33.94,11,7,3143.8,842,11,1082.0,5497.0,958.25,144.0,Yüksek Risk,6.8,"Yüksek OSB, yüksek PM2,5"
 Ağrı,4,Doğu Anadolu,39.7217,43.0567,510626,36.47,2,1,233.7,77,2,244.0,1771.0,249.0,47.8,Yüksek Risk,7.3,Tarım / Hizmet / Kırsal
 Amasya,5,Karadeniz,40.6534,35.8331,339529,30.97,4,4,696.4,217,4,410.0,2868.0,396.25,120.8,Yüksek Risk,6.2,Gelişmekte Olan Sanayi
-Ankara,6,İç Anadolu,39.9334,32.8597,5803482,39.25,15,13,9173.5,14156,15,3654.0,29787.0,3571.5,63.0,Yüksek Risk,7.8,Ağır Sanayi Metropolü
+Ankara,6,İç Anadolu,39.9334,32.8597,5803482,39.25,15,13,9173.5,14156,15,3654.0,29787.0,3571.5,63.0,Yüksek Risk,7.8,"Yüksek OSB, yüksek PM2,5"
 Antalya,7,Akdeniz,36.8969,30.7133,2696249,24.95,4,1,919.6,553,4,1919.0,13886.0,1830.0,71.2,Orta Risk,5.0,Gelişmekte Olan Sanayi
 Artvin,8,Karadeniz,41.1828,41.8183,172356,15.3,1,0,40.0,24,1,263.0,1637.0,242.75,152.6,Orta Risk,3.1,Tarım / Hizmet / Kırsal
-Aydın,9,Ege,37.8444,27.8458,1161702,24.36,8,8,1838.0,512,8,1099.0,9666.0,1085.5,94.6,Orta Risk,4.9,Ağır Sanayi Metropolü
-Balıkesir,10,Marmara,39.6484,27.8826,1273519,36.73,11,5,4336.2,900,11,2106.0,12310.0,1973.25,165.4,Yüksek Risk,7.3,Ağır Sanayi Metropolü
-Bilecik,11,Marmara,40.1451,29.9799,228058,23.72,8,6,2411.1,609,8,261.0,1738.0,238.75,114.4,Orta Risk,4.7,Ağır Sanayi Metropolü
+Aydın,9,Ege,37.8444,27.8458,1161702,24.36,8,8,1838.0,512,8,1099.0,9666.0,1085.5,94.6,Orta Risk,4.9,"Yüksek OSB, yüksek PM2,5"
+Balıkesir,10,Marmara,39.6484,27.8826,1273519,36.73,11,5,4336.2,900,11,2106.0,12310.0,1973.25,165.4,Yüksek Risk,7.3,"Yüksek OSB, yüksek PM2,5"
+Bilecik,11,Marmara,40.1451,29.9799,228058,23.72,8,6,2411.1,609,8,261.0,1738.0,238.75,114.4,Orta Risk,4.7,"Yüksek OSB, yüksek PM2,5"
 Bingöl,12,Doğu Anadolu,38.8847,40.4982,285655,21.94,1,1,179.0,92,1,185.0,1203.0,168.75,64.8,Orta Risk,4.4,Tarım / Hizmet / Kırsal
 Bitlis,13,Doğu Anadolu,38.4006,42.1095,357367,35.08,1,1,186.5,55,1,147.0,1305.0,150.0,41.1,Yüksek Risk,7.0,Tarım / Hizmet / Kırsal
 Bolu,14,Karadeniz,40.7358,31.6061,324789,40.97,4,3,586.0,326,4,552.0,2453.0,537.25,170.0,Yüksek Risk,8.2,Gelişmekte Olan Sanayi
 Burdur,15,Akdeniz,37.7203,30.2908,277452,20.09,3,3,407.9,171,3,316.0,2359.0,289.25,113.9,Orta Risk,4.0,Gelişmekte Olan Sanayi
-Bursa,16,Marmara,40.1885,29.061,3214571,55.4,17,17,5723.1,2689,17,2727.0,19606.0,2490.25,84.8,Kritik Risk,11.1,Ağır Sanayi Metropolü
+Bursa,16,Marmara,40.1885,29.061,3214571,55.4,17,17,5723.1,2689,17,2727.0,19606.0,2490.25,84.8,Kritik Risk,11.1,"Yüksek OSB, yüksek PM2,5"
 Çanakkale,17,Marmara,40.1553,26.4142,570077,35.2,4,3,676.0,194,4,1006.0,5336.0,1026.0,176.5,Yüksek Risk,7.0,Gelişmekte Olan Sanayi
 Çankırı,18,İç Anadolu,40.6013,33.6134,200244,31.27,6,4,1384.0,286,6,234.0,1759.0,240.0,116.9,Yüksek Risk,6.3,Gelişmekte Olan Sanayi
 Çorum,19,Karadeniz,40.5506,34.9556,524130,37.88,5,3,1602.0,554,5,957.0,4409.0,849.25,182.6,Yüksek Risk,7.6,Gelişmekte Olan Sanayi
@@ -25,26 +25,26 @@ Elazığ,23,Doğu Anadolu,38.681,39.2264,604411,40.19,5,3,1543.1,712,5,527.0,340
 Erzincan,24,Doğu Anadolu,39.75,39.5,243399,78.5,2,1,636.2,277,2,186.0,1661.0,237.5,76.4,Kritik Risk,15.7,Tarım / Hizmet / Kırsal
 Erzurum,25,Doğu Anadolu,39.9043,41.2679,749993,35.72,3,3,354.4,218,3,563.0,4162.0,567.0,75.1,Yüksek Risk,7.1,Gelişmekte Olan Sanayi
 Eskişehir,26,İç Anadolu,39.7667,30.5256,915418,31.94,3,3,3715.5,1192,3,987.0,6655.0,892.5,107.8,Yüksek Risk,6.4,Gelişmekte Olan Sanayi
-Gaziantep,27,Güneydoğu Anadolu,37.0662,37.3833,2164134,23.13,8,5,9775.8,2759,8,901.0,9104.0,1018.0,41.6,Orta Risk,4.6,Ağır Sanayi Metropolü
+Gaziantep,27,Güneydoğu Anadolu,37.0662,37.3833,2164134,23.13,8,5,9775.8,2759,8,901.0,9104.0,1018.0,41.6,Orta Risk,4.6,"Yüksek OSB, yüksek PM2,5"
 Giresun,28,Karadeniz,40.9128,38.3895,461712,28.21,5,2,292.1,235,5,730.0,4306.0,717.5,158.1,Yüksek Risk,5.6,Gelişmekte Olan Sanayi
 Gümüşhane,29,Karadeniz,40.46,39.4814,148539,34.83,2,1,180.5,112,2,162.0,901.0,161.25,109.1,Yüksek Risk,7.0,Tarım / Hizmet / Kırsal
 Hakkari,30,Doğu Anadolu,37.5833,43.7333,287431,68.3,1,0,145.0,142,1,79.0,645.0,82.75,27.5,Kritik Risk,13.7,Tarım / Hizmet / Kırsal
-Hatay,31,Akdeniz,36.4018,36.3498,1544640,29.72,9,6,2601.4,775,9,1086.0,8145.0,1229.5,70.3,Yüksek Risk,5.9,Ağır Sanayi Metropolü
+Hatay,31,Akdeniz,36.4018,36.3498,1544640,29.72,9,6,2601.4,775,9,1086.0,8145.0,1229.5,70.3,Yüksek Risk,5.9,"Yüksek OSB, yüksek PM2,5"
 Isparta,32,Akdeniz,37.7648,30.5566,449777,29.55,3,2,797.9,252,3,454.0,3370.0,424.75,100.9,Yüksek Risk,5.9,Gelişmekte Olan Sanayi
 Mersin,33,Akdeniz,36.8121,34.6415,1938389,33.59,7,5,2508.7,700,7,1811.0,11633.0,1715.75,93.4,Yüksek Risk,6.7,Gelişmekte Olan Sanayi
-İstanbul,34,Marmara,41.0082,28.9784,15655924,38.41,9,8,2424.7,1863,9,11143.0,71338.0,11008.0,71.2,Yüksek Risk,7.7,Ağır Sanayi Metropolü
-İzmir,35,Ege,38.4192,27.1287,4479525,45.18,17,13,5070.8,3491,17,6508.0,31452.0,6121.25,145.3,Yüksek Risk,9.0,Ağır Sanayi Metropolü
+İstanbul,34,Marmara,41.0082,28.9784,15655924,38.41,9,8,2424.7,1863,9,11143.0,71338.0,11008.0,71.2,Yüksek Risk,7.7,"Yüksek OSB, yüksek PM2,5"
+İzmir,35,Ege,38.4192,27.1287,4479525,45.18,17,13,5070.8,3491,17,6508.0,31452.0,6121.25,145.3,Yüksek Risk,9.0,"Yüksek OSB, yüksek PM2,5"
 Kars,36,Doğu Anadolu,40.6013,43.0975,278335,31.29,2,2,441.1,263,2,201.0,1386.0,189.25,72.2,Yüksek Risk,6.3,Tarım / Hizmet / Kırsal
 Kastamonu,37,Karadeniz,41.3887,33.7827,388990,34.31,6,4,875.8,445,6,616.0,3998.0,599.75,158.4,Yüksek Risk,6.9,Gelişmekte Olan Sanayi
-Kayseri,38,İç Anadolu,38.7312,35.4787,1445495,33.22,5,3,4564.3,2145,5,1108.0,8053.0,1086.0,76.7,Yüksek Risk,6.6,Ağır Sanayi Metropolü
+Kayseri,38,İç Anadolu,38.7312,35.4787,1445495,33.22,5,3,4564.3,2145,5,1108.0,8053.0,1086.0,76.7,Yüksek Risk,6.6,"Yüksek OSB, yüksek PM2,5"
 Kırklareli,39,Marmara,41.7333,27.2167,377156,37.71,5,3,1553.0,315,5,625.0,3535.0,607.5,165.7,Yüksek Risk,7.5,Gelişmekte Olan Sanayi
 Kırşehir,40,İç Anadolu,39.1425,34.1709,247179,31.48,3,2,784.3,225,3,180.0,1734.0,169.0,72.8,Yüksek Risk,6.3,Gelişmekte Olan Sanayi
-Kocaeli,41,Marmara,40.8533,29.8815,2102907,48.5,14,14,4034.0,2107,14,1672.0,10232.0,1570.75,79.5,Yüksek Risk,9.7,Ağır Sanayi Metropolü
-Konya,42,İç Anadolu,37.8667,32.4833,2320641,39.99,12,8,6009.3,2349,12,1882.0,13139.0,1832.75,81.1,Yüksek Risk,8.0,Ağır Sanayi Metropolü
+Kocaeli,41,Marmara,40.8533,29.8815,2102907,48.5,14,14,4034.0,2107,14,1672.0,10232.0,1570.75,79.5,Yüksek Risk,9.7,"Yüksek OSB, yüksek PM2,5"
+Konya,42,İç Anadolu,37.8667,32.4833,2320641,39.99,12,8,6009.3,2349,12,1882.0,13139.0,1832.75,81.1,Yüksek Risk,8.0,"Yüksek OSB, yüksek PM2,5"
 Kütahya,43,Ege,39.4167,29.9833,575670,75.2,7,6,2372.2,391,7,790.0,4930.0,777.75,137.2,Kritik Risk,15.0,Gelişmekte Olan Sanayi
 Malatya,44,Doğu Anadolu,38.3552,38.3095,742725,76.4,5,3,2742.8,661,5,562.0,4394.0,577.75,75.7,Kritik Risk,15.3,Gelişmekte Olan Sanayi
-Manisa,45,Ege,38.6191,27.4289,1475716,27.02,10,7,4104.0,1038,10,1703.0,11355.0,1669.0,115.4,Yüksek Risk,5.4,Ağır Sanayi Metropolü
-Kahramanmaraş,46,Akdeniz,37.5858,36.9371,1116618,21.99,8,4,3003.0,1145,8,629.0,5260.0,712.0,56.3,Orta Risk,4.4,Ağır Sanayi Metropolü
+Manisa,45,Ege,38.6191,27.4289,1475716,27.02,10,7,4104.0,1038,10,1703.0,11355.0,1669.0,115.4,Yüksek Risk,5.4,"Yüksek OSB, yüksek PM2,5"
+Kahramanmaraş,46,Akdeniz,37.5858,36.9371,1116618,21.99,8,4,3003.0,1145,8,629.0,5260.0,712.0,56.3,Orta Risk,4.4,"Yüksek OSB, yüksek PM2,5"
 Mardin,47,Güneydoğu Anadolu,37.3212,40.7245,888874,26.62,3,2,515.3,436,3,428.0,2948.0,413.0,48.2,Yüksek Risk,5.3,Gelişmekte Olan Sanayi
 Muğla,48,Ege,37.2153,28.3636,1066736,22.51,2,1,234.2,104,2,794.0,7174.0,761.75,74.4,Orta Risk,4.5,Tarım / Hizmet / Kırsal
 Muş,49,Doğu Anadolu,38.7432,41.5064,399879,38.23,1,1,93.0,49,1,197.0,1467.0,209.25,49.3,Yüksek Risk,7.6,Tarım / Hizmet / Kırsal
@@ -52,16 +52,16 @@ Nevşehir,50,İç Anadolu,38.6244,34.7144,315994,21.03,4,2,439.5,256,4,261.0,227
 Niğde,51,İç Anadolu,37.9667,34.6833,377080,33.78,4,2,3028.0,694,4,308.0,2374.0,289.0,81.7,Yüksek Risk,6.8,Gelişmekte Olan Sanayi
 Ordu,52,Karadeniz,40.9839,37.8764,775800,32.05,4,3,336.5,228,4,1008.0,6097.0,1073.0,129.9,Yüksek Risk,6.4,Gelişmekte Olan Sanayi
 Rize,53,Karadeniz,41.0201,40.5234,350506,16.5,2,1,178.0,83,2,480.0,2677.0,461.75,136.9,Orta Risk,3.3,Tarım / Hizmet / Kırsal
-Sakarya,54,Marmara,40.7569,30.3783,1098115,38.02,9,7,2678.7,1009,9,940.0,6915.0,872.25,85.6,Yüksek Risk,7.6,Ağır Sanayi Metropolü
-Samsun,55,Karadeniz,41.2928,36.3313,1377546,24.38,11,8,2441.9,547,11,1473.0,9760.0,1414.25,106.9,Orta Risk,4.9,Ağır Sanayi Metropolü
+Sakarya,54,Marmara,40.7569,30.3783,1098115,38.02,9,7,2678.7,1009,9,940.0,6915.0,872.25,85.6,Yüksek Risk,7.6,"Yüksek OSB, yüksek PM2,5"
+Samsun,55,Karadeniz,41.2928,36.3313,1377546,24.38,11,8,2441.9,547,11,1473.0,9760.0,1414.25,106.9,Orta Risk,4.9,"Yüksek OSB, yüksek PM2,5"
 Siirt,56,Güneydoğu Anadolu,37.9333,41.95,331311,38.85,1,1,165.0,44,1,157.0,1102.0,158.0,47.4,Yüksek Risk,7.8,Tarım / Hizmet / Kırsal
 Sinop,57,Karadeniz,42.0231,35.1531,229702,27.74,2,2,174.3,123,2,327.0,2287.0,349.75,142.4,Yüksek Risk,5.5,Tarım / Hizmet / Kırsal
 Sivas,58,İç Anadolu,39.7477,37.0179,650401,36.6,5,4,1668.0,780,5,747.0,4727.0,678.75,114.9,Yüksek Risk,7.3,Gelişmekte Olan Sanayi
-Tekirdağ,59,Marmara,40.9833,27.5167,1167459,26.51,13,13,5387.8,1999,13,1036.0,6929.0,1050.5,88.7,Yüksek Risk,5.3,Ağır Sanayi Metropolü
+Tekirdağ,59,Marmara,40.9833,27.5167,1167459,26.51,13,13,5387.8,1999,13,1036.0,6929.0,1050.5,88.7,Yüksek Risk,5.3,"Yüksek OSB, yüksek PM2,5"
 Tokat,60,Karadeniz,40.3167,36.55,606934,39.45,5,5,971.0,384,5,681.0,4849.0,662.25,112.2,Yüksek Risk,7.9,Gelişmekte Olan Sanayi
 Trabzon,61,Karadeniz,41.0015,39.7178,824352,27.16,5,3,422.3,272,5,961.0,5636.0,910.5,116.6,Yüksek Risk,5.4,Gelişmekte Olan Sanayi
 Tunceli,62,Doğu Anadolu,39.1079,39.5401,89317,14.8,1,1,100.0,46,1,111.0,585.0,99.75,124.3,Orta Risk,3.0,Tarım / Hizmet / Kırsal
-Şanlıurfa,63,Güneydoğu Anadolu,37.1674,38.7955,2213964,23.63,6,6,3677.6,1782,6,859.0,7356.0,822.5,38.8,Orta Risk,4.7,Ağır Sanayi Metropolü
+Şanlıurfa,63,Güneydoğu Anadolu,37.1674,38.7955,2213964,23.63,6,6,3677.6,1782,6,859.0,7356.0,822.5,38.8,Orta Risk,4.7,"Yüksek OSB, yüksek PM2,5"
 Uşak,64,Ege,38.6823,29.4082,377001,28.64,5,4,2250.6,934,5,415.0,2809.0,399.75,110.1,Yüksek Risk,5.7,Gelişmekte Olan Sanayi
 Van,65,Doğu Anadolu,38.4891,43.4089,1127612,22.06,3,2,975.2,404,3,481.0,3288.0,478.25,42.7,Orta Risk,4.4,Gelişmekte Olan Sanayi
 Yozgat,66,İç Anadolu,39.8181,34.8147,418442,38.06,5,3,552.4,165,5,530.0,3228.0,528.0,126.7,Yüksek Risk,7.6,Gelişmekte Olan Sanayi

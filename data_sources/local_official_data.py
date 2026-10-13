@@ -226,7 +226,7 @@ def build_master_dataset() -> pd.DataFrame:
     # 6. Sanayi Profili Sınıflandırması
     def sanayi_profili(row) -> str:
         if row["toplam_osb"] >= 8 or row["toplam_parsel"] >= 1500:
-            return "Ağır Sanayi Metropolü"
+            return "Yüksek OSB, yüksek PM2,5"
         elif row["toplam_osb"] >= 3 or row["toplam_parsel"] >= 400:
             return "Gelişmekte Olan Sanayi"
         else:

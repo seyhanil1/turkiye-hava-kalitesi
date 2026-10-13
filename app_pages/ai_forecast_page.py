@@ -1,24 +1,11 @@
 """
-🤖 Yapay Zeka İçgörü & Tahmin Motoru
+İl Grupları Modülü
 HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 
-4 Aşamalı Dinamik Yapı:
-1. Dinamik Anomali ve Neden-Sonuç Algoritması (Pandas quantile):
-   - Kategori A (Coğrafi Kapan / Sessiz Tehlike): OSB sayısı alt %25, PM2.5 üst %25
-   - Kategori B (Ağır Sanayi Baskısı): OSB sayısı üst %25, PM2.5 üst %25
-   - Normal: Diğer dengeli iller
-2. Dinamik İl Seçici ve 5 Yıllık Trend Projeksiyonu (2026-2031):
-   - st.selectbox ile il seçimi
-   - Kategori A: yıllık %3 artış
-   - Kategori B: yıllık %5 artış
-   - Normal: yıllık %1 artış
-   - Plotly go.Scatter koyu temalı, ucu kesik çizgili (dashed) grafik
-3. Dinamik Uyarılar ve Alınacak Önlemler (CSS pulsing glow):
-   - Kategoriye özel Neden-Sonuç analizi ve Acil Eylem Planı reçetesi
-4. Şık UI/UX Entegrasyonu:
-   - background-color: #1e293b, border: 1px solid #334155
-   - Hover efekti ile hafif zıplayan (translateY) bilgi balonları (info-bubble)
-   - Neon mavi (#38bdf8) ve neon kırmızı (#ef4444) başlıklar
+81 İl İçin Çeyreklik (Quantile) Dağılımı ve OSB-Kirlilik Grup Sınıflandırması:
+1. Kategori A (Düşük OSB, yüksek PM2,5): OSB sayısı alt %25, PM2.5 üst %25
+2. Kategori B (Yüksek OSB, yüksek PM2,5): OSB sayısı üst %25, PM2.5 üst %25
+3. Normal: Diğer dengeli iller
 """
 
 import streamlit as st
@@ -61,10 +48,10 @@ def determine_city_category(
     pm25 = float(row["pm25"])
 
     if osb <= q1_osb and pm25 >= q3_pm25:
-        # Kategori A (Coğrafi Kapan / Sessiz Tehlike): %3 yıllık artış
+        # Kategori A (Düşük OSB, yüksek PM2,5): %3 yıllık artış
         return "Kategori A", 0.03
     elif osb >= q3_osb and pm25 >= q3_pm25:
-        # Kategori B (Ağır Sanayi Baskısı): %5 yıllık artış
+        # Kategori B (Yüksek OSB, yüksek PM2,5): %5 yıllık artış
         return "Kategori B", 0.05
     else:
         # Normal / Dengeli: %1 yıllık artış
@@ -95,10 +82,10 @@ def create_forecast_figure(
     """
     if category == "Kategori A":
         theme_color = "#f59e0b"   # Amber / Uyarı
-        badge_text = "Kategori A (Coğrafi Kapan) — Yıllık +%3 Artış Trendi"
+        badge_text = "Kategori A (Düşük OSB, yüksek PM2,5) — Yıllık +%3 Artış Trendi"
     elif category == "Kategori B":
         theme_color = "#ef4444"   # Kırmızı / Kritik Sanayi
-        badge_text = "Kategori B (Ağır Sanayi Baskısı) — Yıllık +%5 Artış Trendi"
+        badge_text = "Kategori B (Yüksek OSB, yüksek PM2,5) — Yıllık +%5 Artış Trendi"
     else:
         theme_color = "#00e5db"   # Neon Turkuaz / Normal
         badge_text = "Normal Profil (Dengeli) — Yıllık +%1 Artış Trendi"
@@ -316,10 +303,10 @@ def render_ai_forecast_page(df: pd.DataFrame):
             <span style='font-size:32px;'>📊</span>
             <div>
                 <h2 style='color:#f8fafc; margin:0; font-size:24px; font-weight:700;'>
-                    İstatistiksel Risk ve Anomali Analizi
+                    İl Grupları
                 </h2>
                 <p style='color:#94a3b8; margin:4px 0 0 0; font-size:14px;'>
-                    81 İl İçin Dinamik Çeyreklik (Quantile) Dağılımı ve Coğrafi/Sanayi Anomali Sınıflandırması
+                    81 İl İçin Çeyreklik (Quantile) Dağılımı ve OSB-Kirlilik Grup Sınıflandırması
                 </p>
             </div>
         </div>
@@ -359,7 +346,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
     with col_q3:
         st.markdown(f"""
         <div class='info-bubble' style='padding:14px 18px;'>
-            <div style='color:#94a3b8; font-size:12px;'>Kategori A (Coğrafi Kapan)</div>
+            <div style='color:#94a3b8; font-size:12px;'>Kategori A (Düşük OSB, yüksek PM2,5)</div>
             <div style='color:#f59e0b; font-size:18px; font-weight:700; margin-top:4px;'>
                 {len(kat_a_df)} İl Tespit Edildi
             </div>
@@ -370,7 +357,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
     with col_q4:
         st.markdown(f"""
         <div class='info-bubble' style='padding:14px 18px;'>
-            <div style='color:#94a3b8; font-size:12px;'>Kategori B (Ağır Sanayi)</div>
+            <div style='color:#94a3b8; font-size:12px;'>Kategori B (Yüksek OSB, yüksek PM2,5)</div>
             <div style='color:#ef4444; font-size:18px; font-weight:700; margin-top:4px;'>
                 {len(kat_b_df)} İl Tespit Edildi
             </div>
