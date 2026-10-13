@@ -33,11 +33,11 @@ def to_tr_num(val: float, decimals: int = 1) -> str:
 
 def render_duel_page(df: pd.DataFrame):
     """
-    İki ili nesnel kamu ve model verileriyle kafa kafaya karşılaştıran analitik profil sayfası.
+    İki ili resmi kamu ve model verileriyle kafa kafaya karşılaştıran analitik profil sayfası.
     """
     st.markdown("### İki İl Kafa Kafaya Karşılaştırma & Gösterge Profili")
     st.markdown(
-        "<p style='color:#94a3b8; font-size:13px;'>Resmi kamu ve model verileriyle iki ilin çevre, solunum sağlığı ve sanayi altyapısı göstergelerini nesnel olarak karşılaştırın.</p>",
+        "<p style='color:#94a3b8; font-size:13px;'>Resmi kamu ve model verileriyle iki ilin çevre, solunum sağlığı ve sanayi altyapısı göstergelerini karşılaştırın.</p>",
         unsafe_allow_html=True
     )
 

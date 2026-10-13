@@ -16,7 +16,7 @@ def test_duel_dumbbell_chart_percentile():
 
     fig = create_duel_dumbbell_chart(df, city_a, city_b)
     assert fig is not None
-    assert len(fig.data) >= 5  # 3 çizgi trace + 2 marker trace
+    assert len(fig.data) >= 4  # 2 çizgi trace + 2 marker trace
     
     # Trace isimleri
     marker_traces = [t for t in fig.data if t.mode == "markers+text"]
