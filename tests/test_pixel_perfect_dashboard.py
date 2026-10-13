@@ -68,7 +68,7 @@ def test_dashboard_html_structure_and_no_old_health_shield():
     assert "rankingTableContent" in html
     assert "mapContainer" in html
     assert "plotly-2.27.0.min.js" in html
-    assert "81 İlin Ortalaması" in html
+    assert "81 İlin Düz Ortalaması" in html
     
     # 7 Coğrafi Bölge Benchmark grafiğinin Bölgeler sayfasında üretildiğini doğrula
     from app_pages.regions_page import create_regional_benchmark_bar

@@ -23,7 +23,6 @@ def aggregate_by_region(df: pd.DataFrame, pollutant: str = "pm25") -> pd.DataFra
         max_deger=(pollutant, "max"),
         toplam_nufus=("nufus", "sum"),
         toplam_osb=("toplam_osb", "sum"),
-        ort_yesil_skor=("yesil_skor", "mean"),
         toplam_solunum_olum=("solunum_olum", "sum")
     ).reset_index()
     
@@ -35,7 +34,6 @@ def aggregate_by_region(df: pd.DataFrame, pollutant: str = "pm25") -> pd.DataFra
     grouped["ortalama"] = grouped["ortalama"].round(2)
     grouped["medyan"] = grouped["medyan"].round(2)
     grouped["std"] = grouped["std"].round(2)
-    grouped["ort_yesil_skor"] = grouped["ort_yesil_skor"].round(1)
     
     return grouped.sort_values(by="ortalama", ascending=False)
 

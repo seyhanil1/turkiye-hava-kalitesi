@@ -155,7 +155,7 @@ def render_regions_page(df: pd.DataFrame):
 
     display_df = region_summary[[
         "bolge", "il_sayisi", "ortalama", "medyan", "std", 
-        "toplam_osb", "bolgesel_solunum_olum_100k", "ort_yesil_skor"
+        "toplam_osb", "bolgesel_solunum_olum_100k"
     ]].copy()
 
     formatted_df = pd.DataFrame()
@@ -166,7 +166,6 @@ def render_regions_page(df: pd.DataFrame):
     formatted_df["Standart Sapma"] = display_df["std"].apply(lambda x: f"{x:.2f}".replace(".", ","))
     formatted_df["Toplam OSB"] = display_df["toplam_osb"].astype(int)
     formatted_df["Solunum Ölüm Hızı (100k)"] = display_df["bolgesel_solunum_olum_100k"].apply(lambda x: f"{x:.1f}".replace(".", ","))
-    formatted_df["Ort. Yeşil Skor"] = display_df["ort_yesil_skor"].apply(lambda x: f"{x:.1f}".replace(".", ","))
 
     st.dataframe(
         formatted_df,

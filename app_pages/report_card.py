@@ -159,8 +159,8 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
         
     st.write("")
     
-    # 1. TEMEL GÖSTERGELER (4 Kart)
-    c1, c2, c3, c4 = st.columns(4)
+    # 1. TEMEL GÖSTERGELER (3 Kart)
+    c1, c2, c3 = st.columns(3)
     with c1:
         delta_bolge = round(il_row["pm25"] - bolge_ort_pm25, 1)
         render_metric_card(
@@ -185,14 +185,6 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
             unit="/ 100k",
             delta="TÜİK 2024 (Kaba Hız)",
             delta_type="neutral"
-        )
-    with c4:
-        render_metric_card(
-            title="Yeşil Dönüşüm Skoru",
-            value=to_tr_num(il_row["yesil_skor"], 1),
-            unit="/ 100",
-            delta="Çevresel Başarı Endeksi",
-            delta_type="negative" if il_row["yesil_skor"] >= 75 else "positive"
         )
         
     st.write("")

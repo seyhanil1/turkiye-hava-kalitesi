@@ -223,17 +223,7 @@ def build_master_dataset() -> pd.DataFrame:
     # DSÖ 5 µg/m³ kılavuz limitine oran
     df_master["dso_limit_kat"] = (df_master["pm25"] / 5.0).round(1)
     
-    # 6. Yeşil Dönüşüm Skoru (0 - 100 endeksi)
-    # Formül: 100 taban puan; PM2.5 yüksekliği ve parsel kirlilik yükü düşürür
-    max_pm = df_master["pm25"].max()
-    max_parsel = df_master["toplam_parsel"].max() if df_master["toplam_parsel"].max() > 0 else 1
-    
-    pm_ceza = (df_master["pm25"] / max_pm) * 55.0
-    sanayi_ceza = (df_master["toplam_parsel"] / max_parsel) * 20.0
-    
-    df_master["yesil_skor"] = (100.0 - pm_ceza - sanayi_ceza).clip(5.0, 98.0).round(1)
-    
-    # 7. Sanayi Profili Sınıflandırması
+    # 6. Sanayi Profili Sınıflandırması
     def sanayi_profili(row) -> str:
         if row["toplam_osb"] >= 8 or row["toplam_parsel"] >= 1500:
             return "Ağır Sanayi Metropolü"
@@ -253,4 +243,5 @@ if __name__ == "__main__":
     print("Master dataset başarıyla oluşturuldu:")
     print(df.info())
     print("\nİlk 5 satır:")
-    print(df[["plaka", "il", "bolge", "pm25", "solunum_olum_100k", "yesil_skor"]].head())
+    print(df[["plaka", "il", "bolge", "pm25", "solunum_olum_100k"]].head())
+

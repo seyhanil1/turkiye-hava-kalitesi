@@ -50,8 +50,8 @@ def test_build_master_dataset():
     assert len(df) == 81
     expected_cols = [
         "il", "plaka", "bolge", "lat", "lon", "nufus", 
-        "pm25", "pm10", "no2", "toplam_osb", "faal_osb", 
-        "solunum_olum_100k", "dso_risk", "yesil_skor"
+        "pm25", "toplam_osb", "faal_osb", 
+        "solunum_olum_100k", "dso_risk"
     ]
     for col in expected_cols:
         assert col in df.columns, f"Eksik sütun: {col}"

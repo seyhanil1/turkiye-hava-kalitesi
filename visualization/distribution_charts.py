@@ -190,23 +190,20 @@ def create_duel_radar_chart(
     categories = [
         "Hava Temizliği Skoru", 
         "Sanayi Baskısı (Düşük)", 
-        "Solunum Sağlığı", 
-        "Yeşil Dönüşüm Skoru"
+        "Solunum Sağlığı"
     ]
     
     # Skorlama (100 = En iyi durum)
     val_a = [
         max(0, 100 - (city_a["pm25"] / 85.0 * 100)),
         max(0, 100 - (city_a.get("toplam_osb", 0) / 15.0 * 100)),
-        max(0, 100 - (city_a.get("solunum_olum_100k", 35.0) / 60.0 * 100)),
-        city_a.get("yesil_skor", 50.0)
+        max(0, 100 - (city_a.get("solunum_olum_100k", 35.0) / 60.0 * 100))
     ]
     
     val_b = [
         max(0, 100 - (city_b["pm25"] / 85.0 * 100)),
         max(0, 100 - (city_b.get("toplam_osb", 0) / 15.0 * 100)),
-        max(0, 100 - (city_b.get("solunum_olum_100k", 35.0) / 60.0 * 100)),
-        city_b.get("yesil_skor", 50.0)
+        max(0, 100 - (city_b.get("solunum_olum_100k", 35.0) / 60.0 * 100))
     ]
     
     # Radar grafiği kapanması için ilk elemanı sona ekle

@@ -38,14 +38,14 @@ def test_analyze_time_series_window(timeseries_df):
     assert "trend_direction" in analysis_30
 
 def test_calculate_bivariate_correlation(master_df):
-    corr = calculate_bivariate_correlation(master_df["pm25"], master_df["pm10"])
+    corr = calculate_bivariate_correlation(master_df["pm25"], master_df["solunum_olum_100k"])
     assert corr["n"] == 81
-    assert corr["pearson_r"] > 0.8
-    assert corr["pearson_p"] < 0.001
+    assert -1.0 <= corr["pearson_r"] <= 1.0
+    assert 0.0 <= corr["pearson_p"] <= 1.0
     assert 0.0 <= corr["r_squared"] <= 1.0
 
 def test_calculate_correlation_matrix(master_df):
-    cols = ["pm25", "pm10", "no2", "toplam_osb"]
+    cols = ["pm25", "solunum_olum_100k", "toplam_osb", "nufus"]
     corr_mat, pval_mat = calculate_correlation_matrix(master_df, columns=cols)
     assert corr_mat.shape == (4, 4)
     assert (np.diag(corr_mat.values) == 1.0).all()

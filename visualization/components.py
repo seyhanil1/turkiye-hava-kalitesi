@@ -240,6 +240,6 @@ def render_quick_cards():
         st.markdown("""
         <div class="quick-card">
             <div class="quick-title">🌱 Yeşil Dönüşüm</div>
-            <div class="quick-desc">Bölgesel temiz hava endeksi ve yeşil skorlar</div>
+            <div class="quick-desc">Bölgesel hava kalitesi ve çevre politikası hedefleri</div>
         </div>
         """, unsafe_allow_html=True)

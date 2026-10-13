@@ -18,13 +18,10 @@ def test_glossary_definitions_content():
     assert "Çapı 2,5 mikrometre veya daha küçük ince partikül maddelerdir" in source
     assert "Akciğer alveollerine ve doğrudan kan dolaşımına nüfuz edebildiği için" in source
     
-    # NO2 academic definition check
-    assert "Fosil yakıtlı motorlu araçlar, termik santraller ve endüstriyel tesislerin yüksek sıcaklıktaki yanma süreçlerinden" in source
-    assert "yer seviyesi ozon (O3) oluşumunda birincil rol oynar" in source
-    
-    # SO2 academic definition check
+    # SO2 and O3 academic definition check
     assert "SO₂ (Kükürt Dioksit)" in source
-    assert "Yüksek kükürtlü kömür ve fuel-oil yakılması sonucu oluşan, asit yağmurlarına yol açan boğucu gazdır." in source
+    assert "Yüksek kükürtlü kömür ve fuel-oil yakılması sonucu oluşan" in source
+    assert "O₃ (Yer Seviyesi Ozon / Troposferik Ozon)" in source
 
 
 def test_action_guide_content_and_translations():

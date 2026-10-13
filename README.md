@@ -46,7 +46,6 @@ HavaAtlası modüler bir analitik mimariden oluşmaktadır:
    - Bölgesel Box-Plot (Kutu grafiği) varyans dağılımı.
    - Bölgeler arası Tek Yönlü ANOVA ($F$) ve Kruskal-Wallis ($H$) varyans analizi testi.
 6. **🌱 Yeşil Dönüşüm (Green Transition):**
-   - İllerin çok kriterli Yeşil Skor (0-100) endeksi sıralaması.
    - DSÖ yıllık 5 µg/m³ kılavuz limitine uyum oranları.
    - Temiz Hava Eylem Planı politika simülatörü (Kirlilik %X azaltılırsa kurtarılabilecek hayat ve iyileşme projeksiyonu).
 7. **🏭 Sanayi Profili (Industrial Profile):**
