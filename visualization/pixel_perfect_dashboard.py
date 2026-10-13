@@ -3166,7 +3166,7 @@ function renderCityReportCard(cityName) {{
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
                 <div style="font-size:12px; color:#8faec9;">Sanayi Baskısı (OSB)</div>
                 <div style="font-size:26px; font-weight:800; color:#00e599; margin-top:4px;">${{c.osb_sayisi}} Adet</div>
-                <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${{fmt(c.osb / 10)}} Hektar Sanayi Alanı</div>
+                <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${{fmt(c.osb)}} Hektar Sanayi Alanı</div>
             </div>
         </div>
         
@@ -3264,13 +3264,13 @@ function runDuelComparison() {{
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:20px;">
                 <h3 style="color:#00e5db; font-size:18px; margin-bottom:14px;">${{cA.il}} Profili</h3>
                 <p>• <strong>PM2.5:</strong> ${{fmt(cA.pm25)}} µg/m³</p>
-                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cA.osb / 10)}} Hektar</p>
+                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cA.osb)}} Hektar</p>
                 <p style="margin-top:6px;">• <strong>Solunum Ölümü:</strong> ${{fmt(cA.solunum_olum_100k)}} / 100k</p>
             </div>
             <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:20px;">
                 <h3 style="color:#38bdf8; font-size:18px; margin-bottom:14px;">${{cB.il}} Profili</h3>
                 <p>• <strong>PM2.5:</strong> ${{fmt(cB.pm25)}} µg/m³</p>
-                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cB.osb / 10)}} Hektar</p>
+                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cB.osb)}} Hektar</p>
                 <p style="margin-top:6px;">• <strong>Solunum Ölümü:</strong> ${{fmt(cB.solunum_olum_100k)}} / 100k</p>
             </div>
         </div>
