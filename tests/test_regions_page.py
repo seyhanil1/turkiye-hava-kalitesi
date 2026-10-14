@@ -40,8 +40,14 @@ def test_regional_boxplot_sorting_and_margins():
     assert expected_order[0] == "Doğu Anadolu"
     assert expected_order[-1] == "Karadeniz"
 
-    # Alt boşluk (margin b=80) kontrolü
-    assert fig.layout.margin.b == 80
+    # Alt boşluk ve yükseklik kontrolü
+    assert fig.layout.margin.b == 70
+    assert fig.layout.margin.t == 40
+    assert fig.layout.margin.l == 50
+    assert fig.layout.margin.r == 20
+    assert fig.layout.height == 400
+    assert fig.data[0].boxpoints == "outliers"
+    assert fig.layout.xaxis.title.text is None
 
 
 def test_regional_anova_academic_turkish():

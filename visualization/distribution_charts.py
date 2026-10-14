@@ -85,20 +85,27 @@ def create_regional_boxplot(
         df,
         x="bolge",
         y=val_col,
-        color="bolge",
         category_orders={"bolge": order},
-        points="all",
+        points="outliers",
         hover_name="il"
+    )
+    
+    fig.update_traces(
+        boxpoints="outliers",
+        marker=dict(color="#00d2ee", size=5),
+        line=dict(color="#00d2ee", width=1.5),
+        fillcolor="rgba(0, 210, 238, 0.2)"
     )
     
     fig.update_layout(
         title=None,
-        height=380,
-        margin=dict(t=15, l=20, r=20, b=80),
-        xaxis=dict(title="", tickfont=dict(color="#94a3b8", size=11), tickangle=-45),
+        height=400,
+        margin=dict(b=70, t=40, l=50, r=20),
+        xaxis=dict(title=None, tickfont=dict(color="#94a3b8", size=11), tickangle=-45),
         yaxis=dict(
             title=dict(text=f"{label} Konsantrasyonu (µg/m³)", font=dict(color="#94a3b8", size=11)),
-            gridcolor="#1e293b"
+            gridcolor="#1e293b",
+            tickfont=dict(color="#94a3b8", size=10)
         ),
         showlegend=False,
         paper_bgcolor="rgba(0,0,0,0)",

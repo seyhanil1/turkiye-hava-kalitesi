@@ -179,9 +179,17 @@ def render_regions_page(df: pd.DataFrame):
     with col_box:
         st.markdown("### Bölgesel PM2.5 Dağılımı (Kutu Grafiği)")
         fig_box = create_regional_boxplot(df, pollutant="pm25")
+        fig_box.update_traces(
+            boxpoints="outliers",
+            marker=dict(color="#00d2ee", size=5),
+            line=dict(color="#00d2ee", width=1.5),
+            fillcolor="rgba(0, 210, 238, 0.2)"
+        )
         fig_box.update_layout(
-            margin=dict(t=15, l=20, r=20, b=80),
-            xaxis=dict(tickangle=-45)
+            height=400,
+            margin=dict(b=70, t=40, l=50, r=20),
+            xaxis=dict(title=None, tickangle=-45, tickfont=dict(color="#94a3b8", size=11)),
+            yaxis=dict(gridcolor="#1e293b", tickfont=dict(color="#94a3b8", size=10))
         )
         st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
 
@@ -192,21 +200,28 @@ def render_regions_page(df: pd.DataFrame):
             x="bolge",
             y="toplam_osb",
             text="toplam_osb",
-            labels={"bolge": "Bölge", "toplam_osb": "OSB Sayısı"}
+            labels={"toplam_osb": "OSB Sayısı"}
         )
         fig_osb.update_traces(
-            marker_color="#0ea5e9",
+            marker=dict(
+                color="rgba(0, 210, 238, 0.65)",
+                line=dict(color="#00d2ee", width=1.5)
+            ),
             textposition="outside",
             textfont=dict(color="#f8fafc", size=11)
         )
         fig_osb.update_layout(
-            height=380, 
+            height=400, 
             showlegend=False, 
-            margin=dict(t=30, l=10, r=10, b=80),
+            margin=dict(b=70, t=40, l=50, r=20),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(tickfont=dict(color="#94a3b8", size=11), tickangle=-45),
-            yaxis=dict(gridcolor="#1e293b", tickfont=dict(color="#94a3b8", size=10))
+            xaxis=dict(title=None, tickfont=dict(color="#94a3b8", size=11), tickangle=-45),
+            yaxis=dict(
+                title=dict(text="OSB Sayısı", font=dict(color="#94a3b8", size=11)),
+                gridcolor="#1e293b", 
+                tickfont=dict(color="#94a3b8", size=10)
+            )
         )
         st.plotly_chart(fig_osb, use_container_width=True, config={'displayModeBar': False})
 
