@@ -123,9 +123,9 @@ def render_correlation_page(df: pd.DataFrame):
     """, unsafe_allow_html=True)
 
     scatter_vars = {
-        "osb_alani_hektar": {"label": "OSB Alanı (Hektar)", "unit": "Hektar"},
-        "toplam_osb": {"label": "OSB Sayısı (Adet)", "unit": "Adet"},
-        "rakim": {"label": "Ortalama Rakım (Metre)", "unit": "Metre"},
+        "osb_alani_hektar": {"label": "OSB Alanı", "unit": "Hektar"},
+        "toplam_osb": {"label": "OSB Sayısı", "unit": "Adet"},
+        "rakim": {"label": "Ortalama Rakım", "unit": "Metre"},
         "nufus": {"label": "İl Nüfusu", "unit": "Kişi"}
     }
 
@@ -134,7 +134,7 @@ def render_correlation_page(df: pd.DataFrame):
         x_col = st.selectbox(
             "X Ekseni Değişkeni:",
             options=list(scatter_vars.keys()),
-            format_func=lambda k: scatter_vars[k]["label"],
+            format_func=lambda k: f"{scatter_vars[k]['label']} ({scatter_vars[k]['unit']})",
             index=0
         )
 
@@ -254,11 +254,13 @@ def render_correlation_page(df: pd.DataFrame):
         margin=dict(t=30, l=40, r=20, b=40),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
+        separators=",.",
         xaxis=dict(
             title=dict(text=f"{meta_x['label']} ({meta_x['unit']})", font=dict(color="#cbd5e1", size=11)),
             gridcolor="#093452",
             zerolinecolor="#093452",
-            tickfont=dict(color="#94a3b8", size=10)
+            tickfont=dict(color="#94a3b8", size=10),
+            tickformat=",d"
         ),
         yaxis=dict(
             title=dict(text="PM2.5 Düzeyi (µg/m³)", font=dict(color="#cbd5e1", size=11)),
@@ -288,7 +290,7 @@ def render_correlation_page(df: pd.DataFrame):
             Çoklu Regresyon Modeli (OLS Özeti)
         </h3>
         <div style="font-size: 12px; color: #8faec9; margin-top: 2px;">
-            Model: <strong>PM2.5 = β₀ + β₁(OSB) + β₂(Rakım) + β₃(Nüfus/100k)</strong>
+            Model: <strong>PM2.5 = β₀ + β₁(OSB) + β₂(Rakım) + β₃(Nüfus / 100 Bin)</strong>
         </div>
     </div>
     """, unsafe_allow_html=True)

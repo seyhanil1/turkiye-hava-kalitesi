@@ -142,3 +142,24 @@ def test_correlation_apptest_navigation_and_no_city_selector():
     df_rendered = at.dataframe[0].value
     assert "Değişken Adı" in df_rendered.columns
     assert "İl Nüfusu (100k Kişi) (β₃)" in df_rendered["Değişken Adı"].values
+
+    all_markdown = " ".join([m.value for m in at.markdown])
+    # Formül başlığının güncellendiğini doğrula
+    assert "β₃(Nüfus / 100 Bin)" in all_markdown
+    assert "β₃(Nüfus/100k)" not in all_markdown
+    assert "OSB Alanı (Hektar) (Hektar)" not in all_markdown
+
+
+def test_correlation_axis_formatting_and_units():
+    """X ekseni çifte birim temizliği, tickformat ve separators kontrolü."""
+    with open("app_pages/correlation_page.py", "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Çifte birim hatasının bulunmadığını doğrula
+    assert "OSB Alanı (Hektar) (Hektar)" not in content
+    # Eksen tickformat ve separatör ayarlarını doğrula
+    assert 'tickformat=",d"' in content
+    assert 'separators=",."' in content
+    # Formül başlığı doğrula
+    assert "β₃(Nüfus / 100 Bin)" in content
+    assert "β₃(Nüfus/100k)" not in content
