@@ -120,11 +120,13 @@ def render_duel_page(df: pd.DataFrame):
     osb_m_a_str = to_tr_num(osb_per_m_a, 1)
     osb_m_b_str = to_tr_num(osb_per_m_b, 1)
 
-    # Metrik 5: Toplam OSB Alanı (Hektar)
-    ha_a = float(city_a.get("osb_alani_hektar", 0.0))
-    ha_b = float(city_b.get("osb_alani_hektar", 0.0))
-    ha_a_str = to_tr_num(ha_a, 1)
-    ha_b_str = to_tr_num(ha_b, 1)
+    # Metrik 5: Faal OSB Oranı (%)
+    faal_a = float(city_a.get("faal_osb", 0))
+    faal_b = float(city_b.get("faal_osb", 0))
+    oran_a = (faal_a / osb_a * 100.0) if osb_a > 0 else 0.0
+    oran_b = (faal_b / osb_b * 100.0) if osb_b > 0 else 0.0
+    oran_a_str = to_tr_num(oran_a, 1)
+    oran_b_str = to_tr_num(oran_b, 1)
 
     # Yardımcı Fark Çipi Fonksiyonu (kazandı/kaybetti ifadesi ASLA kullanılmaz)
     def format_diff_chip(val_1: float, val_2: float, unit_s: str, name_1: str, name_2: str, decimals: int = 1) -> str:
@@ -147,10 +149,10 @@ def render_duel_page(df: pd.DataFrame):
             return f"<span style='background:rgba(16, 185, 129, 0.12); color:#10b981; border:1px solid rgba(16, 185, 129, 0.3); padding:3px 8px; border-radius:6px; font-size:12px; font-weight:600;'>▲ {name_2} +{diff_abs_s} {unit_s} (+%{pct_s})</span>"
 
     chip_pm = format_diff_chip(pm_a, pm_b, "µg/m³", il_a_name, il_b_name, decimals=1)
-    chip_sol = format_diff_chip(sol_a, sol_b, "/ 100k", il_a_name, il_b_name, decimals=1)
+    chip_sol = format_diff_chip(sol_a, sol_b, "yüz binde", il_a_name, il_b_name, decimals=1)
     chip_osb = format_diff_chip(float(osb_a), float(osb_b), "Adet", il_a_name, il_b_name, decimals=0)
     chip_osb_m = format_diff_chip(osb_per_m_a, osb_per_m_b, "Adet/Milyon", il_a_name, il_b_name, decimals=1)
-    chip_ha = format_diff_chip(ha_a, ha_b, "ha", il_a_name, il_b_name, decimals=1)
+    chip_faal = format_diff_chip(oran_a, oran_b, "puan", il_a_name, il_b_name, decimals=1)
 
     # HTML Tablosu (Glassmorphic lüks koyu tasarım)
     st.markdown("#### Kafa Kafaya Gösterge Karşılaştırma Tablosu")
@@ -175,9 +177,9 @@ def render_duel_page(df: pd.DataFrame):
                     <td style="padding:12px 16px; color:#cbd5e1;">{dso_kat_a_str}x vs {dso_kat_b_str}x</td>
                 </tr>
                 <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <td style="padding:12px 16px; font-weight:600;">TÜİK Solunum Ölüm Hızı (100k)</td>
-                    <td style="padding:12px 16px; font-weight:700; color:#38bdf8;">{sol_a_str} / 100k</td>
-                    <td style="padding:12px 16px; font-weight:700; color:#10b981;">{sol_b_str} / 100k</td>
+                    <td style="padding:12px 16px; font-weight:600;">TÜİK Solunum Ölüm Hızı (Yüz Binde)</td>
+                    <td style="padding:12px 16px; font-weight:700; color:#38bdf8;">{sol_a_str} (yüz binde)</td>
+                    <td style="padding:12px 16px; font-weight:700; color:#10b981;">{sol_b_str} (yüz binde)</td>
                     <td style="padding:12px 16px;">{chip_sol}</td>
                     <td style="padding:12px 16px; color:#64748b;">—</td>
                 </tr>
@@ -196,10 +198,10 @@ def render_duel_page(df: pd.DataFrame):
                     <td style="padding:12px 16px; color:#64748b;">—</td>
                 </tr>
                 <tr>
-                    <td style="padding:12px 16px; font-weight:600;">Toplam OSB Alanı (Hektar)</td>
-                    <td style="padding:12px 16px; font-weight:700; color:#38bdf8;">{ha_a_str} ha</td>
-                    <td style="padding:12px 16px; font-weight:700; color:#10b981;">{ha_b_str} ha</td>
-                    <td style="padding:12px 16px;">{chip_ha}</td>
+                    <td style="padding:12px 16px; font-weight:600;">Faal OSB Oranı (%)</td>
+                    <td style="padding:12px 16px; font-weight:700; color:#38bdf8;">%{oran_a_str}</td>
+                    <td style="padding:12px 16px; font-weight:700; color:#10b981;">%{oran_b_str}</td>
+                    <td style="padding:12px 16px;">{chip_faal}</td>
                     <td style="padding:12px 16px; color:#64748b;">—</td>
                 </tr>
             </tbody>
@@ -225,7 +227,7 @@ def render_duel_page(df: pd.DataFrame):
 
     st.markdown(f"""
     <div style="background:#091220; border-left:4px solid #38bdf8; border-radius:6px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#cbd5e1; line-height:1.6;">
-        <strong>İstatistiksel Özet:</strong> {il_a_name} ilinde yıllık ortalama PM2.5 konsantrasyonu {il_b_name} iline göre <strong>{pm_abs_str} µg/m³ {pm_dir}</strong> seviyededir ({pm_rel_note}). TÜİK solunum yolu ölüm hızında ise {il_a_name}, {il_b_name} iline kıyasla <strong>{sol_abs_str} / 100k {sol_dir}</strong> düzeyde ölçülmektedir.
+        <strong>İstatistiksel Özet:</strong> {il_a_name} ilinde yıllık ortalama PM2.5 konsantrasyonu {il_b_name} iline göre <strong>{pm_abs_str} µg/m³ {pm_dir}</strong> seviyededir ({pm_rel_note}). TÜİK solunum yolu ölüm hızında ise {il_a_name}, {il_b_name} iline kıyasla <strong>yüz binde {sol_abs_str} {sol_dir}</strong> düzeyde ölçülmektedir.
     </div>
     """, unsafe_allow_html=True)
 
@@ -254,14 +256,14 @@ def render_duel_page(df: pd.DataFrame):
 
     with col_b2:
         fig_sol = create_single_metric_comparison_bar(
-            metric_title="TÜİK Solunum Ölüm Hızı",
-            unit_label="/ 100k",
+            metric_title="TÜİK Solunum Ölüm Hızı (Yüz Binde)",
+            unit_label="yüz binde",
             val_a=sol_a,
             val_b=sol_b,
             name_a=il_a_name,
             name_b=il_b_name,
-            text_a=f"{sol_a_str} / 100k",
-            text_b=f"{sol_b_str} / 100k"
+            text_a=f"{sol_a_str} (yüz binde)",
+            text_b=f"{sol_b_str} (yüz binde)"
         )
         st.plotly_chart(fig_sol, use_container_width=True, config={"displayModeBar": False})
 

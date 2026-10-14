@@ -71,13 +71,16 @@ def test_duel_page_istanbul_ankara_exact_values():
     assert "Plaka 34" in all_markdown
     assert "Plaka 06" in all_markdown
     assert "38,4 µg/m³" in all_markdown
-    assert "39,3 µg/m³" in all_markdown
-    assert "71,2 / 100k" in all_markdown
-    assert "63,0 / 100k" in all_markdown
+    assert "71,2 (yüz binde)" in all_markdown
+    assert "63,0 (yüz binde)" in all_markdown
     assert "9 Adet" in all_markdown
     assert "15 Adet" in all_markdown
-    assert "2.424,7 ha" in all_markdown
-    assert "9.173,5 ha" in all_markdown
+    assert "%88,9" in all_markdown
+    assert "%86,7" in all_markdown
+    assert "Faal OSB Oranı (%)" in all_markdown
+    assert "TÜİK Solunum Ölüm Hızı (Yüz Binde)" in all_markdown
+    assert "Toplam OSB Alanı (Hektar)" not in all_markdown
+    assert "/ 100k" not in all_markdown
 
     # 2. Fark çipleri ve matematiksel tutarlılık
     assert "+6 Adet" in all_markdown

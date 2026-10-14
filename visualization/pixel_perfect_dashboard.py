@@ -540,7 +540,7 @@ def generate_pixel_perfect_dashboard_html(
     }, ensure_ascii=False)
 
     total_cities = il_count
-    prev_30_period_str = "16.08–14.09.2026 dönemine göre"
+    prev_30_period_str = "Önceki döneme göre %12 iyileşme"
     
     pollutants_map = [("PM2.5", "pm25", "PM2.5")]
     available_pols = [("PM2.5", "pm25", "PM2.5")]
@@ -2149,9 +2149,9 @@ html, body {{
                         </div>
                     </div>
                     <div class="stat-bottom-row">
-                        <div class="stat-delta green" title="15.09–14.10.2026 ile 16.08–14.09.2026 dönemleri karşılaştırılmıştır">
-                            <span>▼ %12</span>
-                            <span class="stat-subtext">({prev_30_period_str})</span>
+                        <div class="stat-delta green" title="Önceki konsolidasyon dönemine kıyasla değişim">
+                            <span>▼</span>
+                            <span class="stat-subtext">Önceki döneme göre %12 iyileşme</span>
                         </div>
                     </div>
                 </div>
@@ -2180,7 +2180,7 @@ html, body {{
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label notranslate" translate="no" id="card3Label" title="Dönemin en düşük ortalamasına sahip ili (Birim: µg/m³)">En Düşük PM2,5 ⓘ</span>
+                            <span class="stat-label notranslate" translate="no" id="card3Label" title="Dönemin en düşük ortalamasına sahip ili (Birim: µg/m³)">En Düşük İl (PM2.5) ⓘ</span>
                             <div class="stat-value" id="card3Value" style="color: #00e599;">{min_val_str}<span>µg/m³</span></div>
                         </div>
                     </div>
@@ -2948,7 +2948,7 @@ function updateKpiCards() {{
     if (card2Diff) card2Diff.textContent = '(ortalamanın +' + fmt(maxCity[polKey] - mean) + ' µg/m³ üzerinde)';
     
     const card3Label = document.getElementById('card3Label');
-    if (card3Label) card3Label.innerHTML = 'En Düşük PM2,5 ⓘ';
+    if (card3Label) card3Label.innerHTML = 'En Düşük İl (PM2.5) ⓘ';
     const card3Val = document.getElementById('card3Value');
     if (card3Val) card3Val.innerHTML = fmt(minCity[polKey]) + '<span>µg/m³</span>';
     const card3City = document.getElementById('card3City');
