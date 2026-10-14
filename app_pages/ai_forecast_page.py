@@ -16,7 +16,7 @@ from typing import Dict, Any, Tuple, List
 
 def calculate_quantiles_and_anomalies(df: pd.DataFrame) -> Tuple[float, float, float, float, pd.DataFrame, pd.DataFrame]:
     """
-    Pandas ile 81 ilin pm25 ve osb_sayisi çeyrekliklerini (quantile) hesaplar,
+    81 ilin pm25 ve osb_sayisi çeyrekliklerini (quantile) hesaplar,
     Kategori A ve Kategori B illerini filtreler.
     """
     q1_osb = float(df["osb_sayisi"].quantile(0.25))
@@ -394,11 +394,11 @@ def render_ai_forecast_page(df: pd.DataFrame):
     with col_sel_right:
         # Seçilen ilin hızlı rozet durumu
         if category == "Kategori A":
-            cat_badge_html = "<span style='background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fbbf24; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>⚠️ Kategori A: Coğrafi Kapan / Sessiz Tehlike</span>"
+            cat_badge_html = "<span style='background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fbbf24; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori A: Düşük OSB, yüksek PM2,5</span>"
         elif category == "Kategori B":
-            cat_badge_html = "<span style='background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>🚨 Kategori B: Ağır Sanayi Baskısı</span>"
+            cat_badge_html = "<span style='background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori B: Yüksek OSB, yüksek PM2,5</span>"
         else:
-            cat_badge_html = "<span style='background:rgba(0,229,219,0.15); border:1px solid #00e5db; color:#38bdf8; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>✅ Normal / Dengeli Profil</span>"
+            cat_badge_html = "<span style='background:rgba(0,229,219,0.15); border:1px solid #00e5db; color:#38bdf8; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Normal / Dengeli Profil</span>"
 
         pm_val_now_str = f"{float(il_row['pm25']):.1f}".replace(".", ",")
         dso_kat_val = round(float(il_row["pm25"]) / 5.0, 1)
@@ -416,7 +416,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
     # 4. AŞAMA ALT BÖLÜM: DİNAMİK OLARAK FİLTRELENEN TÜM KATEGORİ LİSTELERİ
     st.write("")
     st.markdown("<hr style='border-color:#1e293b; margin:20px 0;'>", unsafe_allow_html=True)
-    st.markdown("#### 📋 81 İl İstatistiksel Risk ve Anomali Grupları")
+    st.markdown("#### 📋 81 İl Dağılım Grupları")
 
     chips_a = []
     for _, r in kat_a_df.sort_values(by="pm25", ascending=False).iterrows():
@@ -443,7 +443,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
         st.markdown(f"""
         <div class='info-bubble'>
             <div class='neon-amber-title'>
-                <span>⛰️</span> Kategori A: Coğrafi Kapan İlleri ({len(kat_a_df)} İl)
+                <span>⛰️</span> Kategori A: Düşük OSB, yüksek PM2,5 İlleri ({len(kat_a_df)} İl)
             </div>
             <p style='color:#94a3b8; font-size:12px; margin-bottom:10px;'>
                 OSB Sayısı ≤ {q1_osb:.0f} (Alt %25) ve PM2.5 ≥ {q3_pm_str} µg/m³ (Üst %25)
@@ -458,7 +458,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
         st.markdown(f"""
         <div class='info-bubble'>
             <div class='neon-red-title'>
-                <span>🏭</span> Kategori B: Ağır Sanayi Baskısı İlleri ({len(kat_b_df)} İl)
+                <span>🏭</span> Kategori B: Yüksek OSB, yüksek PM2,5 İlleri ({len(kat_b_df)} İl)
             </div>
             <p style='color:#94a3b8; font-size:12px; margin-bottom:10px;'>
                 OSB Sayısı ≥ {q3_osb:.0f} (Üst %25) ve PM2.5 ≥ {q3_pm_str} µg/m³ (Üst %25)

@@ -45,12 +45,12 @@ HavaAtlası modüler bir analitik mimariden oluşmaktadır:
    - 7 coğrafi bölgenin kirlilik, sanayi ve solunum sağlığı özet tablosu.
    - Bölgesel Box-Plot (Kutu grafiği) varyans dağılımı.
    - Bölgeler arası Tek Yönlü ANOVA ($F$) ve Kruskal-Wallis ($H$) varyans analizi testi.
-6. **🌱 Yeşil Dönüşüm (Green Transition):**
-   - DSÖ yıllık 5 µg/m³ kılavuz limitine uyum oranları.
-   - Temiz Hava Eylem Planı politika simülatörü (Kirlilik %X azaltılırsa kurtarılabilecek hayat ve iyileşme projeksiyonu).
+6. **📊 İl Grupları (City Groups):**
+   - 81 il için çeyreklik (Q1/Q3) eşiklerine göre OSB ve PM2,5 grup sınıflandırması.
+   - Kategori A (Düşük OSB, yüksek PM2,5), Kategori B (Yüksek OSB, yüksek PM2,5) ve Normal profil dağılımları.
 7. **🏭 Sanayi Profili (Industrial Profile):**
-   - OSB dizini analizi: OSBÜK (indirme tarihi: GG.AA.2026) (toplam OSB, faal OSB, hektar ve parsel).
-   - İllerin sanayi kümelenmesi (Ağır Sanayi Metropolü, Gelişmekte Olan Sanayi, Tarım/Hizmet).
+   - OSB dizini analizi: OSBÜK (indirme tarihi: GG.AA.2026) (toplam OSB, hektar ve dağılım).
+   - İllerin sanayi kümelenmesi ve bölgesel partikül madde göstergeleri.
 
 ---
 
@@ -186,7 +186,7 @@ havakirliligi/
 │   ├── duel.py                    # 3. Şehir Düellosu modülü
 │   ├── correlation_page.py        # 4. Korelasyon ve Regresyon modülü
 │   ├── regions_page.py            # 5. Coğrafi Bölgeler ve ANOVA modülü
-│   ├── green_page.py              # 6. Yeşil Dönüşüm ve Simülasyon
+│   ├── ai_forecast_page.py        # 6. İl Grupları ve Çeyreklik Analizi
 │   └── industry_page.py           # 7. Sanayi Profili ve OSB Analizi
 ├── data/
 │   ├── daily_air_quality_90d.csv  # 90 günlük Copernicus CAMS zaman serisi

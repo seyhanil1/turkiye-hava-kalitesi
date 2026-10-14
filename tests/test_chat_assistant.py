@@ -39,7 +39,7 @@ def test_city_detection_single_and_multiple(master_df):
 
 def test_button_1_riskli_3_sehir(master_df):
     resp = generate_local_response("🚨 En Riskli 3 Şehir", master_df)
-    assert "En Riskli" in resp or "En Kirli" in resp
+    assert "PM2.5 Seviyesi En Yüksek" in resp
     assert "Osmaniye" in resp
     assert "Iğdır" in resp
     assert "Erzincan" in resp
@@ -47,7 +47,7 @@ def test_button_1_riskli_3_sehir(master_df):
 
 def test_button_2_temiz_3_sehir(master_df):
     resp = generate_local_response("🌿 En Temiz 3 Şehir", master_df)
-    assert "En Temiz" in resp
+    assert "PM2.5 Seviyesi En Düşük" in resp
     assert "Tunceli" in resp
     assert "Artvin" in resp
 
@@ -105,7 +105,7 @@ def test_new_button_3_sanayi_baskisi(master_df):
 def test_new_button_4_en_temiz_bolge(master_df):
     resp = generate_local_response("En Temiz Bölge", master_df)
     assert "Karadeniz" in resp
-    assert "Havası En Temiz" in resp
+    assert "En Düşük Coğrafi Bölge" in resp
 
 
 def test_natural_language_queries(master_df):

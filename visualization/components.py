@@ -211,7 +211,7 @@ def render_metric_card(
 
 def render_quick_cards():
     """
-    Ana ekrandaki Şehir Karnesi, Korelasyon, DSÖ Sınırları ve Yeşil Dönüşüm
+    Ana ekrandaki Şehir Karnesi, Korelasyon, DSÖ Sınırları ve İl Grupları
     hızlı erişim kartlarını 4 sütunda gösterir.
     """
     c1, c2, c3, c4 = st.columns(4)
@@ -239,7 +239,7 @@ def render_quick_cards():
     with c4:
         st.markdown("""
         <div class="quick-card">
-            <div class="quick-title">🌱 Yeşil Dönüşüm</div>
-            <div class="quick-desc">Bölgesel hava kalitesi ve çevre politikası hedefleri</div>
+            <div class="quick-title">📊 İl Grupları</div>
+            <div class="quick-desc">81 ilin OSB ve kirlilik çeyreklik grup sınıflandırması</div>
         </div>
         """, unsafe_allow_html=True)

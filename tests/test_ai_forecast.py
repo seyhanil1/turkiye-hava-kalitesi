@@ -80,8 +80,8 @@ def test_create_forecast_figure():
     assert len(fig.data) >= 1
     # Çizginin dash=dash olduğunu doğrula
     assert fig.data[0].line.dash == "dash"
-    # Başlıktaki kırık parantez düzeltmesini doğrula
-    assert "[Kategori B (Ağır Sanayi Baskısı) — Yıllık +%5 Artış Trendi]" in fig.layout.title.text
+    # Başlıktaki formatı doğrula
+    assert "[Kategori B (Yüksek OSB, yüksek PM2,5) — Yıllık +%5 Artış Trendi]" in fig.layout.title.text
     # Çizgi etiketlerinin yshift ve yanchor='bottom' ile kaydırıldığını doğrula
     assert fig.layout.annotations[0].yshift == 8
     assert fig.layout.annotations[1].yshift == 8
@@ -109,9 +109,9 @@ def test_ai_forecast_page_apptest_rendering():
     all_markdown = " ".join([m.value for m in at.markdown])
 
     # 1. Başlıklar ve kod sızıntısı temizliği
-    assert "📋 81 İl İstatistiksel Risk ve Anomali Grupları" in all_markdown
+    assert "📋 81 İl Dağılım Grupları" in all_markdown
     assert "(Pandas Filtreleme)" not in all_markdown
-    assert "İstatistiksel Risk ve Anomali Analizi" in all_markdown
+    assert "İl Grupları" in all_markdown
 
     # 2. İstatistiksel kartlar ve dilim bilgisi (Türkçe virgüllü)
     assert "Alt %25 ≤" in all_markdown

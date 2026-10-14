@@ -3,14 +3,14 @@ Piksel Düzeyinde Referans Tasarıma Sadık & Tam Etkileşimli Platform Oluştur
 HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 
 Özellikler:
-- Sol Panel Navigasyonu: 7 modülün tamamı (Genel Bakış, Şehir Karnesi, Düello, Korelasyon,
-  Bölgeler, Yeşil Dönüşüm, Sanayi Profili) kesintisiz, anında ve çalışan sayfa motoru ile bağlıdır.
+- Sol Panel Navigasyonu: modüllerin tamamı (Genel Bakış, Şehir Karnesi, Düello, Korelasyon,
+  Bölgeler, Sanayi Profili, İl Grupları) kesintisiz, anında ve çalışan sayfa motoru ile bağlıdır.
 - Harita Pan & Zoom Motoru: Fareyle sürükleyip kaydırma (drag-to-pan), fare tekerleğiyle yakınlaştırma (wheel-zoom),
   + / - / sıfırla kontrolleri ve koordinat kilitlenmesini önleyen dinamik sınır koruması.
 - Bölge Seçici Dropdown: Türkiye Geneli ve 7 Coğrafi Bölgenin tamamını
   içeren açılır menüden istenen bölge doğrudan seçilebilir.
 - Özelleştirilmiş Sağ Sıralama Tablosu: Sıra numaraları,
-  kirlilik düzey pilleri (Kritik, Sağlıksız, Hassas, Orta, İyi), plaka numaraları ve çoklu filtreleme (İlk 10, En Temiz 10, Tümü).
+  kirlilik düzey pilleri (Kritik, Sağlıksız, Hassas, Orta, İyi), plaka numaraları ve çoklu filtreleme (İlk 10, En Düşük 10, Tümü).
 """
 
 from __future__ import annotations
@@ -2293,7 +2293,7 @@ html, body {{
                         <div style="display:flex; align-items:center; gap:8px;">
                             <div class="tab-pills" id="rankLimitTabs">
                                 <button class="tab-pill active" data-limit="10">İlk 10</button>
-                                <button class="tab-pill" data-limit="clean10">En Temiz 10</button>
+                                <button class="tab-pill" data-limit="clean10">En Düşük 10</button>
                                 <button class="tab-pill" data-limit="all">Tümü</button>
                             </div>
                         </div>
@@ -2422,7 +2422,7 @@ html, body {{
                     <span style="font-size:22px;">🗺️</span>
                     <div>
                         <div style="font-size:16px; font-weight:800; color:#ffffff;">7 Coğrafi Bölge Analizi & ANOVA</div>
-                        <div style="font-size:11px; color:#6d8fae;">Bölgeler arası hava kalitesi dağılımı, varyans analizi ve en temiz/kirli iller</div>
+                        <div style="font-size:11px; color:#6d8fae;">Bölgeler arası hava kalitesi dağılımı, varyans analizi ve en düşük/yüksek PM2.5 seviyeleri</div>
                     </div>
                     <span class="module-badge">Bölgesel Profil</span>
                 </div>
@@ -2430,27 +2430,6 @@ html, body {{
             </div>
             
             <div style="padding:0 24px;" id="regionsModuleContent">
-                <!-- JS ile render edilir -->
-            </div>
-        </div>
-        
-        <!-- ========================================================
-             MODÜL 6: YEŞİL DÖNÜŞÜM & DSÖ (GREEN TRANSITION)
-             ======================================================== -->
-        <div id="view-yesil_donusum" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">🌿</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">🌿 Ulusal Yeşil Dönüşüm, Eylem Planı & Risk Projeksiyonu</div>
-                        <div style="font-size:11px; color:#6d8fae;">Veriye dayalı kök neden tespiti, resmi müdahale politikaları ve 2035 eylemsizlik projeksiyonu.</div>
-                    </div>
-                    <span class="module-badge" style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe;">Ulusal Politika Motoru</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;" id="greenModuleContent">
                 <!-- JS ile render edilir -->
             </div>
         </div>
@@ -2593,10 +2572,6 @@ function switchView(viewName) {{
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
     const gb = document.getElementById('view-genel_bakis');
     if (gb) gb.classList.add('active');
-}}
-
-function scrollToHealthShield() {{
-    switchView('yesil_donusum');
 }}
 
 // ==========================================
@@ -3552,7 +3527,7 @@ function renderCorrelationModule() {{
 }}
 
 // ==========================================
-// 10. BÖLGELER, YEŞİL DÖNÜŞÜM, SANAYİ, EKONOMİ
+// 10. BÖLGELER, SANAYİ, EKONOMİ
 // ==========================================
 function renderRegionsModule() {{
     const cont = document.getElementById('regionsModuleContent');
@@ -3570,207 +3545,12 @@ function renderRegionsModule() {{
                     <span style="font-size:11px; color:#38bdf8; font-weight:700;">${{rCities.length}} İl</span>
                 </div>
                 <div style="font-size:24px; font-weight:800; color:${{getColor(avg, 'PM2.5')}}; margin:8px 0;">${{fmt(avg)}} <span style="font-size:12px; color:#64748b;">µg/m³</span></div>
-                <div style="font-size:12px; color:#94a3b8;">• En Temiz: <strong style="color:#00e599;">${{best ? best.il : '-'}}</strong> (${{best ? fmt(best.pm25) : '-'}})</div>
-                <div style="font-size:12px; color:#94a3b8; margin-top:2px;">• En Kirli: <strong style="color:#ef4444;">${{worst ? worst.il : '-'}}</strong> (${{worst ? fmt(worst.pm25) : '-'}})</div>
+                <div style="font-size:12px; color:#94a3b8;">• En Düşük PM2.5: <strong style="color:#00e599;">${{best ? best.il : '-'}}</strong> (${{best ? fmt(best.pm25) : '-'}})</div>
+                <div style="font-size:12px; color:#94a3b8; margin-top:2px;">• En Yüksek PM2.5: <strong style="color:#ef4444;">${{worst ? worst.il : '-'}}</strong> (${{worst ? fmt(worst.pm25) : '-'}})</div>
             </div>
         `;
     }});
     cont.innerHTML = `<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">${{cards}}</div>`;
-}}
-
-function renderGreenModule(targetCity) {{
-    const cont = document.getElementById('greenModuleContent');
-    if (!cont) return;
-
-    const selectedCity = targetCity || window.currentGreenCity || 'Iğdır';
-    window.currentGreenCity = selectedCity;
-    const cityObj = CITIES.find(c => c.il === selectedCity) || CITIES[0];
-
-    const cityPm = cityObj.pm25 || 0;
-    const cityOsb = cityObj.osb_sayisi || 0;
-    const citySolunumOlum = cityObj.solunum_olum || Math.round((cityObj.solunum_olum_100k || 0) * (cityObj.nufus || 500000) / 100000);
-    const dsoKat = (cityPm / 5.0).toFixed(1);
-
-    // Kök Neden Teşhisi:
-    let diagType = "ulasim";
-    let diagTitle = "🚗 Kentsel Yoğunluk, Ulaşım & İnşaat Tozu";
-    let diagDetail = "Eski araç filosu (dizel emisyonları), sıkışık yapılaşma ve kentsel inşaat/trafik tozu arka plan kirliliğini sürekli kılmaktadır.";
-    let diagBadge = "KENTSEL EMİSYON & ULAŞIM";
-    let diagColor = "#00f2fe";
-    let actions = [
-        "Düşük Emisyon Bölgeleri (LEZ) kurularak yaşlı dizel araç girişinin sınırlandırılması",
-        "Toplu taşımada elektrikli otobüs ve raylı sistem payının %60 üzerine çıkarılması",
-        "Kentsel yeşil bariyer ve hava akım kanallarının master plana işlenmesi"
-    ];
-
-    if (cityOsb >= 6 && cityPm > 40) {{
-        diagType = "sanayi";
-        diagTitle = "🏭 Ağır Sanayi & Endüstriyel Emisyon";
-        diagDetail = "Kirliliğin birincil kaynağı OSB bacaları, filtre denetimsizliği ve fosil yakıtlı termik/endüstriyel üretim tesisleridir.";
-        diagBadge = "AĞIR SANAYİ BASKISI";
-        diagColor = "#ef4444";
-        actions = [
-            "Tüm OSB bacalarına 7/24 Kesintisiz Emisyon Ölçüm Sistemi (SEÖS) zorunluluğu",
-            "Sanayi tesislerinde elektrostatik ve torbalı filtre denetimlerinin ayda 2 keze çıkarılması",
-            "Yeşil Çelik / Temiz Üretim GES teşviklerinin %50 artırılması"
-        ];
-    }} else if (cityOsb < 6 && cityPm > 50) {{
-        diagType = "canak";
-        diagTitle = "🏔️ Çanak Topoğrafyası & Evsel Katı Yakıt";
-        diagDetail = "Coğrafi çanak yapısı hava akımını engellemekte; düşük gelirli konutlarda kalitesiz kömür/biyokütle kullanımı inversiyonla birleşerek tehlikeli hava kirliliği epizotlarına ve yoğun duman birikimine yol açmaktadır.";
-        diagBadge = "COĞRAFİ KAPAN & İNVERSİYON";
-        diagColor = "#f59e0b";
-        actions = [
-            "Sosyal yardım amaçlı kömür dağıtımının acilen sonlandırılarak ücretsiz ısı pompası/doğalgaz desteği verilmesi",
-            "Vadi tabanında rüzgar koridorlarını kesen çok katlı imar izinlerinin durdurulması",
-            "Alt gelir grubu yerleşim alanları ve kentsel dönüşüm bölgelerinde bina yalıtım seferberliği"
-        ];
-    }}
-
-    // 2035 Eylemsizlik Senaryosu
-    const inactionDeaths = Math.floor(citySolunumOlum * 1.45);
-
-    // Simülasyon Değerleri (Slider state saklama)
-    window.greenSimInd = window.greenSimInd !== undefined ? window.greenSimInd : 30;
-    window.greenSimEnergy = window.greenSimEnergy !== undefined ? window.greenSimEnergy : 25;
-
-    let pmReduction = 0;
-    if (diagType === "sanayi") {{
-        pmReduction = (window.greenSimInd * 0.52) + (window.greenSimEnergy * 0.36);
-    }} else if (diagType === "canak") {{
-        pmReduction = (window.greenSimInd * 0.25) + (window.greenSimEnergy * 0.65);
-    }} else {{
-        pmReduction = (window.greenSimInd * 0.40) + (window.greenSimEnergy * 0.48);
-    }}
-    pmReduction = Math.min(82.0, Math.max(0, pmReduction));
-    const newPm25 = Math.max(5.0, (cityPm * (1.0 - pmReduction / 100.0))).toFixed(1);
-    const savedLives = citySolunumOlum > 0 && pmReduction > 0 ? Math.max(1, Math.floor(citySolunumOlum * (pmReduction / 100.0) * 0.70)) : 0;
-
-    const sortedCities = [...CITIES].sort((a,b) => a.il.localeCompare(b.il, 'tr'));
-    const cityOptionsHtml = sortedCities.map(c => 
-        `<option value="${{c.il}}" ${{c.il === selectedCity ? 'selected' : ''}}>${{c.il}} (PM2.5: ${{c.pm25.toFixed(1).replace('.', ',')}}, OSB: ${{c.osb_sayisi}})</option>`
-    ).join('');
-
-    const actionsHtml = actions.map(a => 
-        `<div style="background:rgba(2, 18, 32, 0.6); border-left:3px solid #00f2fe; border-radius:4px; padding:10px 12px; margin-bottom:8px; font-size:12.5px; color:#e2e8f0; line-height:1.45;">• ${{a}}</div>`
-    ).join('');
-
-    cont.innerHTML = `
-        <div style="background:#031b2e; border:1px solid #093452; border-radius:12px; padding:16px 20px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <label style="font-size:13px; font-weight:700; color:#f8fafc;">📍 Senaryo Analizi Yapılacak İli Seçin:</label>
-                <select id="greenCitySelect" onchange="renderGreenModule(this.value)" style="background:#021220; border:1px solid #00e5db; color:#ffffff; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:700; outline:none; cursor:pointer;">
-                    ${{cityOptionsHtml}}
-                </select>
-            </div>
-            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                <span style="font-size:12px; color:#8faec9;">PM2.5: <strong style="color:${{cityPm > 40 ? '#ef4444' : '#f59e0b'}};">${{cityPm.toFixed(1).replace('.', ',')}} µg/m³</strong></span>
-                <span style="font-size:12px; color:#8faec9;">DSÖ: <strong style="color:#ef4444;">${{dsoKat.toFixed(1).replace('.', ',')}} Kat</strong></span>
-                <span style="font-size:12px; color:#8faec9;">OSB: <strong style="color:#38bdf8;">${{cityOsb}}</strong></span>
-                <span style="font-size:12px; color:#8faec9;">Solunum Vefatı: <strong style="color:#f8fafc;">~${{fmt(citySolunumOlum)}} Can</strong></span>
-            </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; margin-bottom:24px;">
-            <!-- KOLON 1 -->
-            <div style="background:rgba(17, 26, 46, 0.85); border:1px solid ${{diagColor}}66; border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 8px 24px ${{diagColor}}22;">
-                <div>
-                    <span style="background:${{diagColor}}22; color:${{diagColor}}; border:1px solid ${{diagColor}}; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; display:inline-block; margin-bottom:10px;">🔍 KÖK NEDEN ANALİZİ</span>
-                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:10px;">${{selectedCity}} — ${{diagTitle}}</div>
-                    <p style="font-size:13px; color:#cbd5e1; line-height:1.6; margin-bottom:14px;">${{diagDetail}}</p>
-                </div>
-                <div style="background:rgba(2, 18, 32, 0.7); border-radius:8px; padding:12px; border:1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size:11px; color:#8faec9; margin-bottom:4px;">Algoritma Teşhis Çıktısı:</div>
-                    <div style="font-size:13px; font-weight:700; color:${{diagColor}};">&bull; ${{diagBadge}}</div>
-                    <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">(OSB: ${{cityOsb}} &bull; PM2.5: ${{cityPm.toFixed(1).replace('.', ',')}} µg/m³)</div>
-                </div>
-            </div>
-
-            <!-- KOLON 2 -->
-            <div style="background:rgba(17, 26, 46, 0.85); border:1px solid rgba(0, 242, 254, 0.35); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 8px 24px rgba(0, 242, 254, 0.15);">
-                <div>
-                    <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; display:inline-block; margin-bottom:10px;">🛠️ RESMİ EYLEM PLANI</span>
-                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:12px;">${{selectedCity}} Öncelikli Politika Müdahalesi</div>
-                    <div>${{actionsHtml}}</div>
-                </div>
-                <div style="margin-top:10px; font-size:11px; color:#64748b; font-style:italic;">
-                    * Çevre Bakanlığı ve İl Mahalli Çevre Kurulu direktifleriyle uyumlu.
-                </div>
-            </div>
-
-            <!-- KOLON 3 -->
-            <div style="background:rgba(17, 26, 46, 0.85); border:1px solid rgba(239, 68, 68, 0.35); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 8px 24px rgba(239, 68, 68, 0.15);">
-                <div>
-                    <span style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid #ef4444; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; display:inline-block; margin-bottom:10px;">⚠️ 2035 EYLEMSİZLİK SENARYOSU</span>
-                    <div style="font-size:16px; font-weight:700; color:#ffffff; margin-bottom:10px;">${{selectedCity}} — Hiçbir Şey Yapılmazsa (10 Yıllık Risk)</div>
-                    
-                    <div style="background:rgba(2, 18, 32, 0.7); border-radius:8px; padding:8px 12px; margin-bottom:6px;">
-                        <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase;">10 Yıllık Önlenemeyen Ek Can Kaybı</div>
-                        <div style="font-size:17px; font-weight:800; color:#ef4444;">+${{fmt(inactionDeaths)}} Kişi</div>
-                    </div>
-
-                    <div style="background:rgba(2, 18, 32, 0.7); border-radius:8px; padding:8px 12px;">
-                        <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase;">Kronikleşme Riski</div>
-                        <div style="font-size:11.5px; font-weight:600; color:#e2e8f0; margin-top:2px;">Astım ve KOAH acil servis başvurularında +%38 kalıcı artış.</div>
-                    </div>
-                </div>
-                <div style="background:rgba(239, 68, 68, 0.08); border:1px dashed rgba(239, 68, 68, 0.4); border-radius:8px; padding:8px 10px; margin-top:10px;">
-                    <div style="font-size:10px; font-weight:700; color:#ef4444; margin-bottom:2px;">🚨 Epidemiyolojik Risk Modeli Uyarısı</div>
-                    <div style="font-size:11px; color:#cbd5e1; line-height:1.35;">Kritik inversiyon dönemlerinde yaşam süresinde 2,8 - 4,1 yıl kayıp projeksiyonu.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SİMÜLATÖR -->
-        <div style="background:linear-gradient(135deg, rgba(11, 19, 43, 0.95) 0%, rgba(3, 22, 38, 0.98) 100%); border:1px solid rgba(0, 242, 254, 0.3); border-radius:14px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.4);">
-            <div style="font-size:16px; font-weight:800; color:#ffffff; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
-                <span>🎛️</span> ${{selectedCity}} İnteraktif Politika Simülatörü
-            </div>
-            <div style="font-size:12px; color:#8faec9; margin-bottom:18px;">
-                Sanayi baca filtre denetimlerini ve temiz enerji oranını ayarlayarak ${{selectedCity}} için önlenebilecek tahmini ölümleri ve kirlilik iyileşmesini senaryo bazında simüle edin.
-            </div>
-
-            <div style="display:grid; grid-template-columns:1.2fr 1.8fr; gap:20px; align-items:center;">
-                <div style="background:rgba(2, 18, 32, 0.7); border-radius:10px; padding:14px; border:1px solid rgba(255,255,255,0.06);">
-                    <div style="margin-bottom:14px;">
-                        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:#cbd5e1; margin-bottom:4px;">
-                            <span>🏭 Sanayi Baca Filtresi & Yeşil Teknoloji:</span>
-                            <span style="color:#00e5db; font-weight:800;" id="simIndVal">%${{window.greenSimInd}}</span>
-                        </div>
-                        <input type="range" min="0" max="100" step="5" value="${{window.greenSimInd}}" oninput="window.greenSimInd=parseInt(this.value); document.getElementById('simIndVal').textContent='%'+this.value; renderGreenModule('${{selectedCity}}');" style="width:100%; accent-color:#00e5db; cursor:pointer;">
-                    </div>
-                    <div>
-                        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:#cbd5e1; margin-bottom:4px;">
-                            <span>🏠 Temiz Enerji & Kömürden Arındırma:</span>
-                            <span style="color:#10b981; font-weight:800;" id="simEnergyVal">%${{window.greenSimEnergy}}</span>
-                        </div>
-                        <input type="range" min="0" max="100" step="5" value="${{window.greenSimEnergy}}" oninput="window.greenSimEnergy=parseInt(this.value); document.getElementById('simEnergyVal').textContent='%'+this.value; renderGreenModule('${{selectedCity}}');" style="width:100%; accent-color:#10b981; cursor:pointer;">
-                    </div>
-                </div>
-
-                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
-                    <div style="background:rgba(2, 18, 32, 0.85); border-radius:10px; padding:16px 12px; text-align:center; border-top:3px solid #10b981; border-left:1px solid rgba(255,255,255,0.05); border-right:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size:22px;">🫁</div>
-                        <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase; font-weight:700; margin-top:2px;">Önlenebilir Tahmini Ölüm</div>
-                        <div style="font-size:22px; font-weight:900; color:#10b981; margin:4px 0;">~${{fmt(savedLives)}}</div>
-                        <div style="font-size:10px; color:#94a3b8;">Kişi / Yıl (Tahmini Projeksiyon)</div>
-                    </div>
-
-                    <div style="background:rgba(2, 18, 32, 0.85); border-radius:10px; padding:16px 12px; text-align:center; border-top:3px solid #38bdf8; border-left:1px solid rgba(255,255,255,0.05); border-right:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size:22px;">📉</div>
-                        <div style="font-size:10.5px; color:#8faec9; text-transform:uppercase; font-weight:700; margin-top:2px;">PM2.5 İyileşme Oranı</div>
-                        <div style="font-size:22px; font-weight:900; color:#38bdf8; margin:4px 0;">-%${{pmReduction.toFixed(1).replace('.', ',')}}</div>
-                        <div style="font-size:10px; color:#94a3b8;">${{cityPm.toFixed(1).replace('.', ',')}} ➔ ${{newPm25.replace('.', ',')}} µg/m³</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Metodolojik Şeffaflık Notu -->
-            <div style="margin-top:16px; background:rgba(2, 18, 32, 0.6); border:1px solid rgba(255, 255, 255, 0.08); border-radius:8px; padding:10px 14px; font-size:11.5px; color:#94a3b8; line-height:1.5;">
-                <strong>Not:</strong> Öngörülen can kaybı ve morbidite projeksiyonları, DSÖ AirQ+ ve küresel nispi risk (RR) katsayıları baz alınarak simüle edilmiştir. Klinik kesinlik veya resmi adli can kaybı verisi niteliği taşımaz.
-            </div>
-        </div>
-    `;
 }}
 
 function renderIndustryModule() {{
@@ -3826,7 +3606,7 @@ function renderIndustryModule() {{
                         ${{fmt(totalArea)}} <span style="font-size:18px; color:#ff9f3d; font-weight:700;">Hektar</span>
                     </div>
                     <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                        Ağır sanayi, kimya, otomotiv, tekstil ve metalurji üretim üslerine tahsis edilmiş tescilli endüstriyel etki sahası.
+                        Sanayi ve Teknoloji Bakanlığı onaylı organize sanayi bölgelerinin resmi yüzölçümü toplamı (OSBÜK verisi).
                     </div>
                 </div>
             </div>
@@ -3844,7 +3624,7 @@ function renderIndustryModule() {{
                     <div id="industryBarChart" style="height:340px; width:100%;"></div>
                 </div>
 
-                <!-- SAĞ: KRİTİK SANAYİ & EMİSYON BASKI KARARLARI -->
+                <!-- SAĞ: YÜKSEK OSB VE KİRLİLİK GÖSTERGELERİ -->
                 <div style="display:flex; flex-direction:column; gap:14px;">
                     <div style="background:rgba(17, 26, 46, 0.92); border:1px solid rgba(239, 68, 68, 0.5); border-radius:14px; padding:18px; box-shadow:0 8px 24px rgba(239, 68, 68, 0.15);">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -3853,7 +3633,7 @@ function renderIndustryModule() {{
                             </span>
                             <div style="display:flex; gap:6px;">
                                 <span style="background:rgba(239, 68, 68, 0.2); color:#fca5a5; border:1px solid #ef4444; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700;">
-                                    KRİTİK BASKI
+                                    YÜKSEK OSB
                                 </span>
                                 <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700;">
                                     SANAYİ SİCİLİ
@@ -3861,10 +3641,10 @@ function renderIndustryModule() {{
                             </div>
                         </div>
                         <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                            PM2.5 partikül emisyonlarının en yüksek yoğunluğa ulaştığı bölge. 100 OSB ve 12.434 aktif parsel ile kimya, petrokimya ve otomotiv sanayisi kaynaklı partikül yükünün %38'i bu koridorda yoğunlaşmaktadır.
+                            Bölge genelinde 100 OSB yer almakta olup, sanayi kümelenmesi ve partikül madde konsantrasyonu en yüksek seviyelerdedir.
                         </div>
                         <div style="margin-top:8px; font-size:11px; color:#f87171; font-weight:600;">
-                            • Çözüm: Kesintisiz online SEÖS baca denetimi ve yeşil OSB emisyon sertifikasyonu zorunluluğu.
+                            • Veri Notu: Sanayi tesislerinin yoğun olduğu koridorda emisyon kontrolleri ve hava kalitesi izleme sistemleri uygulanmaktadır.
                         </div>
                     </div>
 
@@ -3875,7 +3655,7 @@ function renderIndustryModule() {{
                             </span>
                             <div style="display:flex; gap:6px;">
                                 <span style="background:rgba(245, 158, 11, 0.2); color:#fde047; border:1px solid #f59e0b; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700;">
-                                    AĞIR EMİSYON
+                                    YÜKSEK PM2,5
                                 </span>
                                 <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700;">
                                     SANAYİ SİCİLİ
@@ -3883,10 +3663,10 @@ function renderIndustryModule() {{
                             </div>
                         </div>
                         <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                            Hızlı sanayileşme, tekstil ve gıda işleme tesisleri nedeniyle partikül madde yükünün en yüksek olduğu OSB bölgesi. Geniş üretim havzasıyla meteorolojik inversiyon riski taşımaktadır.
+                            Tekstil, kimya ve gıda imalat tesislerinin yoğunlaştığı OSB havzalarında partikül madde konsantrasyonları izlenmektedir.
                         </div>
                         <div style="margin-top:8px; font-size:11px; color:#fbbf24; font-weight:600;">
-                            • Çözüm: Kömür yakıtlı sanayi kazanlarının dönüşümü ve organize sanayi hava koridoru koruması.
+                            • Veri Notu: Bölgesel sanayi faaliyetleri ve meteorolojik faktörlerin partikül madde düzeyleri üzerindeki etkisi takip edilmektedir.
                         </div>
                     </div>
                 </div>
@@ -3972,8 +3752,8 @@ function renderAIForecastModule(targetCity) {{
     let pulseClass = "pulse-box-normal";
     let badgeColor = "#00e5db";
     let badgeLabel = "Normal Profil (Dengeli)";
-    let nedenSonuc = `Yapay Zeka Analizi: ${{cityObj.il}} ilinde sanayi yoğunluğu ve hava kirliliği göstergeleri dengeli/normal seyretmektedir. Aşırı uç bir jeolojik veya endüstriyel anomali saptanmamıştır.`;
-    let onlem = `Koruyucu Eylem Planı: Mevcut emisyon denetimleri sürdürülmeli, sanayi filtre kontrolleri ve yeşil enerji dönüşümü desteklenmelidir.`;
+    let nedenSonuc = `${{cityObj.il}} ilinde OSB sayısı ve PM2.5 konsantrasyonu çeyreklik uç değer sınırlarının dışındadır.`;
+    let onlem = `Düzenli hava kalitesi izleme ve mevzuat standartlarına uyumun takibi önerilir.`;
     
     const cityOsb = cityObj.osb_sayisi || 0;
     const cityPm = cityObj.pm25 || 0;
@@ -3983,17 +3763,17 @@ function renderAIForecastModule(targetCity) {{
         growthRate = 0.03;
         pulseClass = "pulse-box-a";
         badgeColor = "#f59e0b";
-        badgeLabel = "Kategori A: Coğrafi Kapan / Sessiz Tehlike (Yıllık +%3)";
-        nedenSonuc = `Yapay Zeka Analizi: ${{cityObj.il}} ilinde sanayi yoğunluğu düşük olmasına rağmen hava kirliliği tehlikeli boyuttadır. Bu durumun ana nedeni coğrafi çanak yapısı (rüzgar hapsi) ve kış aylarındaki kalitesiz yakıt kullanımıdır (Termal İnversiyon).`;
-        onlem = `Acil Eylem Planı: Doğalgaz/temiz enerji altyapısı acilen teşvik edilmeli, rüzgar koridorlarını kesecek yüksek yapılaşma derhal durdurulmalıdır.`;
+        badgeLabel = "Kategori A: Düşük OSB, yüksek PM2,5";
+        nedenSonuc = `${{cityObj.il}} ilinde OSB sayısı Q1 alt çeyreklik eşiğinde veya altında iken, PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerindedir.`;
+        onlem = `Emisyon envanteri ve topoğrafik özelliklerin detaylı incelenmesi önerilir.`;
     }} else if (cityOsb >= q3_osb && cityPm >= q3_pm) {{
         category = "Kategori B";
         growthRate = 0.05;
         pulseClass = "pulse-box-b";
         badgeColor = "#ef4444";
-        badgeLabel = "Kategori B: Ağır Sanayi Baskısı (Yıllık +%5)";
-        nedenSonuc = `Yapay Zeka Analizi: ${{cityObj.il}} ilindeki kirlilik doğrudan yoğun OSB ve endüstriyel faaliyetler kaynaklıdır.`;
-        onlem = `Acil Eylem Planı: Fabrika bacalarına akıllı (IoT) filtre zorunluluğu getirilmeli, yeni açılacak sanayi bölgeleri şehrin hakim rüzgar yönünün tersine planlanmalıdır.`;
+        badgeLabel = "Kategori B: Yüksek OSB, yüksek PM2,5";
+        nedenSonuc = `${{cityObj.il}} ilinde hem OSB sayısı hem de PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerindedir.`;
+        onlem = `Sanayi emisyon denetimlerinin ve sürekli izleme sistemlerinin sürdürülmesi önerilir.`;
     }}
     
     const years = [2026, 2027, 2028, 2029, 2030, 2031];
@@ -4029,12 +3809,12 @@ function renderAIForecastModule(targetCity) {{
                 <div style="font-size:11px; color:#557896; margin-top:2px;">Kritik Eşik ≥ ${{fmt(q3_pm)}} µg/m³</div>
             </div>
             <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
-                <div style="font-size:11px; color:#8faec9;">Kategori A (Coğrafi Kapan)</div>
+                <div style="font-size:11px; color:#8faec9;">Kategori A (Düşük OSB, yüksek PM2,5)</div>
                 <div style="font-size:18px; font-weight:800; color:#f59e0b; margin-top:4px;">${{katA_cities.length}} İl Tespit Edildi</div>
                 <div style="font-size:11px; color:#557896; margin-top:2px;">Düşük OSB, Yüksek Kirlilik</div>
             </div>
             <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
-                <div style="font-size:11px; color:#8faec9;">Kategori B (Ağır Sanayi)</div>
+                <div style="font-size:11px; color:#8faec9;">Kategori B (Yüksek OSB, yüksek PM2,5)</div>
                 <div style="font-size:18px; font-weight:800; color:#ef4444; margin-top:4px;">${{katB_cities.length}} İl Tespit Edildi</div>
                 <div style="font-size:11px; color:#557896; margin-top:2px;">Yüksek OSB, Yüksek Kirlilik</div>
             </div>
@@ -4073,7 +3853,7 @@ function renderAIForecastModule(targetCity) {{
             <div style="display:flex; flex-direction:column; justify-content:space-between;">
                 <div class="ai-info-bubble">
                     <div style="color:#38bdf8; text-shadow:0 0 10px rgba(56,189,248,0.6); font-size:15px; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-                        <span>🔬</span> Yapay Zeka Neden-Sonuç Analizi
+                        <span>🔬</span> Veri Analizi ve Göstergeler
                     </div>
                     <p style="color:#e2e8f0; font-size:13.5px; line-height:1.65; margin:0;">
                         ${{nedenSonuc}}
@@ -4082,7 +3862,7 @@ function renderAIForecastModule(targetCity) {{
                 
                 <div class="ai-info-bubble ${{pulseClass}}">
                     <div style="color:${{badgeColor}}; text-shadow:0 0 10px ${{badgeColor}}aa; font-size:15px; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-                        <span>🚨</span> Alınacak Önlemler (Acil Eylem Reçetesi)
+                        <span>📋</span> Politika ve Müdahale Notları
                     </div>
                     <p style="color:#ffffff; font-size:13.5px; line-height:1.65; margin:0; font-weight:600;">
                         ${{onlem}}
@@ -4112,17 +3892,17 @@ function renderAIForecastModule(targetCity) {{
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div class="ai-info-bubble" style="margin-bottom:0;">
                 <div style="color:#f59e0b; font-size:14px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                    <span>⛰️</span> Kategori A: Coğrafi Kapan İlleri (${{katA_cities.length}} İl)
+                    <span>⛰️</span> Kategori A: Düşük OSB, yüksek PM2,5 İlleri (${{katA_cities.length}} İl)
                 </div>
-                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Düşük sanayi yoğunluğu (OSB ≤ ${{q1_osb.toFixed(0)}}), aşırı partikül hapsi (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
+                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Düşük sanayi yoğunluğu (OSB ≤ ${{q1_osb.toFixed(0)}}), partikül seviyesi (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
                 <div>${{katAPills}}</div>
             </div>
             
             <div class="ai-info-bubble" style="margin-bottom:0;">
                 <div style="color:#ef4444; font-size:14px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                    <span>🏭</span> Kategori B: Ağır Sanayi Baskısı İlleri (${{katB_cities.length}} İl)
+                    <span>🏭</span> Kategori B: Yüksek OSB, yüksek PM2,5 İlleri (${{katB_cities.length}} İl)
                 </div>
-                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Yüksek endüstriyel kümelenme (OSB ≥ ${{q3_osb.toFixed(0)}}), yüksek emisyon (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
+                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Yüksek OSB kümelenmesi (OSB ≥ ${{q3_osb.toFixed(0)}}), yüksek emisyon (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
                 <div>${{katBPills}}</div>
             </div>
         </div>
@@ -4185,7 +3965,7 @@ function renderAIForecastModule(targetCity) {{
 let chatHistory = [
     {{
         role: "assistant",
-        text: "Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>. 🌍<br><br>81 ilin hava kalitesi (PM2.5), OSB sanayi baskısı ve resmi çevre karnesi hakkında sorularınızı yanıtlamaya hazırım.<br><br>Bana şunları sorabilirsiniz:<br>• <em>'En kirli iller hangileri?'</em> veya <em>'kötü'</em><br>• <em>'Havası en temiz yerler'</em> veya <em>'temiz'</em><br>• <em>'İstanbul veya Iğdır'ın durumu'</em>"
+        text: "Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>. 🌍<br><br>81 ilin hava kalitesi (PM2.5), OSB sanayi baskısı ve resmi çevre karnesi hakkında sorularınızı yanıtlamaya hazırım.<br><br>Bana şunları sorabilirsiniz:<br>• <em>'PM2.5 en yüksek iller hangileri?'</em><br>• <em>'PM2.5 en düşük iller'</em><br>• <em>'İstanbul veya Iğdır\\'ın durumu'</em>"
     }}
 ];
 
@@ -4211,8 +3991,8 @@ function renderChatAssistantModule() {{
 
             <!-- Hızlı Soru Hapları -->
             <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
-                <button onclick="sendQuickPrompt('en kirli iller hangileri?')" style="background:#07253d; border:1px solid #ef444455; color:#f87171; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🚨 En Kirli İller</button>
-                <button onclick="sendQuickPrompt('havası en temiz iller hangileri?')" style="background:#07253d; border:1px solid #00e59955; color:#00e599; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🌿 En Temiz İller</button>
+                <button onclick="sendQuickPrompt('en yuksek pm2.5 illeri hangileri?')" style="background:#07253d; border:1px solid #ef444455; color:#f87171; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🚨 En Yüksek PM2.5 İlleri</button>
+                <button onclick="sendQuickPrompt('en dusuk pm2.5 illeri hangileri?')" style="background:#07253d; border:1px solid #00e59955; color:#00e599; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🌿 En Düşük PM2.5 İlleri</button>
                 <button onclick="sendQuickPrompt('İstanbul ve Ankara hava kalitesi farkı')" style="background:#07253d; border:1px solid #facc1555; color:#facc15; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">⚖️ İstanbul vs Ankara</button>
                 <button onclick="sendQuickPrompt('en çok osb olan sanayi illeri')" style="background:#07253d; border:1px solid #38bdf855; color:#38bdf8; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🏭 Sanayi İlleri</button>
             </div>
@@ -4224,7 +4004,7 @@ function renderChatAssistantModule() {{
 
             <!-- Giriş Çubuğu -->
             <div style="display:flex; gap:10px; margin-top:14px; border-top:1px solid #07253d; padding-top:14px;">
-                <input type="text" id="chatInputBar" placeholder="Hava kalitesi veya şehirler hakkında bir soru sorun... (örn: en kirli, temiz, sanayi)" 
+                <input type="text" id="chatInputBar" placeholder="Hava kalitesi veya şehirler hakkında bir soru sorun... (örn: en yüksek, en düşük, sanayi)" 
                     style="flex:1; background:#021220; border:1px solid #093452; border-radius:8px; padding:10px 16px; color:#ffffff; font-size:13px; outline:none;" 
                     onkeydown="if(event.key==='Enter') executeChatSubmit();" />
                 <button onclick="executeChatSubmit()" style="background:#00e5db; border:none; border-radius:8px; padding:0 20px; color:#021220; font-weight:700; font-size:13px; cursor:pointer;">
@@ -4309,18 +4089,18 @@ function clearChatHistory() {{
 function answerUserQuery(userQuery) {{
     const q = userQuery.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
 
-    // 1. En Kirli / Kötü
+    // 1. En Yüksek PM2.5
     if (q.includes('kirli') || q.includes('kotu') || q.includes('en yuksek') || q.includes('tehlikeli')) {{
         const top3 = [...CITIES].sort((a,b) => b.pm25 - a.pm25).slice(0, 3);
         const list = top3.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong> (${{c.bolge}}): <code style="color:#ef4444; background:#2d1215; padding:2px 6px; border-radius:4px;">${{fmt(c.pm25)}} µg/m³</code> (DSÖ sınırının ${{fmt(c.pm25/5)}} katı)`).join('<br>');
-        return `🚨 <strong>Türkiye Genelinde Havası En Kirli 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Analiz Notu:</em> Osmaniye, Iğdır ve Erzincan gibi illerimizde topoğrafik çanak yapısı (rüzgar hapsi / termal inversiyon) ve kış aylarındaki evsel ısınma emisyonları kirliliği kritik seviyelere taşımaktadır.`;
+        return `🚨 <strong>Türkiye Genelinde PM2.5 Seviyesi En Yüksek 3 İl:</strong><br><br>${{list}}`;
     }}
 
-    // 2. En Temiz / İyi
+    // 2. En Düşük PM2.5
     if (q.includes('temiz') || q.includes('iyi') || q.includes('en dusuk') || q.includes('saglikli') || q.includes('ferah')) {{
         const top3 = [...CITIES].sort((a,b) => a.pm25 - b.pm25).slice(0, 3);
         const list = top3.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong> (${{c.bolge}}): <code style="color:#00e599; background:#04281f; padding:2px 6px; border-radius:4px;">${{fmt(c.pm25)}} µg/m³</code>`).join('<br>');
-        return `🌿 <strong>Türkiye Genelinde Havası En Temiz Olan 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Analiz Notu:</em> Tunceli, Artvin ve Rize kırsalında sanayi yoğunluğunun düşüklüğü ve güçlü hava koridorları partikül madde konsantrasyonunu ulusal ortalamaların oldukça altında tutmaktadır.`;
+        return `🌿 <strong>Türkiye Genelinde PM2.5 Seviyesi En Düşük 3 İl:</strong><br><br>${{list}}`;
     }}
 
     // 3. Şehir Bazlı Eşleşme
@@ -4336,11 +4116,11 @@ function answerUserQuery(userQuery) {{
     if (q.includes('osb') || q.includes('sanayi') || q.includes('fabrika') || q.includes('endustri')) {{
         const top3Osb = [...CITIES].sort((a,b) => b.osb_sayisi - a.osb_sayisi).slice(0, 3);
         const list = top3Osb.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong>: ${{c.osb_sayisi}} OSB (${{fmt(c.osb)}} hektar) &bull; PM2.5: <code>${{fmt(c.pm25)}} µg/m³</code>`).join('<br>');
-        return `🏭 <strong>Türkiye'de En Çok Organize Sanayi Bölgesine (OSB) Sahip 3 İl:</strong><br><br>${{list}}<br><br>💡 <em>Bilgi:</em> OSB alanları (OSB verileri: OSBÜK, indirme tarihi: GG.AA.2026) hava kirliliği göstergeleriyle orta-yüksek düzeyde pozitif korelasyon göstermektedir.`;
+        return `🏭 <strong>Türkiye'de En Çok Organize Sanayi Bölgesine (OSB) Sahip 3 İl:</strong><br><br>${{list}}`;
     }}
 
     // 5. Genel Karşılama
-    return `👋 Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>.<br><br>Platform veritabanındaki 81 ilin hava kalitesi, sanayi ve sağlık göstergelerini gerçek zamanlı sorgulayabilirim.<br><br>Deneyebileceğiniz bazı sorular:<br>• <em>'En kirli iller hangileri?'</em> veya <em>'kötü'</em><br>• <em>'Havası en temiz iller'</em> veya <em>'temiz'</em><br>• <em>'En çok OSB olan sanayi illeri'</em> veya <em>'sanayi'</em><br>• <em>'İstanbul\\'un durumu ne?'</em>, <em>'Bursa'</em>, <em>'Iğdır'</em>`;
+    return `👋 Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>.<br><br>Platform veritabanındaki 81 ilin hava kalitesi, sanayi ve sağlık göstergelerini gerçek zamanlı sorgulayabilirim.<br><br>Deneyebileceğiniz bazı sorular:<br>• <em>'PM2.5 en yüksek iller hangileri?'</em><br>• <em>'PM2.5 en düşük iller'</em><br>• <em>'En çok OSB olan sanayi illeri'</em> veya <em>'sanayi'</em><br>• <em>'İstanbul\\'un durumu ne?'</em>, <em>'Bursa'</em>, <em>'Iğdır'</em>`;
 }}
 
 // ==========================================

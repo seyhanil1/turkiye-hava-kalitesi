@@ -7,15 +7,15 @@ Tamamen yerel (offline), harici kütüphane veya API anahtarı olmadan çalışa
 Özellikler:
 1. %100 Çevrimdışı ve Yerel: Yalnızca platformun mevcut 81 il master_df verisini kullanır.
 2. 4 Hazır Buton (st.button):
-   - 🚨 En Riskli 3 Şehir
-   - 🌿 En Temiz 3 Şehir
+   - 🚨 PM2.5 Seviyesi En Yüksek 3 Şehir
+   - 🌿 PM2.5 Seviyesi En Düşük 3 Şehir
    - 🏭 En Çok OSB'li 3 İl
    - ⚖️ İstanbul vs Ankara Kıyasla
 3. Akıllı Sorgu Eşleme:
    - Türkçe karakter duyarlı il tarama (İ/i, I/ı, Ğ/g, Ü/u, Ş/s, Ö/o, Ç/c ve ekler)
    - İki il geçerse yan yana detaylı karşılaştırma tablosu
    - Tek il geçerse PM2.5, DSÖ durumu ve OSB sayısı karne formatında
-   - 'en kirli' / 'en temiz' sorgularında ilk 3 ili listeleme
+   - 'en yüksek' / 'en düşük' sorgularında ilk 3 ili listeleme
    - 'osb' / 'sanayi' sorgularında en çok OSB'ye sahip 3 ili listeleme
    - Eşleşmeyen sorularda kullanıcı rehberi
 4. st.session_state.messages geçmiş yönetimi ve st.chat_message arayüzü
@@ -156,7 +156,7 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
         cleanest_b = bolge_stats.index[0]
         cleanest_v = bolge_stats.iloc[0]
 
-        # En temiz bölgenin en temiz ilini bul
+        # Bölgenin PM2.5 seviyesi en düşük ilini bul
         cleanest_region_df = df[df["bolge"] == cleanest_b].sort_values(by="pm25", ascending=True)
         top_city_in_reg = cleanest_region_df.iloc[0]["il"] if not cleanest_region_df.empty else ""
         top_city_pm = cleanest_region_df.iloc[0]["pm25"] if not cleanest_region_df.empty else 0.0
@@ -167,11 +167,11 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
 
         return (
             f"🌍 **Türkiye'nin 7 Coğrafi Bölgesi Hava Kalitesi Sıralaması:**\n\n"
-            f"🏆 **Havası En Temiz Coğrafi Bölge:** **{cleanest_b}** (Bölgesel Ortalama: `{cleanest_v:.1f} µg/m³` PM2.5)\n"
-            f"• *Bölgenin En Temiz İli:* **{top_city_in_reg}** (`{top_city_pm:.1f} µg/m³`)\n\n"
-            f"**Tüm Coğrafi Bölgelerin Temizden Kirliye Doğru Sıralaması:**\n"
+            f"🏆 **Ortalama PM2.5 Seviyesi En Düşük Coğrafi Bölge:** **{cleanest_b}** (Bölgesel Ortalama: `{cleanest_v:.1f} µg/m³` PM2.5)\n"
+            f"• *Bölgede PM2.5 En Düşük İl:* **{top_city_in_reg}** (`{top_city_pm:.1f} µg/m³`)\n\n"
+            f"**Tüm Coğrafi Bölgelerin PM2.5 Seviyesine Göre Sıralaması (Düşükten Yükseğe):**\n"
             + "\n".join(lines)
-            + "\n\n💡 **Meteorolojik Not:** Karadeniz'in denizel hava akımları ve nemli rüzgar koridorları partikül dağılımını desteklerken; Doğu ve Güneydoğu Anadolu'da kuraklık, sınır ötesi toz taşınımı ve çanak topografya kirlilik yükünü artırmaktadır."
+            + "\n\n💡 **Veri Notu:** Coğrafi bölgeler arasındaki partikül konsantrasyonu dağılımı bölgesel sanayi, topoğrafya ve meteorolojik faktörlerin bileşkesini yansıtır."
         )
 
     # 4. KURAL: SOLUNUM RİSKİ EN YÜKSEK İLLER (TÜİK VERİLERİ)
@@ -228,7 +228,7 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
         return (
             "🏭 **Türkiye'de Sanayi Baskısı ve Üretim Yoğunluğu En Yüksek İller (OSBÜK Verileri):**\n\n"
             + "\n".join(lines)
-            + "\n\n💡 **Sanayi Analitiği:** Parsel sayısı ve üretim alanı yüksek sanayi havzalarında yeşil dönüşüm, baca gazı filtrasyonu ve temiz yakıt dönüşümü öncelikli politika müdahalesi olarak öne çıkmaktadır."
+            + "\n\n💡 **Sanayi Analitiği:** OSB sayısı ve sanayi alanı yüksek illerde emisyon izleme ve mevzuat standartlarına uyum takip edilmektedir."
         )
 
     # 7. KURAL: TEK İL GEÇERSE DETAYLI İL KARNESİ & PROFİLİ
@@ -266,9 +266,8 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
                 f"{i+1}. **{r['il']}** ({r['bolge']}): `{r['pm25']:.1f} µg/m³` PM2.5 &bull; DSÖ sınırının **{kat:.1f} katı** &bull; {int(r.get('osb_sayisi', 0))} OSB"
             )
         return (
-            "🚨 **Türkiye Genelinde Havası En Riskli (PM2.5 Seviyesi En Yüksek) 3 Şehir:**\n\n"
+            "🚨 **Türkiye Genelinde PM2.5 Seviyesi En Yüksek 3 Şehir:**\n\n"
             + "\n".join(lines)
-            + "\n\n*Neden-Sonuç Notu:* Topoğrafik çanak yapısı (inversiyon hapsi) ve yoğun kış emisyonları bu illerde kirliliği artıran en temel etkenlerdir."
         )
 
     # 9. KURAL: 'EN TEMİZ' SORGUSU (PM2.5 EN DÜŞÜK 3 İL)
@@ -280,9 +279,8 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
                 f"{i+1}. **{r['il']}** ({r['bolge']}): `{r['pm25']:.1f} µg/m³` PM2.5 &bull; DSÖ sınırının **{r['pm25']/5.0:.1f} katı**"
             )
         return (
-            "🌿 **Türkiye Genelinde Havası En Temiz (PM2.5 Seviyesi En Düşük) 3 Şehir:**\n\n"
+            "🌿 **Türkiye Genelinde PM2.5 Seviyesi En Düşük 3 Şehir:**\n\n"
             + "\n".join(lines)
-            + "\n\n*Analiz Notu:* Yüksek rakım, güçlü rüzgar koridorları ve sanayi yoğunluğunun düşüklüğü bu illerde temiz hava kalitesini korumaktadır."
         )
 
     # 10. KURAL: EŞLEŞMEYEN GENEL SORULARDA REHBER SUN
@@ -290,7 +288,7 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
         "Merhaba! Ben **HavaAtlası Yerel Veri Asistanı**.\n\n"
         "Sorunuzu sistem veritabanındaki 81 il ile eşleştiremedim. Bana şu kalıplarla soru sorabilirsiniz:\n\n"
         "- **Sağlık & Risk:** *'Solunum Riski En Yüksek 3 İl'* veya *'Hangi ilde solunum ölümü daha fazla?'*\n"
-        "- **Bölgesel Analiz:** *'En Temiz Bölge'* veya *'Havası en temiz bölge hangisi?'*\n"
+        "- **Bölgesel Analiz:** *'En Düşük PM2.5 Bölgesi'* veya *'PM2.5 ortalaması en düşük bölge hangisi?'*\n"
         "- **Sanayi & OSB:** *'Sanayi Baskısı En Yüksek İller'* veya *'Kirlilik ve OSB ilişkisi'*\n"
         "- **DSÖ Sınırları:** *'DSÖ Limitini En Çok Aşanlar'*\n"
         "- **Tek Şehir Karnesi:** *'Bursa il profili'*, *'Iğdır hava kalitesi ve karnesi'*, *'Ankara durumu'*\n"
@@ -414,9 +412,9 @@ def render_chat_assistant_page(df: pd.DataFrame):
                     "- *'Solunum Riski En Yüksek 3 İl'* (TÜİK solunum ölüm oranlarını listeler)\n"
                     "- *'DSÖ Limitini En Çok Aşanlar'* (5 µg/m³ kılavuz sınırını aşım katları)\n"
                     "- *'Sanayi Baskısı En Yüksek İller'* (OSB ve sanayi parseli sıralaması)\n"
-                    "- *'En Temiz Bölge'* veya *'Havası en temiz bölge hangisi?'*\n"
+                    "- *'En Düşük PM2.5 Bölgesi'* veya *'PM2.5 ortalaması en düşük bölge hangisi?'*\n"
                     "- *'Iğdır hava kalitesi ve karnesi'* veya *'Bursa il profili'*\n"
-                    "- *'En kirli 3 il'*\n"
+                    "- *'PM2.5 en yüksek 3 il'*\n"
                     "- *'İstanbul vs Ankara Kıyasla'*"
                 )
             }
@@ -450,8 +448,8 @@ def render_chat_assistant_page(df: pd.DataFrame):
 
     with c4:
         st.markdown("<div class='quick-btn-box'>", unsafe_allow_html=True)
-        if st.button("En Temiz Bölge", key="btn_temiz_bolge", use_container_width=True):
-            btn_prompt = "En Temiz Bölge"
+        if st.button("En Düşük PM2.5 Bölgesi", key="btn_temiz_bolge", use_container_width=True):
+            btn_prompt = "En Düşük PM2.5 Bölgesi"
         st.markdown("</div>", unsafe_allow_html=True)
 
     # Sohbet Giriş Kutusu (st.chat_input)

@@ -18,7 +18,7 @@ def create_ranking_bar_chart(
     ascending: bool = False
 ) -> go.Figure:
     """
-    Şehir sıralaması yatay çubuk grafiği (En Kirli veya En Temiz N İl).
+    Şehir sıralaması yatay çubuk grafiği (En Yüksek veya En Düşük N İl).
     """
     if pollutant not in df.columns:
         pollutant = "pm25"
