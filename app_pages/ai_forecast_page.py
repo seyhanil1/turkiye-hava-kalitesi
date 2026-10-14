@@ -299,17 +299,12 @@ def render_ai_forecast_page(df: pd.DataFrame):
     # Başlık ve Üst Açıklama
     st.markdown("""
     <div style='margin-bottom: 24px;'>
-        <div style='display:flex; align-items:center; gap:12px;'>
-            <span style='font-size:32px;'>📊</span>
-            <div>
-                <h2 style='color:#f8fafc; margin:0; font-size:24px; font-weight:700;'>
-                    İl Grupları
-                </h2>
-                <p style='color:#94a3b8; margin:4px 0 0 0; font-size:14px;'>
-                    81 İl İçin Çeyreklik (Quantile) Dağılımı ve OSB-Kirlilik Grup Sınıflandırması
-                </p>
-            </div>
-        </div>
+        <h2 style='color:#f8fafc; margin:0; font-size:24px; font-weight:700;'>
+            İl Grupları
+        </h2>
+        <p style='color:#94a3b8; margin:4px 0 0 0; font-size:14px;'>
+            81 İl İçin Çeyreklik (Quantile) Dağılımı ve OSB-Kirlilik Grup Sınıflandırması
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -346,7 +341,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
     with col_q3:
         st.markdown(f"""
         <div class='info-bubble' style='padding:14px 18px;'>
-            <div style='color:#94a3b8; font-size:12px;'>Kategori A (Düşük OSB, yüksek PM2,5)</div>
+            <div style='color:#94a3b8; font-size:12px;'>Kategori A (Düşük OSB, Yüksek PM2.5)</div>
             <div style='color:#f59e0b; font-size:18px; font-weight:700; margin-top:4px;'>
                 {len(kat_a_df)} İl Tespit Edildi
             </div>
@@ -357,7 +352,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
     with col_q4:
         st.markdown(f"""
         <div class='info-bubble' style='padding:14px 18px;'>
-            <div style='color:#94a3b8; font-size:12px;'>Kategori B (Yüksek OSB, yüksek PM2,5)</div>
+            <div style='color:#94a3b8; font-size:12px;'>Kategori B (Yüksek OSB, Yüksek PM2.5)</div>
             <div style='color:#ef4444; font-size:18px; font-weight:700; margin-top:4px;'>
                 {len(kat_b_df)} İl Tespit Edildi
             </div>
@@ -382,7 +377,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
     col_sel_left, col_sel_right = st.columns([1.5, 2.5])
     with col_sel_left:
         secilen_il = st.selectbox(
-            "📍 Analiz Edilecek İli Seçin:",
+            "Analiz Edilecek İli Seçin:",
             iller,
             index=default_index,
             help="81 il arasından dilediğinizi seçerek istatistiksel trend modelini, anomali sınıflandırmasını ve projeksiyonunu inceleyin."
@@ -394,9 +389,9 @@ def render_ai_forecast_page(df: pd.DataFrame):
     with col_sel_right:
         # Seçilen ilin hızlı rozet durumu
         if category == "Kategori A":
-            cat_badge_html = "<span style='background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fbbf24; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori A: Düşük OSB, yüksek PM2,5</span>"
+            cat_badge_html = "<span style='background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fbbf24; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori A: Düşük OSB, Yüksek PM2.5</span>"
         elif category == "Kategori B":
-            cat_badge_html = "<span style='background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori B: Yüksek OSB, yüksek PM2,5</span>"
+            cat_badge_html = "<span style='background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori B: Yüksek OSB, Yüksek PM2.5</span>"
         else:
             cat_badge_html = "<span style='background:rgba(0,229,219,0.15); border:1px solid #00e5db; color:#38bdf8; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Normal / Dengeli Profil</span>"
 
@@ -416,7 +411,7 @@ def render_ai_forecast_page(df: pd.DataFrame):
     # 4. AŞAMA ALT BÖLÜM: DİNAMİK OLARAK FİLTRELENEN TÜM KATEGORİ LİSTELERİ
     st.write("")
     st.markdown("<hr style='border-color:#1e293b; margin:20px 0;'>", unsafe_allow_html=True)
-    st.markdown("#### 📋 81 İl Dağılım Grupları")
+    st.markdown("#### 81 İl Dağılım Grupları")
 
     chips_a = []
     for _, r in kat_a_df.sort_values(by="pm25", ascending=False).iterrows():
@@ -442,8 +437,8 @@ def render_ai_forecast_page(df: pd.DataFrame):
     with col_list_a:
         st.markdown(f"""
         <div class='info-bubble'>
-            <div class='neon-amber-title'>
-                <span>⛰️</span> Kategori A: Düşük OSB, yüksek PM2,5 İlleri ({len(kat_a_df)} İl)
+            <div style='color:#fbbf24; font-size:15px; font-weight:700; margin-bottom:6px;'>
+                Kategori A: Düşük OSB, Yüksek PM2.5 İlleri ({len(kat_a_df)} İl)
             </div>
             <p style='color:#94a3b8; font-size:12px; margin-bottom:10px;'>
                 OSB Sayısı ≤ {q1_osb:.0f} (Alt %25) ve PM2.5 ≥ {q3_pm_str} µg/m³ (Üst %25)
@@ -457,8 +452,8 @@ def render_ai_forecast_page(df: pd.DataFrame):
     with col_list_b:
         st.markdown(f"""
         <div class='info-bubble'>
-            <div class='neon-red-title'>
-                <span>🏭</span> Kategori B: Yüksek OSB, yüksek PM2,5 İlleri ({len(kat_b_df)} İl)
+            <div style='color:#f87171; font-size:15px; font-weight:700; margin-bottom:6px;'>
+                Kategori B: Yüksek OSB, Yüksek PM2.5 İlleri ({len(kat_b_df)} İl)
             </div>
             <p style='color:#94a3b8; font-size:12px; margin-bottom:10px;'>
                 OSB Sayısı ≥ {q3_osb:.0f} (Üst %25) ve PM2.5 ≥ {q3_pm_str} µg/m³ (Üst %25)
@@ -468,3 +463,9 @@ def render_ai_forecast_page(df: pd.DataFrame):
             </div>
         </div>
         """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style='background:rgba(2,18,32,0.6); border:1px solid #1e293b; border-left:3px solid #38bdf8; padding:10px 14px; border-radius:6px; margin-top:14px; font-size:12.5px; color:#94a3b8;'>
+        <strong>Bilgi Notu:</strong> Listelenmeyen 68 il, belirlenen uç çeyreklik eşiklerinin dışında kalarak orta segmentte yer alan 'Dengeli Profil' grubundadır.
+    </div>
+    """, unsafe_allow_html=True)
