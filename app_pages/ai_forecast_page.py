@@ -3,8 +3,8 @@
 HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 
 81 İl İçin Çeyreklik (Quantile) Dağılımı ve OSB-Kirlilik Grup Sınıflandırması:
-1. Kategori A (Düşük OSB, yüksek PM2,5): OSB sayısı alt %25, PM2.5 üst %25
-2. Kategori B (Yüksek OSB, yüksek PM2,5): OSB sayısı üst %25, PM2.5 üst %25
+1. Kategori A (Düşük OSB, yüksek PM2.5): OSB sayısı alt %25, PM2.5 üst %25
+2. Kategori B (Yüksek OSB, yüksek PM2.5): OSB sayısı üst %25, PM2.5 üst %25
 3. Normal: Diğer dengeli iller
 """
 
@@ -48,10 +48,10 @@ def determine_city_category(
     pm25 = float(row["pm25"])
 
     if osb <= q1_osb and pm25 >= q3_pm25:
-        # Kategori A (Düşük OSB, yüksek PM2,5): %3 yıllık artış
+        # Kategori A (Düşük OSB, yüksek PM2.5): %3 yıllık artış
         return "Kategori A", 0.03
     elif osb >= q3_osb and pm25 >= q3_pm25:
-        # Kategori B (Yüksek OSB, yüksek PM2,5): %5 yıllık artış
+        # Kategori B (Yüksek OSB, yüksek PM2.5): %5 yıllık artış
         return "Kategori B", 0.05
     else:
         # Normal / Dengeli: %1 yıllık artış
@@ -82,10 +82,10 @@ def create_forecast_figure(
     """
     if category == "Kategori A":
         theme_color = "#f59e0b"   # Amber / Uyarı
-        badge_text = "Kategori A (Düşük OSB, yüksek PM2,5) — Yıllık +%3 Artış Trendi"
+        badge_text = "Kategori A (Düşük OSB, Yüksek PM2.5) — Yıllık +%3 Artış Trendi"
     elif category == "Kategori B":
         theme_color = "#ef4444"   # Kırmızı / Kritik Sanayi
-        badge_text = "Kategori B (Yüksek OSB, yüksek PM2,5) — Yıllık +%5 Artış Trendi"
+        badge_text = "Kategori B (Yüksek OSB, Yüksek PM2.5) — Yıllık +%5 Artış Trendi"
     else:
         theme_color = "#00e5db"   # Neon Turkuaz / Normal
         badge_text = "Normal Profil (Dengeli) — Yıllık +%1 Artış Trendi"
