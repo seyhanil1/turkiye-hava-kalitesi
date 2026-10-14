@@ -317,40 +317,60 @@ iframe {
 """, unsafe_allow_html=True)
 
 
-def render_shared_top_bar():
+def render_shared_top_bar(show_city: bool = True):
     """Tüm analiz sayfaları için paylaşılan ortak filtre çubuğu."""
-    c1, c2, c3 = st.columns([1.5, 0.9, 1.2])
-    with c1:
-        current_idx = cities_list.index(st.session_state["selected_city"]) if st.session_state["selected_city"] in cities_list else 0
-        new_city = st.selectbox(
-            "İl veya bölge ara:",
-            cities_list,
-            index=current_idx,
-            label_visibility="collapsed",
-            key="_shared_city_picker"
-        )
-        if new_city != st.session_state["selected_city"]:
-            st.session_state["selected_city"] = new_city
-            st.query_params["il"] = new_city
-            if "city" in st.query_params:
-                del st.query_params["city"]
-    with c2:
-        pol_options = ["PM2.5"]
-        cur_pol_idx = 0
-        new_pol = st.selectbox(
-            "Kirletici:",
-            pol_options,
-            index=cur_pol_idx,
-            label_visibility="collapsed",
-            key="_shared_pol_picker"
-        )
-        st.session_state["selected_pollutant"] = "PM2.5"
-    with c3:
-        st.markdown(f"""
-        <div style="background:#031b2e; border:1px solid #093452; border-radius:6px; padding:7px 12px; text-align:center; font-size:11.5px; color:#cbd5e1;">
-            Veri Dönemi: <strong style="color:#00d2ee;">{period_label_str}</strong>
-        </div>
-        """, unsafe_allow_html=True)
+    if show_city:
+        c1, c2, c3 = st.columns([1.5, 0.9, 1.2])
+        with c1:
+            current_idx = cities_list.index(st.session_state["selected_city"]) if st.session_state["selected_city"] in cities_list else 0
+            new_city = st.selectbox(
+                "İl veya bölge ara:",
+                cities_list,
+                index=current_idx,
+                label_visibility="collapsed",
+                key="_shared_city_picker"
+            )
+            if new_city != st.session_state["selected_city"]:
+                st.session_state["selected_city"] = new_city
+                st.query_params["il"] = new_city
+                if "city" in st.query_params:
+                    del st.query_params["city"]
+        with c2:
+            pol_options = ["PM2.5"]
+            cur_pol_idx = 0
+            new_pol = st.selectbox(
+                "Kirletici:",
+                pol_options,
+                index=cur_pol_idx,
+                label_visibility="collapsed",
+                key="_shared_pol_picker"
+            )
+            st.session_state["selected_pollutant"] = "PM2.5"
+        with c3:
+            st.markdown(f"""
+            <div style="background:#031b2e; border:1px solid #093452; border-radius:6px; padding:7px 12px; text-align:center; font-size:11.5px; color:#cbd5e1;">
+                Veri Dönemi: <strong style="color:#00d2ee;">{period_label_str}</strong>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        c1, c2 = st.columns([1.0, 1.8])
+        with c1:
+            pol_options = ["PM2.5"]
+            cur_pol_idx = 0
+            new_pol = st.selectbox(
+                "Kirletici:",
+                pol_options,
+                index=cur_pol_idx,
+                label_visibility="collapsed",
+                key="_shared_pol_picker_nocity"
+            )
+            st.session_state["selected_pollutant"] = "PM2.5"
+        with c2:
+            st.markdown(f"""
+            <div style="background:#031b2e; border:1px solid #093452; border-radius:6px; padding:7px 12px; text-align:center; font-size:11.5px; color:#cbd5e1;">
+                Veri Dönemi: <strong style="color:#00d2ee;">{period_label_str}</strong>
+            </div>
+            """, unsafe_allow_html=True)
     st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 
@@ -392,7 +412,7 @@ def view_correlation():
 
 
 def view_regions():
-    render_shared_top_bar()
+    render_shared_top_bar(show_city=False)
     render_regions_page(df_master)
 
 

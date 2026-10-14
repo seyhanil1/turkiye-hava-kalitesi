@@ -94,8 +94,8 @@ def create_regional_boxplot(
     fig.update_layout(
         title=None,
         height=380,
-        margin=dict(t=15, l=20, r=20, b=30),
-        xaxis=dict(title="", tickfont=dict(color="#94a3b8", size=11)),
+        margin=dict(t=15, l=20, r=20, b=80),
+        xaxis=dict(title="", tickfont=dict(color="#94a3b8", size=11), tickangle=-45),
         yaxis=dict(
             title=dict(text=f"{label} Konsantrasyonu (µg/m³)", font=dict(color="#94a3b8", size=11)),
             gridcolor="#1e293b"

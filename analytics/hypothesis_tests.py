@@ -170,11 +170,17 @@ def run_regional_anova(
     # Kruskal-Wallis (Parametrik olmayan eşdeğeri)
     h_stat, kw_pval = stats.kruskal(*groups)
     
-    h0 = f"H₀: Türkiye'nin 7 coğrafi bölgesi arasında ortalama {val_col.upper()} kirlilik seviyeleri farksızdır."
-    h1 = f"H₁: En az bir bölgenin ortalama {val_col.upper()} kirlilik seviyesi diğerlerinden anlamlı derecede farklıdır."
+    val_label = "PM2.5" if str(val_col).lower().replace(".", "") == "pm25" else str(val_col).upper()
+    h0 = f"H₀: Bölgelerin ortalama {val_label} kirlilik seviyeleri arasında istatistiksel olarak anlamlı bir fark yoktur."
+    h1 = "H₁: En az bir bölgenin kirlilik seviyesi diğer bölgelerden istatistiksel olarak anlamlı derecede farklıdır."
     
     is_sig_anova = f_pval < alpha
     is_sig_kw = kw_pval < alpha
+
+    f_stat_str = f"{f_stat:.2f}".replace(".", ",")
+    f_pval_str = f"{f_pval:.3f}".replace(".", ",")
+    h_stat_str = f"{h_stat:.2f}".replace(".", ",")
+    kw_pval_str = f"{kw_pval:.3f}".replace(".", ",")
     
     return {
         "success": True,
@@ -191,8 +197,8 @@ def run_regional_anova(
         "h0": h0,
         "h1": h1,
         "interpretation": (
-            f"ANOVA F-testi (F={f_stat:.2f}, p={f_pval:.4f}) ve Kruskal-Wallis testi (H={h_stat:.2f}, p={kw_pval:.4f}) sonucunda; "
-            + ("bölgeler arasında hava kalitesi açısından istatistiksel olarak ANLAMLI FARK bulunmuştur." if (is_sig_anova or is_sig_kw)
-               else "bölgeler arasında istatistiksel olarak anlamlı bir varyasyon tespit edilmemiştir.")
+            f"ANOVA F-testi (F = {f_stat_str}, p = {f_pval_str}) ve Kruskal-Wallis testi (H = {h_stat_str}, p = {kw_pval_str}) sonucunda; "
+            + ("bölgeler arasında hava kalitesi açısından istatistiksel olarak anlamlı fark bulunmuştur (p < 0.05)." if (is_sig_anova or is_sig_kw)
+               else "gruplar arasında istatistiksel olarak anlamlı bir fark tespit edilmemiştir (p > 0.05).")
         )
     }

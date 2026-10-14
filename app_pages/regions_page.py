@@ -83,10 +83,9 @@ def create_regional_benchmark_bar(df: pd.DataFrame, pollutant: str = "pm25") -> 
         marker=dict(
             color=x_values,
             colorscale=[
-                [0.0, "#0c4a6e"],
-                [0.35, "#0284c7"],
-                [0.70, "#f97316"],
-                [1.0, "#ef4444"]
+                [0.0, "#083358"],
+                [0.5, "#0284c7"],
+                [1.0, "#38bdf8"]
             ],
             line=dict(color="rgba(255, 255, 255, 0.25)", width=1)
         ),
@@ -145,7 +144,7 @@ def render_regions_page(df: pd.DataFrame):
     fig_bench = create_regional_benchmark_bar(df, pollutant="pm25")
     st.plotly_chart(fig_bench, use_container_width=True, config={'displayModeBar': False})
     st.caption("* Kesikli kırmızı çizgi DSÖ yıllık kılavuz sınırıdır (5 µg/m³). Tüm bölge ortalamaları bu eşiğin 6 ila 9 katı üzerindedir.")
-    st.caption("Not: Gösterilen bölgesel veriler yıllık konsolidasyon (son 12 ay) ölçümlerini yansıtmakta olup DSÖ yıllık referans kılavuz çizgisi ile karşılaştırılmıştır.")
+    st.caption("Not: Gösterilen bölgesel veriler Doğrulanmış 12 Aylık Konsolidasyon Dönemi ölçümlerini yansıtmakta olup DSÖ yıllık referans kılavuz çizgisi ile karşılaştırılmıştır.")
 
     st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
@@ -165,7 +164,7 @@ def render_regions_page(df: pd.DataFrame):
     formatted_df["Medyan PM2.5 (µg/m³)"] = display_df["medyan"].apply(lambda x: f"{x:.2f}".replace(".", ","))
     formatted_df["Standart Sapma"] = display_df["std"].apply(lambda x: f"{x:.2f}".replace(".", ","))
     formatted_df["Toplam OSB"] = display_df["toplam_osb"].astype(int)
-    formatted_df["Solunum Ölüm Hızı (100k)"] = display_df["bolgesel_solunum_olum_100k"].apply(lambda x: f"{x:.1f}".replace(".", ","))
+    formatted_df["Solunum Ölüm Hızı (Yüz Binde)"] = display_df["bolgesel_solunum_olum_100k"].apply(lambda x: f"{x:.1f}".replace(".", ","))
 
     st.dataframe(
         formatted_df,
@@ -180,6 +179,10 @@ def render_regions_page(df: pd.DataFrame):
     with col_box:
         st.markdown("### Bölgesel PM2.5 Dağılımı (Kutu Grafiği)")
         fig_box = create_regional_boxplot(df, pollutant="pm25")
+        fig_box.update_layout(
+            margin=dict(t=15, l=20, r=20, b=80),
+            xaxis=dict(tickangle=-45)
+        )
         st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
 
     with col_bar:
@@ -199,10 +202,10 @@ def render_regions_page(df: pd.DataFrame):
         fig_osb.update_layout(
             height=380, 
             showlegend=False, 
-            margin=dict(t=30, l=10, r=10, b=30),
+            margin=dict(t=30, l=10, r=10, b=80),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(tickfont=dict(color="#94a3b8", size=11)),
+            xaxis=dict(tickfont=dict(color="#94a3b8", size=11), tickangle=-45),
             yaxis=dict(gridcolor="#1e293b", tickfont=dict(color="#94a3b8", size=10))
         )
         st.plotly_chart(fig_osb, use_container_width=True, config={'displayModeBar': False})
@@ -214,6 +217,12 @@ def render_regions_page(df: pd.DataFrame):
     anova_res = run_regional_anova(df, group_col="bolge", val_col="pm25")
 
     if anova_res.get("success"):
+        f_val_str = f"{anova_res['anova_f']:.2f}".replace(".", ",")
+        f_p_str = f"{anova_res['anova_p']:.3f}".replace(".", ",")
+        h_val_str = f"{anova_res['kruskal_h']:.2f}".replace(".", ",")
+        h_p_str = f"{anova_res['kruskal_p']:.3f}".replace(".", ",")
+        levene_p_str = f"{anova_res['levene_p']:.3f}".replace(".", ",")
+
         st.markdown(f"""
         <div style='background:#031b2e; border:1px solid #093452; border-radius:12px; padding:20px;'>
             <div style='font-size:14px; font-weight:700; color:#00d2ee; margin-bottom:8px;'>
@@ -225,22 +234,22 @@ def render_regions_page(df: pd.DataFrame):
             <div style='display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:14px;'>
                 <div style='background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;'>
                     <div style='font-size:11px; color:#8faec9;'>Tek Yönlü ANOVA (F)</div>
-                    <div style='font-size:18px; font-weight:700; color:#f8fafc;'>F = {anova_res['anova_f']}</div>
-                    <div style='font-size:11px; color:{"#00e599" if anova_res["anova_significant"] else "#facc15"};'>p = {anova_res['anova_p']:.4f}</div>
+                    <div style='font-size:18px; font-weight:700; color:#f8fafc;'>F = {f_val_str}</div>
+                    <div style='font-size:11px; color:{"#00e599" if anova_res["anova_significant"] else "#facc15"};'>p = {f_p_str}</div>
                 </div>
                 <div style='background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;'>
                     <div style='font-size:11px; color:#8faec9;'>Kruskal-Wallis (H)</div>
-                    <div style='font-size:18px; font-weight:700; color:#f8fafc;'>H = {anova_res['kruskal_h']}</div>
-                    <div style='font-size:11px; color:{"#00e599" if anova_res["kruskal_significant"] else "#facc15"};'>p = {anova_res['kruskal_p']:.4f}</div>
+                    <div style='font-size:18px; font-weight:700; color:#f8fafc;'>H = {h_val_str}</div>
+                    <div style='font-size:11px; color:{"#00e599" if anova_res["kruskal_significant"] else "#facc15"};'>p = {h_p_str}</div>
                 </div>
                 <div style='background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;'>
                     <div style='font-size:11px; color:#8faec9;'>Levene Varyans Homojenliği</div>
-                    <div style='font-size:16px; font-weight:700; color:#f8fafc;'>p = {anova_res['levene_p']}</div>
+                    <div style='font-size:16px; font-weight:700; color:#f8fafc;'>p = {levene_p_str}</div>
                     <div style='font-size:11px; color:#8faec9;'>{'Varyanslar Eşit' if anova_res['equal_variance'] else 'Heterojen Varyans'}</div>
                 </div>
             </div>
             <div style='background:#021220; border-left:4px solid #00e599; padding:12px; border-radius:6px; font-size:13px; color:#cbd5e1;'>
-                <b>İstatistiki Sonuç:</b> {anova_res['interpretation']}
+                <b>İstatistiksel Değerlendirme:</b> {anova_res['interpretation']}
             </div>
         </div>
         """, unsafe_allow_html=True)
