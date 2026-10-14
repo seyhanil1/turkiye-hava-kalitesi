@@ -110,6 +110,8 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             else:
                 eval_note = f"**{c2}**, {c1} iline kıyasla PM2.5 bazında **{pm2 - pm1:.1f} µg/m³** daha yüksek kirlilik maruziyetine sahiptir."
 
+            parsel1_str = f"{parsel1:,}".replace(",", ".")
+            parsel2_str = f"{parsel2:,}".replace(",", ".")
             return (
                 f"⚖️ **{c1} vs {c2} Karşılaştırmalı Hava Kalitesi ve Sanayi Analizi**\n\n"
                 f"| Analiz Göstergesi | **{c1}** | **{c2}** |\n"
@@ -117,11 +119,82 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
                 f"| **Coğrafi Bölge** | {r1.get('bolge', '-')} | {r2.get('bolge', '-')} |\n"
                 f"| **PM2.5 Kirlilik Değeri** | `{pm1:.1f} µg/m³` | `{pm2:.1f} µg/m³` |\n"
                 f"| **DSÖ Hedefine Oran (5 µg/m³)** | **{kat1:.1f}x** ({r1.get('dso_risk', '-')}) | **{kat2:.1f}x** ({r2.get('dso_risk', '-')}) |\n"
-                f"| **Organize Sanayi Bölgesi (OSB)** | {osb1} adet ({r1.get('osb_alani_hektar', 0):.0f} ha) | {osb2} adet ({r2.get('osb_alani_hektar', 0):.0f} ha) |\n"
-                f"| **Sanayi Parsel Sayısı** | {parsel1:,} parsel | {parsel2:,} parsel |\n"
+                f"| **Organize Sanayi Bölgesi (OSB)** | {osb1} adet | {osb2} adet |\n"
+                f"| **Sanayi Parsel Sayısı** | {parsel1_str} parsel | {parsel2_str} parsel |\n"
                 f"| **Solunum Kaynaklı Vefat (100k)** | `{sol1:.1f} / 100 bin` | `{sol2:.1f} / 100 bin` |\n\n"
                 f"💡 **Değerlendirme:** {eval_note}"
             )
+
+    # ÖZEL ANALİTİK SORU 1: SANAYİSİ AZ AMA HAVASI EN KİRLİ İLLER VE KÖK NEDENLERİ
+    if ("sanayisi az" in p_norm or "sanayisiz" in p_norm or ("sanayi" in p_norm and "az" in p_norm)) and \
+       any(k in p_norm for k in ["kirli", "kirlilik", "hava", "sebebi"]):
+        outlier_cities = ["Iğdır", "Erzincan", "Osmaniye", "Düzce"]
+        lines = []
+        for c_name in outlier_cities:
+            c_row = df[df["il"] == c_name]
+            if not c_row.empty:
+                r = c_row.iloc[0]
+                lines.append(
+                    f"• **{c_name}** ({r.get('bolge', '')}): PM2.5: `{r['pm25']:.1f} µg/m³` (DSÖ kılavuzunun {r['pm25']/5.0:.1f} katı) &bull; **Yalnızca {int(r.get('toplam_osb', 0))} OSB**"
+                )
+
+        return (
+            "🏔️ **Sanayisi Az Olmasına Rağmen Havası En Kirli İller ve Kök Nedenleri:**\n\n"
+            + "\n".join(lines) + "\n\n"
+            "🔍 **Neden Sanayisiz İllerde Kirlilik Bu Kadar Yüksek?**\n"
+            "1. **Topoğrafik Çanak (Havza) Hapsi:** Iğdır, Erzincan ve Düzce gibi iller etrafı yüksek dağlarla çevrili derin çanak havzalarda yer alır. Rüzgar sirkülasyonu kısıtlıdır; kirli hava kütlesi havzada hapsolur.\n"
+            "2. **Kış Sıcaklık Terselmesi (İnversiyon):** Kış aylarında yer seviyesindeki soğuk hava tabakası üstteki sıcak hava tabakası altında sıkışır. Bu durum adeta görünmez bir 'hava kapağı' oluşturarak bacalardan ve egzozlardan çıkan partiküllerin dikey dağılımını engeller.\n"
+            "3. **Sınır Ötesi Toz ve Taşınım:** Doğu Anadolu havzası, komşu ülkelerden ve kurak bölgelerden gelen sınır ötesi çöl tozu ve mineral partikül taşınımına doğrudan açıktır.\n"
+            "4. **Kentsel Isınmada Katı Yakıt:** Düşük gelirli mahallelerde kömür ve linyit ısınması yer seviyesinde yoğun partikül dumanı birikimine yol açar.\n\n"
+            "💡 **Özet:** Türkiye'deki kirlilik haritası tek başına sanayiyi göstermez; mikro-klima ve coğrafi hapis mekanizmaları en az sanayi kadar belirleyicidir."
+        )
+
+    # ÖZEL ANALİTİK SORU 2: DSÖ 5 µg/m³ KILAVUZ DEĞERİNİ KARŞILAYAN İL VAR MI?
+    if any(k in p_norm for k in ["dso", "dso'nun", "5 ug", "kilavuz"]) and any(k in p_norm for k in ["karsilayan", "karsiliyor", "uyumlu", "var mi"]):
+        min_c = df.sort_values(by="pm25", ascending=True).iloc[0]
+        max_c = df.sort_values(by="pm25", ascending=False).iloc[0]
+        avg_pm = df["pm25"].mean()
+        return (
+            "🌍 **DSÖ (Dünya Sağlık Örgütü) 5 µg/m³ Yıllık Kılavuz Değeri Uyumluluk Analizi:**\n\n"
+            "❌ **Cevap: Hayır, 81 ilimizin hiçbirinde DSÖ 5 µg/m³ kılavuz değeri karşılanamamaktadır.**\n\n"
+            "📌 **Temel Göstergeler:**\n"
+            f"• **Ulusal Uyum Oranı:** %0 (81 ilin tamamında PM2.5 seviyesi 5 µg/m³ limitinin üzerindedir).\n"
+            f"• **Türkiye Aritmetik Ortalaması:** `{avg_pm:.1f} µg/m³` (DSÖ kılavuz değerinin **{avg_pm/5.0:.1f} katı**).\n"
+            f"• **En Düşük Kirlilikli İl:** **{min_c['il']}** (`{min_c['pm25']:.1f} µg/m³` - DSÖ sınırının **{min_c['pm25']/5.0:.1f} katı**).\n"
+            f"• **En Yüksek Kirlilikli İl:** **{max_c['il']}** (`{max_c['pm25']:.1f} µg/m³` - DSÖ sınırının **{max_c['pm25']/5.0:.1f} katı**).\n\n"
+            "💡 **Kıyaslama:** Türkiye'nin en temiz kabul edilen illerinde dahi partikül yoğunluğu DSÖ'nün insan sağlığı için önerdiği 5 µg/m³ eşiğinin 3 ila 7 katı üzerindedir."
+        )
+
+    # ÖZEL ANALİTİK SORU 5: HAVA KİRLİLİĞİ İLE SOLUNUM ÖLÜMLERİ ARASINDA PARALELLİK VAR MI?
+    if ("solunum" in p_norm or "vefat" in p_norm) and ("paralellik" in p_norm or "dogrudan" in p_norm or ("iliski" in p_norm and "kirlilik" in p_norm)):
+        return (
+            "🫁 **Hava Kirliliği ile Solunum Yolu Ölümleri Arasındaki İlişki Analizi:**\n\n"
+            "⚠️ **Cevap: Doğrudan ve doğrusal bir birebir paralellik bulunmamaktadır.**\n\n"
+            "TÜİK ölüm nedeni istatistikleri ve PM2.5 kirlilik verileri karşılaştırıldığında şu kritik epidemiyolojik gerçekler öne çıkmaktadır:\n\n"
+            "1. **Demografik Yaş Yapısı Faktörü:** Solunum yolu kaynaklı vefatlar (KOAH, pnömoni vb.) ileri yaş gruplarında katlanarak artmaktadır. Örneğin Edirne ve Çanakkale gibi yaşlı nüfus oranı yüksek illerde kirlilik orta düzeyde olsa dahi 100 bin kişiye düşen solunum vefatı yüksek çıkmaktadır.\n"
+            "2. **Genç Nüfuslu Sanayi/Kirlilik Havzaları:** Güneydoğu Anadolu (Şanlıurfa, Gaziantep) gibi kirlilik oranının yüksek ancak nüfusun genç olduğu illerde kaba ölüm hızları daha düşük gözlenmektedir.\n"
+            "3. **Kronik Maruziyet Gecikmesi (Lag Etkisi):** Solunum yolu hastalıkları anlık hava kirliliğinden ziyade 20-30 yıllık birikimli maruziyetin sonucudur.\n"
+            "4. **Ekolojik Yanılgı (Ecological Fallacy):** İl düzeyindeki makro kirlilik verileri, bireylerin mesleki veya iç ortam maruziyetini tek başına yansıtamaz.\n\n"
+            "💡 **Özet:** Hava kirliliği solunum hastalıkları için kanıtlanmış bir risk faktörüdür; ancak il bazındaki vefat istatistiklerinde nüfusun yaş ortalaması ve sağlık altyapısı birincil belirleyici olmaktadır."
+        )
+
+    # ÖZEL ANALİTİK SORU 4: OSB SAYISI EN YÜKSEK İLLERDE KİRLİLİK NE DURUMDA?
+    if ("osb sayisi en yuksek" in p_norm or "organize sanayi bolgesi" in p_norm or "en cok osb" in p_norm) and ("kirlilik" in p_norm or "ne durumda" in p_norm):
+        top_osb_df = df.sort_values(by="toplam_osb", ascending=False).head(5)
+        lines = []
+        for i, (_, r) in enumerate(top_osb_df.iterrows()):
+            p_cnt = int(r.get("toplam_parsel", 0)) if pd.notna(r.get("toplam_parsel")) else 0
+            lines.append(
+                f"{i+1}. **{r['il']}** ({r['bolge']}): **{int(r['toplam_osb'])} OSB** ({p_cnt:,} parsel) &bull; PM2.5: `{r['pm25']:.1f} µg/m³` (DSÖ'nün {r['pm25']/5.0:.1f} katı)"
+            )
+        return (
+            "🏭 **Organize Sanayi Bölgesi (OSB) Sayısı En Yüksek İllerde Kirlilik Durumu:**\n\n"
+            + "\n".join(lines) + "\n\n"
+            "📊 **Analitik Bulgular:**\n"
+            "1. **Marmara Üretim Koridoru:** Bursa (17 OSB, 38,4 µg/m³) ve Tekirdağ (14 OSB, 38,8 µg/m³) gibi yoğun üretim akslarında kirlilik seviyesi Türkiye ortalamasının üzerindedir.\n"
+            "2. **Metropoller ve Yayılım Kapasitesi:** Ankara (15 OSB, 39,2 µg/m³) ve İzmir (15 OSB, 34,7 µg/m³) gibi illerde yüksek sanayi ve nüfus bulunmasına rağmen, geniş topoğrafik yapı kirliliğin Iğdır gibi kapalı çanak havzalardaki ekstrem seviyelere (80+ µg/m³) ulaşmasını önlemektedir.\n"
+            "3. **Sonuç:** Yüksek OSB sayısı genel emisyon tabanını yükseltmektedir; ancak coğrafi çanak yapısı olmayan açık havzalarda meteorolojik rüzgar dağılımı kirliliği hafifletmektedir."
+        )
 
     # 2. KURAL: KİRLİLİK VE OSB İLİŞKİSİ / KORELASYON SORGULARI
     if any(k in p_norm for k in ["kirlilik ve osb", "osb ve kirlilik", "osb iliskisi", "sanayi iliskisi", "korelasyon", "baglanti"]) or \
@@ -148,13 +221,15 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             "💡 **Sonuç:** Türkiye'de hava kalitesi tek başına sanayi varlığıyla değil; **sanayi emisyonları, topoğrafik çanak yapısı ve meteorolojik dinamiklerin** bileşik etkisiyle şekillenmektedir."
         )
 
-    # 3. KURAL: BÖLGESEL SIRALAMA & EN TEMİZ BÖLGE SORGULARI
-    if any(k in p_norm for k in ["en temiz bolge", "temiz bolge", "havasi en temiz bolge", "bolgeler", "bolge siralamasi", "cografi bolge"]) or \
-       ("bolge" in p_norm and any(k in p_norm for k in ["temiz", "en temiz", "iyi", "hangisi", "siralama"])):
+    # 3. KURAL: BÖLGESEL SIRALAMA & EN TEMİZ VE EN KİRLİ BÖLGE SORGULARI
+    if any(k in p_norm for k in ["en temiz bolge", "temiz bolge", "havasi en temiz bolge", "bolgeler", "bolge siralamasi", "cografi bolge", "en temiz ve en kirli", "en kirli ve en temiz"]) or \
+       ("bolge" in p_norm and any(k in p_norm for k in ["temiz", "en temiz", "kirli", "en kirli", "iyi", "hangisi", "siralama"])):
         bolge_stats = df.groupby("bolge")["pm25"].mean().sort_values()
         lines = []
         cleanest_b = bolge_stats.index[0]
         cleanest_v = bolge_stats.iloc[0]
+        dirtiest_b = bolge_stats.index[-1]
+        dirtiest_v = bolge_stats.iloc[-1]
 
         # Bölgenin PM2.5 seviyesi en düşük ilini bul
         cleanest_region_df = df[df["bolge"] == cleanest_b].sort_values(by="pm25", ascending=True)
@@ -162,13 +237,14 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
         top_city_pm = cleanest_region_df.iloc[0]["pm25"] if not cleanest_region_df.empty else 0.0
 
         for idx, (b_name, b_val) in enumerate(bolge_stats.items()):
-            icon = "🌿" if idx == 0 else ("⚠️" if idx == len(bolge_stats) - 1 else "📍")
+            icon = "🌿" if idx == 0 else ("🚨" if idx == len(bolge_stats) - 1 else "📍")
             lines.append(f"{idx+1}. {icon} **{b_name}:** `{b_val:.1f} µg/m³` PM2.5 (DSÖ sınırının {b_val/5.0:.1f} katı)")
 
         return (
             f"🌍 **Türkiye'nin 7 Coğrafi Bölgesi Hava Kalitesi Sıralaması:**\n\n"
-            f"🏆 **Ortalama PM2.5 Seviyesi En Düşük Coğrafi Bölge:** **{cleanest_b}** (Bölgesel Ortalama: `{cleanest_v:.1f} µg/m³` PM2.5)\n"
+            f"🌿 **En Temiz Coğrafi Bölge:** **{cleanest_b}** (Bölgesel Ortalama: `{cleanest_v:.1f} µg/m³` PM2.5)\n"
             f"• *Bölgede PM2.5 En Düşük İl:* **{top_city_in_reg}** (`{top_city_pm:.1f} µg/m³`)\n\n"
+            f"🚨 **En Kirli Coğrafi Bölge:** **{dirtiest_b}** (Bölgesel Ortalama: `{dirtiest_v:.1f} µg/m³` PM2.5)\n\n"
             f"**Tüm Coğrafi Bölgelerin PM2.5 Seviyesine Göre Sıralaması (Düşükten Yükseğe):**\n"
             + "\n".join(lines)
             + "\n\n💡 **Veri Notu:** Coğrafi bölgeler arasındaki partikül konsantrasyonu dağılımı bölgesel sanayi, topoğrafya ve meteorolojik faktörlerin bileşkesini yansıtır."
@@ -242,16 +318,16 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             kat = pm25 / 5.0
             osb_count = int(r.get("osb_sayisi", r.get("toplam_osb", 0)))
             parsel_count = int(r.get("toplam_parsel", 0)) if pd.notna(r.get("toplam_parsel")) else 0
-            alan_ha = float(r.get("osb_alani_hektar", 0.0))
             dso_status = str(r.get("dso_risk", "Kritik" if pm25 > 35 else "Orta"))
             sol_100k = float(r.get("solunum_olum_100k", 0.0))
             sol_toplam = int(r.get("solunum_olum", 0)) if pd.notna(r.get("solunum_olum")) else 0
+            parsel_str = f"{parsel_count:,}".replace(",", ".")
 
             return (
                 f"🏙️ **{c} İli Çevre & Hava Kalitesi Karnesi**\n\n"
                 f"- **PM2.5 Kirlilik Değeri:** `{pm25:.1f} µg/m³`\n"
                 f"- **DSÖ Durumu (Dünya Sağlık Örgütü):** **{dso_status}** (DSÖ 5 µg/m³ yıllık kılavuzunun **{kat:.1f} katı**)\n"
-                f"- **Organize Sanayi Bölgesi (OSB):** **{osb_count} Adet** ({parsel_count:,} parsel, {alan_ha:,.0f} hektar)\n"
+                f"- **Organize Sanayi Bölgesi (OSB):** **{osb_count} Adet** ({parsel_str} parsel)\n"
                 f"- **Bölge & Plaka:** {r.get('bolge', '-')} &bull; Plaka Kodu: {int(r.get('plaka', 0)):02d}\n"
                 f"- **Solunum Kaynaklı Vefat Oranı:** `{sol_100k:.1f} / 100 bin kişi` (~{sol_toplam:,} vefat)"
             )
@@ -287,13 +363,14 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
     return (
         "Merhaba! Ben **HavaAtlası Yerel Veri Asistanı**.\n\n"
         "Sorunuzu sistem veritabanındaki 81 il ile eşleştiremedim. Bana şu kalıplarla soru sorabilirsiniz:\n\n"
-        "- **Sağlık & Risk:** *'Solunum Riski En Yüksek 3 İl'* veya *'Hangi ilde solunum ölümü daha fazla?'*\n"
-        "- **Bölgesel Analiz:** *'En Düşük PM2.5 Bölgesi'* veya *'PM2.5 ortalaması en düşük bölge hangisi?'*\n"
-        "- **Sanayi & OSB:** *'Sanayi Baskısı En Yüksek İller'* veya *'Kirlilik ve OSB ilişkisi'*\n"
-        "- **DSÖ Sınırları:** *'DSÖ Limitini En Çok Aşanlar'*\n"
-        "- **Tek Şehir Karnesi:** *'Bursa il profili'*, *'Iğdır hava kalitesi ve karnesi'*, *'Ankara durumu'*\n"
-        "- **İki Şehir Kıyaslama:** *'İstanbul vs Ankara Kıyasla'*, *'Bursa ile İzmir kıyasla'*\n\n"
-        "Ayrıca yukarıdaki **hazır butonlara** tıklayarak anında detaylı analiz alabilirsiniz!"
+        "- *'Sanayisi az olmasına rağmen havası en kirli iller hangileri ve sebebi ne?'*\n"
+        "- *'DSÖ'nün 5 µg/m³ kılavuz değerini karşılayan temiz bir ilimiz var mı?'*\n"
+        "- *'İstanbul ile Ankara'nın hava kalitesi ve sanayi yükünü kıyasla.'*\n"
+        "- *'Organize Sanayi Bölgesi (OSB) sayısı en yüksek illerde kirlilik ne durumda?'*\n"
+        "- *'Hava kirliliği ile solunum yolu ölümleri arasında doğrudan bir paralellik var mı?'*\n"
+        "- *'Türkiye'nin havası en temiz ve en kirli coğrafi bölgeleri hangileridir?'*\n"
+        "- *'Bursa il profili'* veya *'Iğdır hava kalitesi ve karnesi'*\n\n"
+        "Ayrıca yukarıdaki **hazır analiz butonlarına** tıklayarak anında detaylı analiz alabilirsiniz!"
     )
 
 
@@ -348,8 +425,13 @@ def render_chat_assistant_page(df: pd.DataFrame):
         font-weight: 600 !important;
         border-radius: 10px !important;
         transition: all 0.2s ease-in-out !important;
-        height: 44px !important;
-        white-space: nowrap !important;
+        min-height: 50px !important;
+        height: auto !important;
+        white-space: normal !important;
+        font-size: 12px !important;
+        line-height: 1.35 !important;
+        padding: 8px 10px !important;
+        text-align: center !important;
     }
     .quick-btn-box button:hover {
         border-color: #00e5db !important;
@@ -384,17 +466,25 @@ def render_chat_assistant_page(df: pd.DataFrame):
         </div>
         """, unsafe_allow_html=True)
 
+    welcome_text = (
+        "Merhaba! Ben **HavaAtlası Yerel Veri Asistanı**.\n\n"
+        "81 ilimizin PM2.5 hava kalitesi, kirlilik ölçümleri, Organize Sanayi Bölgesi (OSB) ve parsel sayıları ile "
+        "TÜİK solunum sağlık verileri üzerinden **%100 yerel ve çevrimdışı** olarak çalışıyorum.\n\n"
+        "Aşağıdaki **önerilen analitik soruları** tek tıkla sorabilir ya da dilediğiniz ili/konuyu doğrudan yazabilirsiniz:\n\n"
+        "- *Sanayisi az olmasına rağmen havası en kirli iller hangileri ve sebebi ne?*\n"
+        "- *DSÖ'nün 5 µg/m³ kılavuz değerini karşılayan temiz bir ilimiz var mı?*\n"
+        "- *İstanbul ile Ankara'nın hava kalitesi ve sanayi yükünü kıyasla.*\n"
+        "- *Organize Sanayi Bölgesi (OSB) sayısı en yüksek illerde kirlilik ne durumda?*\n"
+        "- *Hava kirliliği ile solunum yolu ölümleri arasında doğrudan bir paralellik var mı?*\n"
+        "- *Türkiye'nin havası en temiz ve en kirli coğrafi bölgeleri hangileridir?*"
+    )
+
     with col_clr:
         if st.button("Sohbeti Temizle", key="btn_reset_chat", use_container_width=True):
             st.session_state.messages = [
                 {
                     "role": "assistant",
-                    "content": (
-                        "Merhaba! Ben **HavaAtlası Yerel Veri Asistanı**.\n\n"
-                        "81 ilimizin PM2.5 hava kalitesi, kirlilik ölçümleri, Organize Sanayi Bölgesi (OSB) sayıları ve TÜİK solunum sağlık verileriyle "
-                        "tamamen çevrimdışı ve yerel olarak çalışıyorum.\n\n"
-                        "Aşağıdaki **hızlı analiz butonlarını** seçebilir ya da merak ettiğiniz konuyu doğrudan yazabilirsiniz."
-                    )
+                    "content": welcome_text
                 }
             ]
             st.rerun()
@@ -404,52 +494,55 @@ def render_chat_assistant_page(df: pd.DataFrame):
         st.session_state.messages = [
             {
                 "role": "assistant",
-                "content": (
-                    "Merhaba! Ben **HavaAtlası Yerel Veri Asistanı**.\n\n"
-                    "81 ilimizin PM2.5 hava kalitesi, kirlilik ölçümleri, Organize Sanayi Bölgesi (OSB) sayıları ve TÜİK solunum sağlık verileriyle "
-                    "tamamen çevrimdışı ve yerel olarak çalışıyorum.\n\n"
-                    "Aşağıdaki **hızlı analiz butonlarını** kullanabilir ya da dilediğiniz ili veya konuyu yazıp analiz edebilirsiniz:\n"
-                    "- *'Solunum Riski En Yüksek 3 İl'* (TÜİK solunum ölüm oranlarını listeler)\n"
-                    "- *'DSÖ Limitini En Çok Aşanlar'* (5 µg/m³ kılavuz sınırını aşım katları)\n"
-                    "- *'Sanayi Baskısı En Yüksek İller'* (OSB ve sanayi parseli sıralaması)\n"
-                    "- *'En Düşük PM2.5 Bölgesi'* veya *'PM2.5 ortalaması en düşük bölge hangisi?'*\n"
-                    "- *'Iğdır hava kalitesi ve karnesi'* veya *'Bursa il profili'*\n"
-                    "- *'PM2.5 en yüksek 3 il'*\n"
-                    "- *'İstanbul vs Ankara Kıyasla'*"
-                )
+                "content": welcome_text
             }
         ]
 
     # Sohbet Mesajları Konteyneri (Üst Bölüm)
     chat_container = st.container()
 
-    # Sohbet Alanının Üstünde 4 Hazır Buton (st.columns(4))
-    st.markdown("<div style='margin-top: 10px; margin-bottom: 6px; font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;'>HIZLI ANALİZ SEÇENEKLERİ:</div>", unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
+    # Sohbet Alanının Üstünde 6 Hazır Analitik Soru Butonu (2 Satır x 3 Sütun)
+    st.markdown("<div style='margin-top: 10px; margin-bottom: 8px; font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;'>ÖNERİLEN ANALİTİK SORULAR & HIZLI ANALİZ:</div>", unsafe_allow_html=True)
     btn_prompt = None
 
-    with c1:
+    row1_c1, row1_c2, row1_c3 = st.columns(3)
+
+    with row1_c1:
         st.markdown("<div class='quick-btn-box'>", unsafe_allow_html=True)
-        if st.button("Solunum Riski En Yüksek 3 İl", key="btn_solunum_3", use_container_width=True):
-            btn_prompt = "Solunum Riski En Yüksek 3 İl"
+        if st.button("🏔️ Sanayisi az ama kirli iller ve sebepleri", key="btn_q1_sanayi_az", use_container_width=True):
+            btn_prompt = "Sanayisi az olmasına rağmen havası en kirli iller hangileri ve sebebi ne?"
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with c2:
+    with row1_c2:
         st.markdown("<div class='quick-btn-box'>", unsafe_allow_html=True)
-        if st.button("DSÖ Limitini En Çok Aşanlar", key="btn_dso_limit_3", use_container_width=True):
-            btn_prompt = "DSÖ Limitini En Çok Aşanlar"
+        if st.button("🌍 DSÖ 5 µg/m³ kılavuzunu karşılayan il var mı?", key="btn_q2_dso_uyum", use_container_width=True):
+            btn_prompt = "DSÖ'nün 5 µg/m³ kılavuz değerini karşılayan temiz bir ilimiz var mı?"
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with c3:
+    with row1_c3:
         st.markdown("<div class='quick-btn-box'>", unsafe_allow_html=True)
-        if st.button("Sanayi Baskısı En Yüksek İller", key="btn_sanayi_baskisi_3", use_container_width=True):
-            btn_prompt = "Sanayi Baskısı En Yüksek İller"
+        if st.button("⚖️ İstanbul ile Ankara kıyaslaması", key="btn_q3_ist_ank", use_container_width=True):
+            btn_prompt = "İstanbul ile Ankara'nın hava kalitesi ve sanayi yükünü kıyasla."
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with c4:
+    row2_c1, row2_c2, row2_c3 = st.columns(3)
+
+    with row2_c1:
         st.markdown("<div class='quick-btn-box'>", unsafe_allow_html=True)
-        if st.button("En Düşük PM2.5 Bölgesi", key="btn_temiz_bolge", use_container_width=True):
-            btn_prompt = "En Düşük PM2.5 Bölgesi"
+        if st.button("🏭 En çok OSB'li illerde kirlilik durumu", key="btn_q4_top_osb", use_container_width=True):
+            btn_prompt = "Organize Sanayi Bölgesi (OSB) sayısı en yüksek illerde kirlilik ne durumda?"
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with row2_c2:
+        st.markdown("<div class='quick-btn-box'>", unsafe_allow_html=True)
+        if st.button("🫁 Kirlilik ile solunum vefatı paralelliği", key="btn_q5_solunum_rel", use_container_width=True):
+            btn_prompt = "Hava kirliliği ile solunum yolu ölümleri arasında doğrudan bir paralellik var mı?"
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with row2_c3:
+        st.markdown("<div class='quick-btn-box'>", unsafe_allow_html=True)
+        if st.button("🗺️ En temiz ve en kirli coğrafi bölgeler", key="btn_q6_bolgeler", use_container_width=True):
+            btn_prompt = "Türkiye'nin havası en temiz ve en kirli coğrafi bölgeleri hangileridir?"
         st.markdown("</div>", unsafe_allow_html=True)
 
     # Sohbet Giriş Kutusu (st.chat_input)

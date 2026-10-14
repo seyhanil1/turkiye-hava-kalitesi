@@ -105,7 +105,7 @@ def test_new_button_3_sanayi_baskisi(master_df):
 def test_new_button_4_en_temiz_bolge(master_df):
     resp = generate_local_response("En Temiz Bölge", master_df)
     assert "Karadeniz" in resp
-    assert "En Düşük Coğrafi Bölge" in resp
+    assert "En Temiz Coğrafi Bölge" in resp
 
 
 def test_natural_language_queries(master_df):
@@ -128,4 +128,74 @@ def test_natural_language_queries(master_df):
     resp_corr = generate_local_response("Kirlilik ve OSB ilişkisi", master_df)
     assert "Korelasyon" in resp_corr or "Spearman" in resp_corr
     assert "Marmara" in resp_corr
+
+
+def test_six_analytical_questions(master_df):
+    # Q1: Sanayisi az olmasına rağmen havası en kirli iller hangileri ve sebebi ne?
+    q1 = "Sanayisi az olmasına rağmen havası en kirli iller hangileri ve sebebi ne?"
+    r1 = generate_local_response(q1, master_df)
+    assert "Sanayisi Az Olmasına Rağmen Havası En Kirli İller" in r1
+    assert "Iğdır" in r1
+    assert "Erzincan" in r1
+    assert "İnversiyon" in r1 or "inversiyon" in r1
+    assert "Topoğrafik" in r1 or "topografik" in r1.lower()
+
+    # Q2: DSÖ'nün 5 µg/m³ kılavuz değerini karşılayan temiz bir ilimiz var mı?
+    q2 = "DSÖ'nün 5 µg/m³ kılavuz değerini karşılayan temiz bir ilimiz var mı?"
+    r2 = generate_local_response(q2, master_df)
+    assert "DSÖ" in r2
+    assert "Hayır, 81 ilimizin hiçbirinde" in r2 or "%0" in r2
+    assert "5 µg/m³" in r2
+
+    # Q3: İstanbul ile Ankara'nın hava kalitesi ve sanayi yükünü kıyasla.
+    q3 = "İstanbul ile Ankara'nın hava kalitesi ve sanayi yükünü kıyasla."
+    r3 = generate_local_response(q3, master_df)
+    assert "İstanbul vs Ankara" in r3 or ("İstanbul" in r3 and "Ankara" in r3)
+    assert "PM2.5 Kirlilik Değeri" in r3
+    assert "Organize Sanayi Bölgesi" in r3
+
+    # Q4: Organize Sanayi Bölgesi (OSB) sayısı en yüksek illerde kirlilik ne durumda?
+    q4 = "Organize Sanayi Bölgesi (OSB) sayısı en yüksek illerde kirlilik ne durumda?"
+    r4 = generate_local_response(q4, master_df)
+    assert "Organize Sanayi Bölgesi" in r4 or "OSB" in r4
+    assert "Bursa" in r4
+    assert "Marmara" in r4
+
+    # Q5: Hava kirliliği ile solunum yolu ölümleri arasında doğrudan bir paralellik var mı?
+    q5 = "Hava kirliliği ile solunum yolu ölümleri arasında doğrudan bir paralellik var mı?"
+    r5 = generate_local_response(q5, master_df)
+    assert "Hava Kirliliği ile Solunum Yolu Ölümleri" in r5
+    assert "Doğrudan ve doğrusal bir birebir paralellik bulunmamaktadır" in r5 or "paralellik" in r5
+    assert "Demografik Yaş Yapısı" in r5 or "yaş" in r5.lower()
+
+    # Q6: Türkiye'nin havası en temiz ve en kirli coğrafi bölgeleri hangileridir?
+    q6 = "Türkiye'nin havası en temiz ve en kirli coğrafi bölgeleri hangileridir?"
+    r6 = generate_local_response(q6, master_df)
+    assert "En Temiz Coğrafi Bölge" in r6
+    assert "Karadeniz" in r6
+    assert "En Kirli Coğrafi Bölge" in r6
+    assert "Doğu Anadolu" in r6
+
+
+def test_welcome_message_and_code_hygiene():
+    import inspect
+    from app_pages.chat_assistant_page import render_chat_assistant_page
+    src = inspect.getsource(render_chat_assistant_page)
+
+    # 1. "PM2.5 en yüksek 3 il" kaldırıldı
+    assert "PM2.5 en yüksek 3 il" not in src
+
+    # 2. Parantez içi geliştirici açıklamaları kaldırıldı
+    assert "(TÜİK solunum ölüm oranlarını listeler)" not in src
+    assert "(5 µg/m³ kılavuz sınırını aşım katları)" not in src
+    assert "(OSB ve sanayi parseli sıralaması)" not in src
+
+    # 3. 6 sorunun tamamı yer alıyor
+    assert "Sanayisi az olmasına rağmen havası en kirli iller hangileri ve sebebi ne?" in src
+    assert "DSÖ'nün 5 µg/m³ kılavuz değerini karşılayan temiz bir ilimiz var mı?" in src
+    assert "İstanbul ile Ankara'nın hava kalitesi ve sanayi yükünü kıyasla." in src
+    assert "Organize Sanayi Bölgesi (OSB) sayısı en yüksek illerde kirlilik ne durumda?" in src
+    assert "Hava kirliliği ile solunum yolu ölümleri arasında doğrudan bir paralellik var mı?" in src
+    assert "Türkiye'nin havası en temiz ve en kirli coğrafi bölgeleri hangileridir?" in src
+
 
