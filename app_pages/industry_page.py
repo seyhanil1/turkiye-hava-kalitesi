@@ -27,8 +27,8 @@ def render_industry_page(df: pd.DataFrame):
         toplam_osb = 419
 
     toplam_faal = int(df["faal_osb"].sum()) if "faal_osb" in df.columns else 304
-    toplam_parsel = int(df["toplam_parsel"].sum()) if "toplam_parsel" in df.columns else 64020
-    toplam_parsel_str = f"{toplam_parsel:,}".replace(",", ".")
+    toplam_plan = toplam_osb - toplam_faal
+    faal_oran_genel_str = f"{(toplam_faal / toplam_osb * 100):.1f}".replace(".", ",") if toplam_osb > 0 else "72,6"
 
     # Başlık
     st.markdown(strip_html("""
@@ -77,7 +77,7 @@ def render_industry_page(df: pd.DataFrame):
                 {toplam_osb} <span style="font-size:20px; color:#00f2fe; font-weight:700;">Adet OSB</span>
             </div>
             <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-top: 6px;">
-                Bakanlık siciline kayıtlı 81 ilde faal ({toplam_faal} aktif) ve tescilli organize sanayi bölgesi. Toplam {toplam_parsel_str} endüstriyel üretim parselini barındırmaktadır.
+                Bakanlık siciline kayıtlı 81 ilde {toplam_faal} faal üretimde ve {toplam_plan} planlama/altyapı aşamasında organize sanayi bölgesi.
             </div>
         </div>
         """).strip(), unsafe_allow_html=True)
@@ -95,7 +95,7 @@ def render_industry_page(df: pd.DataFrame):
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="background: rgba(255, 159, 61, 0.15); color: #ff9f3d; border: 1px solid #ff9f3d; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">
-                        PARSEL ENVANTERİ • BAKANLIK VERİSİ
+                        BAKANLIK SİCİLİ • FAAL ORANI
                     </span>
                 </div>
                 <span style="background: rgba(2, 18, 32, 0.8); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 600;">
@@ -103,13 +103,13 @@ def render_industry_page(df: pd.DataFrame):
                 </span>
             </div>
             <div style="font-size: 13px; color: #8faec9; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                TOPLAM SANAYİ PARSELİ
+                AKTİF ÜRETİMDEKİ OSB
             </div>
             <div style="font-size: 38px; font-weight: 900; color: #ffffff; margin: 4px 0; text-shadow: 0 0 20px rgba(255, 159, 61, 0.4);">
-                64.020 <span style="font-size:20px; color:#ff9f3d; font-weight:700;">Adet</span>
+                {toplam_faal} <span style="font-size:20px; color:#ff9f3d; font-weight:700;">Adet (%{faal_oran_genel_str})</span>
             </div>
             <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-top: 6px;">
-                Bakanlık siciline kayıtlı OSB'lerdeki toplam tescilli sanayi parseli sayısı (304 faal, 115 proje aşamasında).
+                Tescilli 419 OSB'nin 304'ü fiilen işletme ve üretim aşamasındadır (OSBÜK Ekim 2026).
             </div>
         </div>
         """).strip(), unsafe_allow_html=True)
@@ -215,10 +215,10 @@ def render_industry_page(df: pd.DataFrame):
                     </div>
                 </div>
                 <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                    Marmara bölgesi genelinde 100 OSB ve 12.434 parsel yer almakta olup yüksek OSB yoğunluğuna sahip iller bu koridorda bulunmaktadır.
+                    Marmara bölgesi genelinde 100 tescilli OSB (78 faal üretimde) yer almakta olup en yoğun sanayi kümelenmesi bu koridordadır.
                 </div>
                 <div style="margin-top:8px; font-size:11px; color:#f87171; font-weight:600; display:flex; align-items:center; gap:4px;">
-                    <span>•</span> Gösterge Notu: OSB sayısı ve sanayi parseli bakımından en yoğun bölgedir.
+                    <span>•</span> Gösterge Notu: OSB sayısı ve faal üretim kapasitesi bakımından en yoğun bölgedir.
                 </div>
             </div>
 
@@ -259,19 +259,32 @@ def render_industry_page(df: pd.DataFrame):
     # ========================================================
     with st.expander("81 İl Sanayi ve OSB Sicil Tablosu"):
         st.markdown("##### 81 İl Sanayi ve Organize Sanayi Bölgeleri (OSB) Sicil Envanteri")
-        table_cols = ["il", "bolge", "toplam_osb", "faal_osb", "toplam_parsel", "sanayi_tipi", "pm25"]
+        table_cols = ["il", "bolge", "toplam_osb", "faal_osb", "sanayi_tipi", "pm25"]
         available_cols = [c for c in table_cols if c in df.columns]
         table_df = df[available_cols].copy()
 
+        # Faal Oran (%) hesaplama: (Faal OSB / Toplam OSB * 100) -> tek ondalıklı Türkçe virgüllü (örn: %86,7)
+        def calc_faal_oran(row):
+            toplam = float(row.get("toplam_osb", 0))
+            faal = float(row.get("faal_osb", 0))
+            if toplam > 0:
+                oran = (faal / toplam) * 100.0
+                return f"%{oran:.1f}".replace(".", ",")
+            return "%0,0"
+
+        table_df["faal_oran"] = table_df.apply(calc_faal_oran, axis=1)
+
         if "pm25" in table_df.columns:
             table_df["pm25"] = table_df["pm25"].apply(lambda v: f"{float(v):.1f}".replace(".", ","))
-        if "toplam_parsel" in table_df.columns:
-            table_df["toplam_parsel"] = table_df["toplam_parsel"].apply(lambda v: f"{int(v):,}".replace(",", "."))
+
+        display_cols = ["il", "bolge", "toplam_osb", "faal_osb", "faal_oran", "sanayi_tipi", "pm25"]
+        display_cols = [c for c in display_cols if c in table_df.columns]
+        table_df = table_df[display_cols]
 
         st.dataframe(
             table_df.rename(columns={
                 "il": "İl", "bolge": "Bölge", "toplam_osb": "Toplam OSB", "faal_osb": "Faal OSB",
-                "toplam_parsel": "Parsel", "sanayi_tipi": "Kategori", "pm25": "PM2.5 (µg/m³)"
+                "faal_oran": "Faal Oran (%)", "sanayi_tipi": "Kategori", "pm25": "PM2.5 (µg/m³)"
             }),
             use_container_width=True,
             hide_index=True

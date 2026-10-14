@@ -2443,7 +2443,7 @@ html, body {{
                     <span style="font-size:22px;">🏭</span>
                     <div>
                         <div style="font-size:16px; font-weight:800; color:#ffffff;">Sanayi Profili & OSB Kümelenmesi</div>
-                        <div style="font-size:11px; color:#6d8fae;">Organize sanayi bölgeleri, aktif parsel sayıları ve kirlilik baskı endeksi</div>
+                        <div style="font-size:11px; color:#6d8fae;">Organize sanayi bölgeleri, faal üretim durumu ve kirlilik baskı endeksi</div>
                     </div>
                     <span class="module-badge">Bakanlık OSB Sicili</span>
                 </div>
@@ -3582,7 +3582,7 @@ function renderIndustryModule() {{
                         ${{totalOsb}} <span style="font-size:18px; color:#00f2fe; font-weight:700;">Adet OSB</span>
                     </div>
                     <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                        Bakanlık siciline kayıtlı 81 ilde faal ve tescilli Organize Sanayi Bölgeleri (toplam 64.220 aktif üretim parseli).
+                        Bakanlık siciline kayıtlı 81 ilde 304 faal üretimde ve 115 planlama/altyapı aşamasında organize sanayi bölgesi.
                     </div>
                 </div>
 
@@ -3687,7 +3687,7 @@ function renderIndustryModule() {{
             '75 OSB | PM2.5: 34,0 µg/m³ (%17,9)',
             '100 OSB | PM2.5: 35,7 µg/m³ (%23,9)'
         ];
-        const bColors = ['#0284c7', '#0284c7', '#38bdf8', '#00f2fe', '#00f2fe', '#f59e0b', '#ef4444'];
+        const bColors = ['#0369a1', '#0284c7', '#0369a1', '#0ea5e9', '#0284c7', '#38bdf8', '#00f2fe'];
 
         Plotly.newPlot('industryBarChart', [{{
             type: 'bar',

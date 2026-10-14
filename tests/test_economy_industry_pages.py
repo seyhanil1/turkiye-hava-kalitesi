@@ -41,25 +41,26 @@ def test_pixel_perfect_dashboard_modules_content(master_df):
     assert "industryBarChart" in html
 
 
-def test_industry_page_kpi_cards_and_hectare_removal():
-    """Sanayi Profili sayfasında hektar bilgisinin kaldırıldığını ve yeni parsel kartını test eder."""
+def test_industry_page_kpi_cards_and_parsel_removal():
+    """Sanayi Profili sayfasında spekülatif parsel ve hektar verilerinin kaldırıldığını ve Faal OSB oranını test eder."""
     with open("app_pages/industry_page.py", "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Hektar alanının sayfadan tamamen kaldırıldığını doğrula
+    # Hektar ve parsel verilerinin sayfadan tamamen kaldırıldığını doğrula
     assert "Toplam OSB Sanayi Alanı" not in content
     assert "Hektar" not in content
     assert "hektar" not in content
-    assert "143.267,5" not in content
+    assert "parsel" not in content.lower()
 
-    # Yeni resmi sanayi parseli kartını doğrula
-    assert "TOPLAM SANAYİ PARSELİ" in content
-    assert "64.020" in content
-    assert "Bakanlık siciline kayıtlı OSB'lerdeki toplam tescilli sanayi parseli sayısı (304 faal, 115 proje aşamasında)." in content
+    # Yeni resmi Faal OSB KPI kartını doğrula
+    assert "BAKANLIK SİCİLİ • FAAL ORANI" in content
+    assert "AKTİF ÜRETİMDEKİ OSB" in content
+    assert "Tescilli 419 OSB'nin 304'ü fiilen işletme ve üretim aşamasındadır (OSBÜK Ekim 2026)." in content
+    assert "planlama/altyapı aşamasında organize sanayi bölgesi" in content
 
-    # Sol kartta Türkçe binlik formatı kontrolü
-    assert "64,020" not in content
-    assert "64,220" not in content
+    # Marmara kartındaki metin güncellemesini doğrula
+    assert "Marmara bölgesi genelinde 100 tescilli OSB (78 faal üretimde)" in content
+    assert "faal üretim kapasitesi" in content
 
 
 def test_industry_page_barchart_descending_and_formatting():
@@ -89,17 +90,22 @@ def test_industry_page_barchart_descending_and_formatting():
     assert 'pm_str = f"{r[\'pm25\']:.1f}".replace(".", ",")' in content
 
 
-def test_industry_page_table_no_hectare_and_formatting(master_df):
-    """81 il tablosunda Alan (Hektar) sütununun olmadığını ve sayı formatlarını doğrular."""
+def test_industry_page_table_faal_oran_and_formatting(master_df):
+    """81 il tablosunda Parsel sütununun olmadığını, Faal Oran (%) sütununun eklendiğini doğrular."""
     with open("app_pages/industry_page.py", "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Tablo kodunda Alan (Hektar) olmadığını doğrula
+    # Tablo kodunda Parsel veya Alan (Hektar) olmadığını doğrula
     assert "Alan (Hektar)" not in content
+    assert '"toplam_parsel"' not in content
+    assert '"Parsel"' not in content
 
-    # PM2.5 virgüllü ve tek ondalık, Parsel binlik noktalı formatlamasını doğrula
+    # Faal Oran (%) sütununun ve hesaplama fonksiyonunun varlığını doğrula
+    assert '"faal_oran": "Faal Oran (%)"' in content
+    assert "calc_faal_oran" in content
+
+    # PM2.5 virgüllü ve tek ondalık formatlamasını doğrula
     assert 'table_df["pm25"] = table_df["pm25"].apply(lambda v: f"{float(v):.1f}".replace(".", ","))' in content
-    assert 'table_df["toplam_parsel"] = table_df["toplam_parsel"].apply(lambda v: f"{int(v):,}".replace(",", "."))' in content
 
 
 def test_industry_page_apptest_no_city_selector():
