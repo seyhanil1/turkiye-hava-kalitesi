@@ -120,7 +120,7 @@ cities_list = sorted(list(df_master["il"].dropna().unique())) if not df_master.e
 
 date_info = get_dataset_date_info()
 date_range_str = date_info.get("date_range_str", "11.07.2026 – 10.10.2026")
-period_label_str = date_info.get("period_label_str", "Yıllık Konsolidasyon (Son 12 Ay)")
+period_label_str = date_info.get("period_label_str", "Doğrulanmış 12 Aylık Konsolidasyon Dönemi")
 
 # Ortak filtre durumu ve URL senkronizasyonu
 if "city" in st.query_params:

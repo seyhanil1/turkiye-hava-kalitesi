@@ -96,7 +96,7 @@ def render_overview_page(
     # 6. ALT BİLGİ VE KAYNAKLAR
     st.markdown("""
     <div style='margin-top: 30px; padding: 16px; border-top: 1px solid #1e293b; color: #64748b; font-size: 0.8rem; text-align: center;'>
-        <b>Veri Kaynakları:</b> Temiz Hava Hakkı Platformu (Kara Rapor 2025) &bull; TÜİK Ölüm ve Nüfus İstatistikleri (2022-2025) &bull; OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026) &bull; Copernicus CAMS / Open-Meteo &bull; DSÖ 2021 Kılavuz Limitleri
+        <b>Veri Kaynakları:</b> Temiz Hava Hakkı Platformu (Kara Rapor 2025) &bull; TÜİK Ölüm ve Nüfus İstatistikleri (2022-2025) &bull; OSB verileri: OSBÜK (Ekim 2026) &bull; Copernicus CAMS / Open-Meteo &bull; DSÖ 2021 Kılavuz Limitleri
         <br>
         <i>Son Veri Eşitleme: 2026-10-10 &bull; Analitik Motor: Python Statsmodels & Scipy &bull; Durum: Doğrulanmış Resmi Veri</i>
     </div>

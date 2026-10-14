@@ -5,7 +5,7 @@ HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 Veri Kaynakları:
 1. Temiz Hava Hakkı Platformu (Kara Rapor 2025) -> data/hava_kirliligi.xlsx
 2. TÜİK Ölüm ve Ölüm Nedeni İstatistikleri (2022-2025) -> data/tuik_saglik.xlsx
-3. OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026) -> data/sanayi.txt
+3. OSB verileri: OSBÜK (Ekim 2026) -> data/sanayi.txt
 """
 
 import os
@@ -117,7 +117,7 @@ def parse_tuik_saglik(filepath: str = "data/tuik_saglik.xlsx") -> pd.DataFrame:
 
 def parse_sanayi_osb(filepath: str = "data/sanayi.txt") -> pd.DataFrame:
     """
-    OSB tablosunu ayrıştırır (OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026)).
+    OSB tablosunu ayrıştırır (OSB verileri: OSBÜK (Ekim 2026)).
     İl bazında: Toplam OSB, Faal OSB, Toplam OSB Alanı (Hektar) ve Toplam Parsel sayısını hesaplar.
     """
     if not os.path.exists(filepath):

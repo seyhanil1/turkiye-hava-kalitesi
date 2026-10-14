@@ -282,13 +282,13 @@ def get_dataset_date_info() -> dict:
         "start_date": start_date,
         "end_date": end_date,
         "date_range_str": f"{start_date} – {end_date}",
-        "period_label_str": "Yıllık Konsolidasyon (Son 12 Ay)",
+        "period_label_str": "Doğrulanmış 12 Aylık Konsolidasyon Dönemi",
         "reference_year": "2026",
         "sources": {
             "istasyon": "T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı (ÇŞİDB) & Kara Rapor 2025",
             "model": "Copernicus CAMS Atmosferik Yeniden Analiz Modeli",
             "saglik": "TÜİK Ölüm Nedeni İstatistikleri (2022-2024)",
-            "sanayi": "OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026)"
+            "sanayi": "OSB verileri: OSBÜK (Ekim 2026)"
         }
     }
 

@@ -32,7 +32,7 @@ HavaAtlası modüler bir analitik mimariden oluşmaktadır:
 2. **🏙️ Şehir Karnesi (City Report Card):**
    - 81 il için detaylı hava kalitesi, DSÖ risk sınıfı (Düşük, Orta, Yüksek, Kritik) ve aşım katsayısı.
    - TÜİK resmi solunum yolu vefat sayıları ve 100.000 kişi başına oranları.
-   - OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026) parsel ve hektar alanı dökümü.
+   - OSB verileri: OSBÜK (Ekim 2026) parsel ve hektar alanı dökümü.
    - Bölge ve Türkiye ortalamasıyla karşılaştırma grafiği.
 3. **⚔️ Şehir Düellosu (City Duel & Hypothesis Testing):**
    - Kullanıcının seçtiği iki ili kafa kafaya çevre radarı ve sütun grafikleriyle karşılaştırma.
@@ -49,7 +49,7 @@ HavaAtlası modüler bir analitik mimariden oluşmaktadır:
    - 81 il için çeyreklik (Q1/Q3) eşiklerine göre OSB ve PM2,5 grup sınıflandırması.
    - Kategori A (Düşük OSB, yüksek PM2,5), Kategori B (Yüksek OSB, yüksek PM2,5) ve Normal profil dağılımları.
 7. **🏭 Sanayi Profili (Industrial Profile):**
-   - OSB dizini analizi: OSBÜK (indirme tarihi: GG.AA.2026) (toplam OSB, hektar ve dağılım).
+   - OSB dizini analizi: OSBÜK (Ekim 2026) (toplam OSB, hektar ve dağılım).
    - İllerin sanayi kümelenmesi ve bölgesel partikül madde göstergeleri.
 
 ---
@@ -81,7 +81,7 @@ Uygulama, profesyonel veri analitiği estetiğine sadık kalarak tasarlanmışt�
 | :--- | :--- | :--- | :--- |
 | **Temiz Hava Hakkı Platformu** | 81 İl Yıllık PM2.5 Kirlilik Düzeyi | `data/hava_kirliligi.xlsx` (Kara Rapor 2025) | Açık kamuoyu çevre raporu |
 | **TÜİK (TurkStat)** | İl Bazlı Ölüm ve Ölüm Nedenleri (2022-2025) | `data/tuik_saglik.xlsx` (Ölüm İstatistikleri) | Resmi İstatistik Programı (TÜİK Açık Veri) |
-| **OSBÜK** | 81 İl OSB Dizini, Parsel ve Hektar Verisi | `data/sanayi.txt` | OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026) |
+| **OSBÜK** | 81 İl OSB Dizini, Parsel ve Hektar Verisi | `data/sanayi.txt` | OSB verileri: OSBÜK (Ekim 2026) |
 | **TÜİK ADNKS** | 81 İl Resmi Nüfus Sayımları | `data_sources/constants.py` | Resmi Nüfus İstatistikleri |
 | **Copernicus CAMS & Open-Meteo** | Saatlik / Günlük PM2.5 Zaman Serisi | `air-quality-api.open-meteo.com` | CC-BY 4.0 (Copernicus Atmosphere Service) |
 | **OpenAQ v3 API** | Küresel Hava Kalitesi İstasyon Verileri | `data_sources/openaq_connector.py` | OpenAQ Açık Veri Lisansı |
@@ -192,7 +192,7 @@ havakirliligi/
 │   ├── daily_air_quality_90d.csv  # 90 günlük Copernicus CAMS zaman serisi
 │   ├── hava_kirliligi.xlsx        # Kara Rapor 2025 PM2.5 ölçümleri
 │   ├── master_data.csv            # 81 il doğrulanmış analitik ana veri tablosu
-│   ├── sanayi.txt                 # OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026)
+│   ├── sanayi.txt                 # OSB verileri: OSBÜK (Ekim 2026)
 │   ├── tr-cities.json             # 81 İl GeoJSON sınır haritası
 │   └── tuik_saglik.xlsx           # TÜİK resmi ölüm istatistikleri (2022-2025)
 ├── data_sources/

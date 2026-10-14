@@ -15,7 +15,7 @@ def strip_html(text: str) -> str:
 
 def render_industry_page(df: pd.DataFrame):
     """
-    OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026) ve hava kirliliği kesişimini
+    OSB verileri: OSBÜK (Ekim 2026) ve hava kirliliği kesişimini
     fütüristik neon cam arayüzle sunar.
     """
     # Veri hesaplamaları (Orijinal veriler ve değişkenler birebir korunur)
@@ -46,7 +46,7 @@ def render_industry_page(df: pd.DataFrame):
             </h2>
         </div>
         <p style="margin:0; font-size:13px; color:#8faec9;">
-            OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026) kayıtlarına göre Organize Sanayi Bölgeleri (OSB), üretim havzaları ve emisyon odakları.
+            OSB verileri: OSBÜK (Ekim 2026) kayıtlarına göre Organize Sanayi Bölgeleri (OSB), üretim havzaları ve emisyon odakları.
         </p>
     </div>
     """).strip(), unsafe_allow_html=True)

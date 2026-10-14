@@ -28,14 +28,14 @@ def render_methodology_page(df: pd.DataFrame = None):
 
     # 1. Veri Kaynağı ve Türü
     st.markdown("### 1. Veri Kaynakları ve Veri Türü (Ölçüm vs. Model)")
-    st.markdown(f"""
+    st.markdown("""
     - **Hava Kalitesi Verisi:** Platformdaki ince partikül madde (PM2.5) verileri, 
       **Copernicus Atmosphere Monitoring Service (CAMS)** atmosferik reanaliz modelleri ve Open-Meteo Air Quality API aracılığıyla elde edilmektedir.
       *Önemli Not:* Bu veriler zemin seviyesindeki fiziksel ölçüm istasyonu verisi değil; uydu gözlemleri, kimyasal taşınım modelleri ve meteorolojik verilerin harmanlandığı **0.1° (~11 km) çözünürlüklü ızgaralanmış atmosferik model tahmin/reanaliz verisidir**.
-    - **Veri Dönemi:** `{date_info.get('date_range_str', '11.07.2026 – 10.10.2026')}` ({date_info.get('total_days', 92)} günlük doğrulanabilir gözlem dönemi). Canlı veya anlık veri iddiası taşımamaktadır.
+    - **Veri Dönemi:** Doğrulanmış 12 Aylık Konsolidasyon Dönemi (yıllık model ve istasyon konsolidasyonu; Copernicus CAMS zaman serisi 11.07.2026 – 10.10.2026 gözlem aralığını kapsar). Canlı veya anlık veri iddiası taşımamaktadır.
     - **Nüfus Verisi:** TÜİK Adrese Dayalı Nüfus Kayıt Sistemi (ADNKS 2023/2024 resmi il nüfusları).
     - **Ölüm ve Sağlık İstatistikleri:** TÜİK Ölüm ve Ölüm Nedeni İstatistikleri (2022–2024). Dolaşım ve solunum sistemi hastalıklarına (ICD-10 J00-J99) bağlı **ham ölüm hızlarıdır** (yaşa göre standardize edilmemiştir).
-    - **Sanayi ve OSB Verisi:** OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026) (81 ildeki faal/onaylı OSB sayıları ve hektar büyüklükleri).
+    - **Sanayi ve OSB Verisi:** OSB verileri: OSBÜK (Ekim 2026) (81 ildeki faal/onaylı OSB sayıları ve hektar büyüklükleri).
     """)
 
     # 2. Seviye Eşikleri ve Kademelendirme
@@ -46,52 +46,47 @@ def render_methodology_page(df: pd.DataFrame = None):
     """)
 
     pm25_kademeler = KIRLILIK_KADEMELERI.get("pm25", [])
-    rows_html = ""
+    rows_list = []
     for k in pm25_kademeler:
-        max_str = f"≤ {k['max_val']}" if k['max_val'] < 900 else f"> {k['min_val']}"
-        range_str = f"{k['min_val']} - {k['max_val']} µg/m³" if k['max_val'] < 900 else f"> {k['min_val']} µg/m³"
-        rows_html += f"""
-        <tr style="border-bottom:1px solid #093452;">
-            <td style="padding:8px 12px; font-weight:700; color:{k['renk']};">{k['etiket']}</td>
-            <td style="padding:8px 12px; color:#ffffff;">{range_str}</td>
-            <td style="padding:8px 12px; color:#cbd5e1; font-size:12px;">{k['aciklama']}</td>
-        </tr>
-        """
+        range_str = f"≤ {k['max_val']} µg/m³" if k['min_val'] == 0 else (
+            f"> {k['min_val']} µg/m³" if k['max_val'] >= 900 else f"{k['min_val']} - {k['max_val']} µg/m³"
+        )
+        badge_style = f"display:inline-block; padding:3px 10px; border-radius:4px; font-weight:700; color:{k['renk']}; background:{k['bg']}; border:1px solid {k['border']}; font-size:12px;"
+        rows_list.append(
+            f'<tr style="border-bottom:1px solid #093452;">'
+            f'<td style="padding:10px 14px;"><span style="{badge_style}">{k["etiket"]}</span></td>'
+            f'<td style="padding:10px 14px; color:#ffffff; font-weight:600; font-size:13px;">{range_str}</td>'
+            f'<td style="padding:10px 14px; color:#cbd5e1; font-size:12.5px;">{k["aciklama"]}</td>'
+            f'</tr>'
+        )
+    tbody_content = "".join(rows_list)
 
-    st.markdown(f"""
-    <table style="width:100%; border-collapse:collapse; background:#031b2e; border:1px solid #093452; border-radius:8px; overflow:hidden; font-size:13px; margin-bottom:16px;">
-        <thead>
-            <tr style="background:#04253e; color:#cbd5e1; text-align:left; border-bottom:1px solid #093452;">
-                <th style="padding:8px 12px;">Kademe</th>
-                <th style="padding:8px 12px;">PM2.5 Aralığı</th>
-                <th style="padding:8px 12px;">Referans & Risk Açıklaması</th>
-            </tr>
-        </thead>
-        <tbody>
-            {rows_html}
-        </tbody>
-    </table>
-    """, unsafe_allow_html=True)
+    table_html = (
+        '<table style="width:100%; border-collapse:collapse; background:#031b2e; '
+        'border:1px solid #093452; border-radius:8px; overflow:hidden; font-size:13px; margin:12px 0 20px 0;">'
+        '<thead>'
+        '<tr style="background:#04253e; color:#cbd5e1; text-align:left; border-bottom:1px solid #093452;">'
+        '<th style="padding:10px 14px; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; width:130px;">Kademe</th>'
+        '<th style="padding:10px 14px; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; width:170px;">PM2.5 Aralığı</th>'
+        '<th style="padding:10px 14px; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Referans & Risk Açıklaması</th>'
+        '</tr>'
+        '</thead>'
+        f'<tbody>{tbody_content}</tbody>'
+        '</table>'
+    )
+    st.markdown(table_html, unsafe_allow_html=True)
 
     # 3. İstatistiksel Hesaplamalar
     st.markdown("### 3. İstatistiksel Hesaplamalar ve Ortalamalar")
     st.markdown("""
-    - **81 İl Ortalaması:** Kodda `df['pm25'].mean()` formülüyle hesaplanan **düz (nüfus ağırlıksız) aritmetik ortalamadır**. İllerin yüzölçümü veya nüfusu hesaba katılmaksızın her il eşit ağırlıktadır.
-    - **Bölge Ortalamaları:** İlgili coğrafi bölgedeki illerin PM2.5 değerlerinin aritmetik ortalamasıdır (`b_df['pm25'].mean()`).
+    - **81 İl Ortalaması:** 81 ilin PM2.5 değerlerinin ağırlıksız aritmetik ortalamasıdır. İllerin yüzölçümü veya nüfusu hesaba katılmaksızın her il eşit ağırlıktadır.
+    - **Bölge Ortalamaları:** İlgili coğrafi bölgedeki illerin PM2.5 konsantrasyonlarının bölgesel aritmetik ortalamasıdır.
     - **Korelasyonlar:** Sanayi alanı (hektar) ve hava kirliliği arasındaki ilişki, doğrusal olmayan dağılımlara duyarlı **Spearman Sıra Korelasyon Katsayısı (ρ)** ile hesaplanmakta ve iki yönlü p-değeri ile test edilmektedir.
     """)
 
     # 4. Eksik Veri Yaklaşımı ve Sınırlamalar
     st.markdown("### 4. Eksik Veri Yaklaşımı ve Bilinen Sınırlamalar")
     st.markdown("""
-    - **Eksik Veri (Missing Data):** Günlük serilerde eksik veya sıfır bildirilmiş kayıtlar analize dahil edilmemekte (`dropna()`); ortalamalar yalnızca geçerli gözlem günleri üzerinden alınmaktadır.
+    - **Eksik Veri (Missing Data):** Eksik veya sıfır bildirilmiş kayıtlar hesaplamaya dahil edilmemiş, yalnızca geçerli gözlem günleri baz alınmıştır.
     - **Model Çözünürlüğü:** CAMS ızgara çözünürlüğü (~11 km) genel bölgesel arka plan kirliliğini çok iyi yakalamakla birlikte; yoğun trafik arterleri, sokak kanyonları veya vadi tabanlarındaki mikro-ölçekli kirlilik birikimlerini yer istasyonları kadar hassas yansıtmayabilir.
     """)
-
-    st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
-    with st.expander("Yöntem ve Kaynaklar"):
-        st.markdown("""
-        - **CAMS Atmosphere Reanalysis:** European Centre for Medium-Range Weather Forecasts (ECMWF).
-        - **TÜİK:** Ölüm ve Ölüm Nedeni İstatistikleri (2022, 2023, 2024).
-        - **OSB verileri: OSBÜK (indirme tarihi: GG.AA.2026)**
-        """)

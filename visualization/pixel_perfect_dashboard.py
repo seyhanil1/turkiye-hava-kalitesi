@@ -397,7 +397,7 @@ def generate_pixel_perfect_dashboard_html(
     from data_sources.constants import get_dataset_date_info
     date_info = get_dataset_date_info()
     date_range_str = date_info.get("date_range_str", "11.07.2026 – 10.10.2026")
-    period_label_str = date_info.get("period_label_str", "Yıllık Konsolidasyon (Son 12 Ay)")
+    period_label_str = date_info.get("period_label_str", "Doğrulanmış 12 Aylık Konsolidasyon Dönemi")
     last_date_str = date_info.get("end_date", "10.10.2026")
 
     # Günlük 81 il hava kalitesi verisi (st.cache_data ile önbellekten okunur)
