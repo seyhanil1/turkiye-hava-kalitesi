@@ -417,7 +417,7 @@ def view_regions():
 
 
 def view_industry():
-    render_shared_top_bar()
+    render_shared_top_bar(show_city=False)
     render_industry_page(df_master)
 
 

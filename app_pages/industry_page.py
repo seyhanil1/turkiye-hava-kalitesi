@@ -26,15 +26,9 @@ def render_industry_page(df: pd.DataFrame):
     else:
         toplam_osb = 419
 
-    if "osb_alani_hektar" in df.columns:
-        toplam_hektar = float(df["osb_alani_hektar"].sum())
-    else:
-        toplam_hektar = 143267.5
-
-    toplam_faal = int(df["faal_osb"].sum()) if "faal_osb" in df.columns else 296
-    toplam_parsel = int(df["toplam_parsel"].sum()) if "toplam_parsel" in df.columns else 64220
-
-    toplam_hektar_str = f"{toplam_hektar:,.1f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    toplam_faal = int(df["faal_osb"].sum()) if "faal_osb" in df.columns else 304
+    toplam_parsel = int(df["toplam_parsel"].sum()) if "toplam_parsel" in df.columns else 64020
+    toplam_parsel_str = f"{toplam_parsel:,}".replace(",", ".")
 
     # Başlık
     st.markdown(strip_html("""
@@ -83,7 +77,7 @@ def render_industry_page(df: pd.DataFrame):
                 {toplam_osb} <span style="font-size:20px; color:#00f2fe; font-weight:700;">Adet OSB</span>
             </div>
             <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-top: 6px;">
-                Bakanlık siciline kayıtlı 81 ilde faal ({toplam_faal} aktif) ve tescilli organize sanayi bölgesi. Toplam {toplam_parsel:,} endüstriyel üretim parselini barındırmaktadır.
+                Bakanlık siciline kayıtlı 81 ilde faal ({toplam_faal} aktif) ve tescilli organize sanayi bölgesi. Toplam {toplam_parsel_str} endüstriyel üretim parselini barındırmaktadır.
             </div>
         </div>
         """).strip(), unsafe_allow_html=True)
@@ -101,7 +95,7 @@ def render_industry_page(df: pd.DataFrame):
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="background: rgba(255, 159, 61, 0.15); color: #ff9f3d; border: 1px solid #ff9f3d; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">
-                        TAHSİSLİ ALAN • HARİTA ENVANTERİ
+                        PARSEL ENVANTERİ • BAKANLIK VERİSİ
                     </span>
                 </div>
                 <span style="background: rgba(2, 18, 32, 0.8); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 600;">
@@ -109,13 +103,13 @@ def render_industry_page(df: pd.DataFrame):
                 </span>
             </div>
             <div style="font-size: 13px; color: #8faec9; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                Toplam OSB Sanayi Alanı
+                TOPLAM SANAYİ PARSELİ
             </div>
             <div style="font-size: 38px; font-weight: 900; color: #ffffff; margin: 4px 0; text-shadow: 0 0 20px rgba(255, 159, 61, 0.4);">
-                {toplam_hektar_str} <span style="font-size:20px; color:#ff9f3d; font-weight:700;">Hektar</span>
+                64.020 <span style="font-size:20px; color:#ff9f3d; font-weight:700;">Adet</span>
             </div>
             <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-top: 6px;">
-                Sanayi ve Teknoloji Bakanlığı onaylı organize sanayi bölgelerinin resmi yüzölçümü toplamı (OSBÜK verisi).
+                Bakanlık siciline kayıtlı OSB'lerdeki toplam tescilli sanayi parseli sayısı (304 faal, 115 proje aşamasında).
             </div>
         </div>
         """).strip(), unsafe_allow_html=True)
@@ -134,39 +128,41 @@ def render_industry_page(df: pd.DataFrame):
         </div>
         """).strip(), unsafe_allow_html=True)
 
-        # 7 Coğrafi Bölge Verileri (Talep edilen sıra: Marmara, İç Anadolu, Ege, Karadeniz, Güneydoğu, Akdeniz, Doğu Anadolu)
+        # 7 Coğrafi Bölge Verileri (OSB sayısına göre kesin büyükten küçüğe sıralı)
         regions_data = [
-            {"bolge": "Marmara", "osb": 100, "pm25": 35.7, "hektar": 793310, "pay": "%23,9"},
-            {"bolge": "İç Anadolu", "osb": 75, "pm25": 34.0, "hektar": 1088440, "pay": "%17,9"},
-            {"bolge": "Ege", "osb": 66, "pm25": 36.3, "hektar": 453187, "pay": "%15,8"},
-            {"bolge": "Karadeniz", "osb": 70, "pm25": 31.4, "hektar": 253054, "pay": "%16,7"},
-            {"bolge": "Güneydoğu Anadolu", "osb": 35, "pm25": 38.7, "hektar": 1016342, "pay": "%8,4"},
-            {"bolge": "Akdeniz", "osb": 44, "pm25": 35.1, "hektar": 412881, "pay": "%10,5"},
-            {"bolge": "Doğu Anadolu", "osb": 29, "pm25": 44.2, "hektar": 113399, "pay": "%6,9"}
+            {"bolge": "Marmara", "osb": 100, "pm25": 35.7, "pay": "%23,9"},
+            {"bolge": "İç Anadolu", "osb": 75, "pm25": 34.0, "pay": "%17,9"},
+            {"bolge": "Karadeniz", "osb": 70, "pm25": 31.4, "pay": "%16,7"},
+            {"bolge": "Ege", "osb": 66, "pm25": 36.3, "pay": "%15,8"},
+            {"bolge": "Akdeniz", "osb": 44, "pm25": 35.1, "pay": "%10,5"},
+            {"bolge": "Güneydoğu Anadolu", "osb": 35, "pm25": 38.7, "pay": "%8,4"},
+            {"bolge": "Doğu Anadolu", "osb": 29, "pm25": 44.2, "pay": "%6,9"}
         ]
         
-        # Horizontal bar için sıralı listeler
+        # Horizontal bar için sıralı listeler (Plotly alttan yukarı çizdiği için [::-1] ile en büyük Marmara en üste gelir)
         b_names = [r["bolge"] for r in regions_data][::-1]
         b_osb = [r["osb"] for r in regions_data][::-1]
-        b_texts = [f"{r['osb']} OSB | PM2.5: {r['pm25']} µg/m³ ({r['pay']} Baskı)" for r in regions_data][::-1]
-        b_pm25 = [r["pm25"] for r in regions_data][::-1]
+        b_texts = []
+        for r in regions_data:
+            pm_str = f"{r['pm25']:.1f}".replace(".", ",")
+            b_texts.append(f"{r['osb']} OSB | PM2.5: {pm_str} µg/m³ ({r['pay']} Baskı)")
+        b_texts = b_texts[::-1]
 
         fig_bar = go.Figure(go.Bar(
             x=b_osb,
             y=b_names,
             orientation="h",
             marker=dict(
-                color=b_pm25,
+                color=b_osb,
                 colorscale=[
-                    [0.0, "#0284c7"],
-                    [0.5, "#00f2fe"],
-                    [0.8, "#f59e0b"],
-                    [1.0, "#ef4444"]
+                    [0.0, "#0369a1"],
+                    [0.5, "#0284c7"],
+                    [1.0, "#00f2fe"]
                 ],
-                line=dict(color="rgba(255,255,255,0.15)", width=1)
+                line=dict(color="rgba(255,255,255,0.2)", width=1)
             ),
             text=b_texts,
-            textposition="inside",
+            textposition="auto",
             insidetextanchor="start",
             textfont=dict(color="#ffffff", size=11, family="sans-serif")
         ))
@@ -183,9 +179,9 @@ def render_industry_page(df: pd.DataFrame):
                 title=dict(text="OSB Sayısı (Adet)", font=dict(color="#8faec9", size=11)),
                 tickfont=dict(color="#94a3b8"),
                 gridcolor="rgba(255,255,255,0.06)",
-                range=[0, 115]
+                range=[0, 135]
             ),
-            margin=dict(t=10, l=10, r=20, b=30)
+            margin=dict(t=10, l=10, r=30, b=30)
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -263,10 +259,19 @@ def render_industry_page(df: pd.DataFrame):
     # ========================================================
     with st.expander("81 İl Sanayi ve OSB Sicil Tablosu"):
         st.markdown("##### 81 İl Sanayi ve Organize Sanayi Bölgeleri (OSB) Sicil Envanteri")
+        table_cols = ["il", "bolge", "toplam_osb", "faal_osb", "toplam_parsel", "sanayi_tipi", "pm25"]
+        available_cols = [c for c in table_cols if c in df.columns]
+        table_df = df[available_cols].copy()
+
+        if "pm25" in table_df.columns:
+            table_df["pm25"] = table_df["pm25"].apply(lambda v: f"{float(v):.1f}".replace(".", ","))
+        if "toplam_parsel" in table_df.columns:
+            table_df["toplam_parsel"] = table_df["toplam_parsel"].apply(lambda v: f"{int(v):,}".replace(",", "."))
+
         st.dataframe(
-            df[["il", "bolge", "toplam_osb", "faal_osb", "osb_alani_hektar", "toplam_parsel", "sanayi_tipi", "pm25"]].rename(columns={
+            table_df.rename(columns={
                 "il": "İl", "bolge": "Bölge", "toplam_osb": "Toplam OSB", "faal_osb": "Faal OSB",
-                "osb_alani_hektar": "Alan (Hektar)", "toplam_parsel": "Parsel", "sanayi_tipi": "Kategori", "pm25": "PM2.5 (µg/m³)"
+                "toplam_parsel": "Parsel", "sanayi_tipi": "Kategori", "pm25": "PM2.5 (µg/m³)"
             }),
             use_container_width=True,
             hide_index=True
