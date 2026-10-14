@@ -407,7 +407,7 @@ def view_duel():
 
 
 def view_correlation():
-    render_shared_top_bar()
+    render_shared_top_bar(show_city=False)
     render_correlation_page(df_master)
 
 

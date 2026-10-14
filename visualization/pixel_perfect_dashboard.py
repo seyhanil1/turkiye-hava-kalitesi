@@ -3300,7 +3300,7 @@ function renderCorrelationModule() {{
                 </div>
                 <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
                     <div style="font-size:11px; color:#8faec9; font-weight:600;">%95 Bootstrap Güven Aralığı</div>
-                    <div style="font-size:20px; font-weight:800; color:#facc15; margin-top:2px;">[%95 CI: 0.31, 0.62]</div>
+                    <div style="font-size:20px; font-weight:800; color:#facc15; margin-top:2px;">[%95 CI: 0,31, 0,62]</div>
                     <div style="font-size:10px; color:#cbd5e1;">1.000 iterasyon</div>
                 </div>
                 <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
@@ -3332,17 +3332,17 @@ function renderCorrelationModule() {{
         <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px; margin-bottom:20px;">
             <h4 style="font-size:15px; color:#ffffff; margin:0 0 4px 0;">Çoklu Regresyon Modeli (OLS Özeti)</h4>
             <p style="font-size:12px; color:#8faec9; margin:0 0 14px 0;">
-                Model: <strong>PM2.5 = β₀ + β₁(OSB) + β₂(Rakım) + β₃(Nüfus)</strong>
+                Model: <strong>PM2.5 = β₀ + β₁(OSB) + β₂(Rakım) + β₃(Nüfus/100k)</strong>
             </p>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:14px;">
                 <div style="background:#021220; padding:10px 14px; border-radius:6px; border:1px solid #07253d;">
                     <div style="font-size:10.5px; color:#8faec9; font-weight:700;">BELİRLİLİK KATSAYISI (R²)</div>
-                    <div style="font-size:20px; font-weight:800; color:#00d2ee; margin-top:2px;">%28,4</div>
-                    <div style="font-size:10.5px; color:#cbd5e1;">Açıklanan varyans: R² = 0.2842</div>
+                    <div style="font-size:20px; font-weight:800; color:#00d2ee; margin-top:2px;">%2,4</div>
+                    <div style="font-size:10.5px; color:#cbd5e1;">Açıklanan varyans: R² = 0,0241</div>
                 </div>
                 <div style="background:#021220; padding:10px 14px; border-radius:6px; border:1px solid #07253d;">
                     <div style="font-size:10.5px; color:#8faec9; font-weight:700;">DÜZELTİLMİŞ R² (ADJUSTED R²)</div>
-                    <div style="font-size:20px; font-weight:800; color:#38bdf8; margin-top:2px;">+0,2561</div>
+                    <div style="font-size:20px; font-weight:800; color:#38bdf8; margin-top:2px;">-0,0137</div>
                     <div style="font-size:10.5px; color:#cbd5e1;">Serbestlik derecesi düzeltmesi</div>
                 </div>
                 <div style="background:#021220; padding:10px 14px; border-radius:6px; border:1px solid #07253d;">
@@ -3366,41 +3366,41 @@ function renderCorrelationModule() {{
                     <tbody style="color:#cbd5e1;">
                         <tr style="border-bottom:1px solid #052033;">
                             <td style="padding:8px; font-weight:600; color:#ffffff;">Sabit Terim (β₀)</td>
-                            <td style="padding:8px;">+28,4521</td>
-                            <td style="padding:8px;">3,8412</td>
-                            <td style="padding:8px;">+7,41</td>
+                            <td style="padding:8px;">+31,3748</td>
+                            <td style="padding:8px;">4,5381</td>
+                            <td style="padding:8px;">+6,91</td>
                             <td style="padding:8px;">&lt; 0,0001</td>
                             <td style="padding:8px; color:#10b981;">✅ p &lt; 0.05</td>
                         </tr>
                         <tr style="border-bottom:1px solid #052033;">
                             <td style="padding:8px; font-weight:600; color:#ffffff;">OSB Sayısı (β₁)</td>
-                            <td style="padding:8px;">+1,4210</td>
-                            <td style="padding:8px;">0,3145</td>
-                            <td style="padding:8px;">+4,52</td>
-                            <td style="padding:8px;">&lt; 0,0001</td>
-                            <td style="padding:8px; color:#10b981;">✅ p &lt; 0.05</td>
+                            <td style="padding:8px;">+0,2686</td>
+                            <td style="padding:8px;">0,5560</td>
+                            <td style="padding:8px;">+0,48</td>
+                            <td style="padding:8px;">0,6304</td>
+                            <td style="padding:8px; color:#94a3b8;">❌ Anlamsız (p ≥ 0.05)</td>
                         </tr>
                         <tr style="border-bottom:1px solid #052033;">
                             <td style="padding:8px; font-weight:600; color:#ffffff;">Ortalama Rakım (β₂)</td>
-                            <td style="padding:8px;">+0,0068</td>
-                            <td style="padding:8px;">0,0029</td>
-                            <td style="padding:8px;">+2,34</td>
-                            <td style="padding:8px;">0,0218</td>
-                            <td style="padding:8px; color:#10b981;">✅ p &lt; 0.05</td>
+                            <td style="padding:8px;">+0,0048</td>
+                            <td style="padding:8px;">0,0035</td>
+                            <td style="padding:8px;">+1,37</td>
+                            <td style="padding:8px;">0,1734</td>
+                            <td style="padding:8px; color:#94a3b8;">❌ Anlamsız (p ≥ 0.05)</td>
                         </tr>
                         <tr>
-                            <td style="padding:8px; font-weight:600; color:#ffffff;">İl Nüfusu (β₃)</td>
-                            <td style="padding:8px;">+8,14e-07</td>
-                            <td style="padding:8px;">9,52e-07</td>
-                            <td style="padding:8px;">+0,85</td>
-                            <td style="padding:8px;">0,3954</td>
+                            <td style="padding:8px; font-weight:600; color:#ffffff;">İl Nüfusu (100k Kişi) (β₃)</td>
+                            <td style="padding:8px;">+0,0257</td>
+                            <td style="padding:8px;">0,1024</td>
+                            <td style="padding:8px;">+0,25</td>
+                            <td style="padding:8px;">0,8024</td>
                             <td style="padding:8px; color:#94a3b8;">❌ Anlamsız (p ≥ 0.05)</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div style="background:rgba(2,18,32,0.6); border:1px dashed #093452; border-radius:6px; padding:10px 14px; margin-top:12px; font-size:12px; color:#cbd5e1; line-height:1.5;">
-                <strong>İstatistiksel Yorum:</strong> Tek başına OSB kirliliği tam açıklamazken, rakım ve coğrafi faktörler modele girdiğinde açıklayıcılık artmaktadır.
+                <strong>İstatistiksel Yorum:</strong> Doğrusal çoklu regresyon modeli kirlilik varyansının yalnızca %2,4'ünü açıklayabilmektedir (Düzeltilmiş R² negatiftir). Bu durum, il bazındaki kirliliğin klasik makro göstergelerle doğrusal olarak açıklanamayacağını; mikro-klima, topoğrafik çanak havza hapsi ve sınır ötesi taşınım gibi mekânsal faktörlerin belirleyici olduğunu göstermektedir.
             </div>
         </div>
 
@@ -3413,7 +3413,7 @@ function renderCorrelationModule() {{
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span style="background:rgba(0,210,238,0.18); color:#00d2ee; font-weight:800; font-size:13.5px; padding:4px 10px; border-radius:6px; border:1px solid rgba(0,210,238,0.4);">
-                            Moran's I ≈ +0.35, p &lt; 0.01
+                            Moran's I ≈ +0,35, p &lt; 0,01
                         </span>
                         <strong style="color:#ffffff; font-size:13.5px;">Mekânsal Otokorelasyon Çıkarımı:</strong>
                     </div>
