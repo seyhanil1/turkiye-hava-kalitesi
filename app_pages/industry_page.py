@@ -155,16 +155,16 @@ def render_industry_page(df: pd.DataFrame):
             marker=dict(
                 color=b_osb,
                 colorscale=[
-                    [0.0, "#0369a1"],
-                    [0.5, "#0284c7"],
-                    [1.0, "#00f2fe"]
+                    [0.0, "#075985"],
+                    [0.5, "#0369a1"],
+                    [1.0, "#0284c7"]
                 ],
-                line=dict(color="rgba(255,255,255,0.2)", width=1)
+                line=dict(color="rgba(255,255,255,0.25)", width=1)
             ),
             text=b_texts,
             textposition="auto",
             insidetextanchor="start",
-            textfont=dict(color="#ffffff", size=11, family="sans-serif")
+            textfont=dict(color="#ffffff", size=11, family="sans-serif", weight="bold")
         ))
 
         fig_bar.update_layout(

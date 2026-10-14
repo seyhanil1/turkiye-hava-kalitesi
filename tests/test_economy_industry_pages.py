@@ -83,8 +83,11 @@ def test_industry_page_barchart_descending_and_formatting():
     assert 'textposition="auto"' in content
     assert 'textposition="inside"' not in content
 
-    # Keyfi kırmızı rengin (#ef4444) kaldırıldığını, kurumsal mavi/turkuaz tonların kullanıldığını doğrula
-    assert "#ef4444" not in content.split("fig_bar = go.Figure")[1].split("st.plotly_chart")[0]
+    # Keyfi kırmızı (#ef4444) ve neon açık turkuaz (#00f2fe) renklerinin kaldırıldığını doğrula
+    fig_bar_code = content.split("fig_bar = go.Figure")[1].split("st.plotly_chart")[0]
+    assert "#ef4444" not in fig_bar_code
+    assert "#00f2fe" not in fig_bar_code
+    assert 'weight="bold"' in fig_bar_code
 
     # PM2.5 virgül formatlama kodunun varlığını doğrula
     assert 'pm_str = f"{r[\'pm25\']:.1f}".replace(".", ",")' in content
