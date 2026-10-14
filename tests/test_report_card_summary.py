@@ -72,8 +72,10 @@ def test_city_summary_turkish_characters_and_edge_cases():
     ist = generate_city_summary(df, "İstanbul")
     ist_text = " ".join(ist["sentences"])
     assert "81 il içinde nüfus büyüklüğünde 1. sırada" in ist_text
+    assert "Marmara Bölgesi ortalamasına (35,7 µg/m³) göre +2,7 µg/m³ fark göstermektedir." in ist_text
     assert ist["kunye"]["nufus"] == 15655924
     assert ist["kunye"]["plaka"] == 34
+    assert ist["kunye"]["faal_osb"] == 8
 
     # 4. Bayburt (En az nüfuslu il)
     bayburt = generate_city_summary(df, "Bayburt")
@@ -86,8 +88,9 @@ def test_report_card_apptest_rendering_and_dom():
     AppTest ile Şehir Karnesi sayfasının DOM çıktısını test eder:
     - 'İl Özeti' ve 'İl Künyesi' başlıkları bulunmalı.
     - Eski 'Hava Kalitesi Eğilimi' veya 'Son 30 Günlük' bulunmamalı.
-    - '(Faal)', 'Parsel' veya 'Hektar' künyede bulunmamalı.
+    - 'Parsel' veya 'Hektar' künyede bulunmamalı.
     - Metodolojik dipnot tam olarak bulunmalı.
+    - Faal OSB satırı ve resmi birimler doğrulanmalı.
     """
     def app_report():
         import streamlit as st
@@ -112,9 +115,17 @@ def test_report_card_apptest_rendering_and_dom():
     assert "(Faal)" not in all_markdown
     assert "Parsel" not in all_markdown
     assert "Hektar" not in all_markdown
+    assert "/ 100k" not in all_markdown
 
-    # İstenen zorunlu dipnot
-    assert "PM2,5 model/istasyon karması; ölüm hızı kaba hızdır; il düzeyi veri bireysel sonuç vermez." in all_markdown
+    # İstenen zorunlu dipnot ve metodolojik düzeltme
+    assert "PM2.5 verileri Copernicus CAMS atmosferik model reanalizine dayanmaktadır; kaba ölüm hızı yaş standardizasyonu içermez." in all_markdown
+    assert "PM2,5 model/istasyon karması" not in all_markdown
+
+    # Faal OSB ve resmi birim kontrolleri
+    assert "Faal OSB:" in all_markdown
+    assert "8 Adet (%88,9)" in all_markdown
+    assert "(Yüz Binde)" in all_markdown
+    assert "+2,7 µg/m³" in all_markdown
 
     # Yasaklı kelimeler DOM'da olmamalı
     assert "en temiz" not in all_markdown.lower()

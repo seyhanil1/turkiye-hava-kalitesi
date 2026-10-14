@@ -31,6 +31,15 @@ def to_tr_sign(val: float, decimals: int = 1) -> str:
     return f"{sign}{to_tr_num(val, decimals)}"
 
 
+def get_disp_val(val: float, decimals: int = 1) -> float:
+    """Ekranda gösterilen yuvarlanmış sayısal değeri (ROUND_HALF_UP) döndürür."""
+    if pd.isnull(val):
+        return 0.0
+    dec_fmt = "1" if decimals == 0 else f"0.{'0'*(decimals-1)}1"
+    dec = Decimal(f"{float(val):.4f}").quantize(Decimal(dec_fmt), rounding=ROUND_HALF_UP)
+    return float(dec)
+
+
 def generate_city_summary(df: pd.DataFrame, city_name: str) -> dict:
     """
     Seçilen il için yalnızca veriden hesaplanan nesnel f-string özet cümleleri ve künye verilerini üretir.
@@ -47,11 +56,14 @@ def generate_city_summary(df: pd.DataFrame, city_name: str) -> dict:
     dso_kat = il_row["pm25"] / 5.0
     sentence_dso = f"PM2,5 değeri DSÖ yıllık kılavuzunun (5 µg/m³) {to_tr_num(dso_kat, 1)} katı."
 
-    # 3. Ortalama Farkı
+    # 3. Ortalama Farkı (Ekranda görünen yuvarlanmış değerler üzerinden fark)
     tr_ort = float(df["pm25"].mean())
     bolge_ort = float(df[df["bolge"] == bolge]["pm25"].mean())
-    diff_tr = il_row["pm25"] - tr_ort
-    diff_bolge = il_row["pm25"] - bolge_ort
+    il_pm_disp = get_disp_val(il_row["pm25"], 1)
+    tr_pm_disp = get_disp_val(tr_ort, 1)
+    bolge_pm_disp = get_disp_val(bolge_ort, 1)
+    diff_tr = round(il_pm_disp - tr_pm_disp, 1)
+    diff_bolge = round(il_pm_disp - bolge_pm_disp, 1)
     diff_tr_str = to_tr_sign(diff_tr, 1)
     diff_bolge_str = to_tr_sign(diff_bolge, 1)
     sentence_ort_fark = (
@@ -109,13 +121,14 @@ def generate_city_summary(df: pd.DataFrame, city_name: str) -> dict:
         "nufus": int(il_row["nufus"]),
         "bolge": bolge,
         "plaka": int(il_row["plaka"]),
-        "toplam_osb": int(il_row["toplam_osb"])
+        "toplam_osb": int(il_row["toplam_osb"]),
+        "faal_osb": int(il_row.get("faal_osb", 0))
     }
 
     return {
         "sentences": sentences,
         "kunye": kunye,
-        "footnote": "Not: PM2,5 model/istasyon karması; ölüm hızı kaba hızdır; il düzeyi veri bireysel sonuç vermez."
+        "footnote": "Not: PM2.5 verileri Copernicus CAMS atmosferik model reanalizine dayanmaktadır; kaba ölüm hızı yaş standardizasyonu içermez."
     }
 
 def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = None):
@@ -162,11 +175,13 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
     # 1. TEMEL GÖSTERGELER (3 Kart)
     c1, c2, c3 = st.columns(3)
     with c1:
-        delta_bolge = round(il_row["pm25"] - bolge_ort_pm25, 1)
+        il_pm_disp = get_disp_val(il_row["pm25"], 1)
+        bolge_pm_disp = get_disp_val(bolge_ort_pm25, 1)
+        delta_bolge = round(il_pm_disp - bolge_pm_disp, 1)
         render_metric_card(
             title="PM2.5 Konsantrasyonu",
             value=to_tr_num(il_row["pm25"], 1),
-            unit="µg/m³",
+            unit=" µg/m³",
             delta=f"{to_tr_sign(delta_bolge, 1)} µg/m³ (Bölge Ort.)",
             delta_type="positive" if delta_bolge > 0 else "negative"
         )
@@ -182,7 +197,7 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
         render_metric_card(
             title="Solunum Ölüm Oranı",
             value=to_tr_num(il_row["solunum_olum_100k"], 1),
-            unit="/ 100k",
+            unit=" (Yüz Binde)",
             delta="TÜİK 2024 (Kaba Hız)",
             delta_type="neutral"
         )
@@ -217,11 +232,25 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
         )
         fig_comp.update_traces(textposition="outside")
         fig_comp.add_hline(y=5.0, line_dash="dash", line_color="#ef4444", annotation_text="DSÖ Yıllık Limit (5 µg/m³)")
-        fig_comp.update_layout(height=280, showlegend=False, margin=dict(t=20, l=10, r=10, b=10))
+        fig_comp.update_layout(
+            height=280,
+            showlegend=False,
+            xaxis_title=None,
+            margin=dict(t=20, l=10, r=10, b=10)
+        )
         st.plotly_chart(fig_comp, use_container_width=True)
         
     with col_details:
         st.markdown("#### İl Künyesi")
+        toplam_osb_val = int(il_row["toplam_osb"])
+        faal_osb_val = int(il_row.get("faal_osb", 0))
+        if toplam_osb_val > 0:
+            faal_pct = (faal_osb_val / toplam_osb_val) * 100.0
+            faal_pct_str = to_tr_num(faal_pct, 1)
+        else:
+            faal_pct_str = "0,0"
+        faal_osb_display = f"{faal_osb_val} Adet (%{faal_pct_str})"
+
         st.markdown(f"""
         <div style='background:#0d1527; border:1px solid #1e293b; border-radius:12px; padding:18px;'>
             <table style='width:100%; border-collapse:collapse; font-size:13px; color:#cbd5e1;'>
@@ -237,9 +266,13 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
                     <td><b>Plaka Kodu:</b></td>
                     <td style='text-align:right; color:#f8fafc; font-weight:700;'>{int(il_row['plaka']):02d}</td>
                 </tr>
+                <tr style='border-bottom:1px solid #1e293b; height:36px;'>
+                    <td><b>Toplam OSB:</b></td>
+                    <td style='text-align:right; color:#f8fafc; font-weight:700;'>{toplam_osb_val} Adet</td>
+                </tr>
                 <tr style='height:36px;'>
-                    <td><b>Toplam OSB Sayısı:</b></td>
-                    <td style='text-align:right; color:#f8fafc; font-weight:700;'>{int(il_row['toplam_osb'])} Adet</td>
+                    <td><b>Faal OSB:</b></td>
+                    <td style='text-align:right; color:#f8fafc; font-weight:700;'>{faal_osb_display}</td>
                 </tr>
             </table>
         </div>

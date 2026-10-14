@@ -201,10 +201,13 @@ def render_metric_card(
         delta_class = f"delta-{delta_type}"
         delta_html = f'<div class="metric-delta {delta_class}">{delta}</div>'
         
+    unit_str = f" {unit.strip()}" if unit and not unit.startswith(" ") else unit
+    unit_html = f'<span class="metric-unit">{unit_str}</span>' if unit else ""
+
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-label">{title}</div>
-        <div class="metric-value">{value}<span class="metric-unit">{unit}</span></div>
+        <div class="metric-value">{value}{unit_html}</div>
         {delta_html}
     </div>
     """, unsafe_allow_html=True)
