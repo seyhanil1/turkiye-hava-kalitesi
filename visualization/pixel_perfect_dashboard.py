@@ -3763,7 +3763,7 @@ function renderAIForecastModule(targetCity) {{
         growthRate = 0.03;
         pulseClass = "pulse-box-a";
         badgeColor = "#f59e0b";
-        badgeLabel = "Kategori A: Düşük OSB, yüksek PM2,5";
+        badgeLabel = "Kategori A: Düşük OSB, Yüksek PM2.5";
         nedenSonuc = `${{cityObj.il}} ilinde OSB sayısı Q1 alt çeyreklik eşiğinde veya altında iken, PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerindedir.`;
         onlem = `Emisyon envanteri ve topoğrafik özelliklerin detaylı incelenmesi önerilir.`;
     }} else if (cityOsb >= q3_osb && cityPm >= q3_pm) {{
@@ -3771,7 +3771,7 @@ function renderAIForecastModule(targetCity) {{
         growthRate = 0.05;
         pulseClass = "pulse-box-b";
         badgeColor = "#ef4444";
-        badgeLabel = "Kategori B: Yüksek OSB, yüksek PM2,5";
+        badgeLabel = "Kategori B: Yüksek OSB, Yüksek PM2.5";
         nedenSonuc = `${{cityObj.il}} ilinde hem OSB sayısı hem de PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerindedir.`;
         onlem = `Sanayi emisyon denetimlerinin ve sürekli izleme sistemlerinin sürdürülmesi önerilir.`;
     }}
@@ -3809,12 +3809,12 @@ function renderAIForecastModule(targetCity) {{
                 <div style="font-size:11px; color:#557896; margin-top:2px;">Kritik Eşik ≥ ${{fmt(q3_pm)}} µg/m³</div>
             </div>
             <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
-                <div style="font-size:11px; color:#8faec9;">Kategori A (Düşük OSB, yüksek PM2,5)</div>
+                <div style="font-size:11px; color:#8faec9;">Kategori A (Düşük OSB, Yüksek PM2.5)</div>
                 <div style="font-size:18px; font-weight:800; color:#f59e0b; margin-top:4px;">${{katA_cities.length}} İl Tespit Edildi</div>
                 <div style="font-size:11px; color:#557896; margin-top:2px;">Düşük OSB, Yüksek Kirlilik</div>
             </div>
             <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
-                <div style="font-size:11px; color:#8faec9;">Kategori B (Yüksek OSB, yüksek PM2,5)</div>
+                <div style="font-size:11px; color:#8faec9;">Kategori B (Yüksek OSB, Yüksek PM2.5)</div>
                 <div style="font-size:18px; font-weight:800; color:#ef4444; margin-top:4px;">${{katB_cities.length}} İl Tespit Edildi</div>
                 <div style="font-size:11px; color:#557896; margin-top:2px;">Yüksek OSB, Yüksek Kirlilik</div>
             </div>
@@ -3822,7 +3822,7 @@ function renderAIForecastModule(targetCity) {{
         
         <div style="background:#031b2e; border:1px solid #093452; border-radius:12px; padding:16px 20px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div style="display:flex; align-items:center; gap:12px;">
-                <label style="font-size:13px; font-weight:700; color:#f8fafc;">📍 Analiz Edilecek İl:</label>
+                <label style="font-size:13px; font-weight:700; color:#f8fafc;">Analiz Edilecek İl:</label>
                 <select id="aiCitySelectBox" onchange="renderAIForecastModule(this.value)" style="background:#07253d; border:1px solid #00e5db55; color:#ffffff; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; outline:none; cursor:pointer;">
                     ${{cityOptionsHtml}}
                 </select>
@@ -3891,20 +3891,24 @@ function renderAIForecastModule(targetCity) {{
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div class="ai-info-bubble" style="margin-bottom:0;">
-                <div style="color:#f59e0b; font-size:14px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                    <span>⛰️</span> Kategori A: Düşük OSB, yüksek PM2,5 İlleri (${{katA_cities.length}} İl)
+                <div style="color:#fbbf24; font-size:14px; font-weight:700; margin-bottom:6px;">
+                    Kategori A: Düşük OSB, Yüksek PM2.5 İlleri (${{katA_cities.length}} İl)
                 </div>
                 <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Düşük sanayi yoğunluğu (OSB ≤ ${{q1_osb.toFixed(0)}}), partikül seviyesi (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
                 <div>${{katAPills}}</div>
             </div>
             
             <div class="ai-info-bubble" style="margin-bottom:0;">
-                <div style="color:#ef4444; font-size:14px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                    <span>🏭</span> Kategori B: Yüksek OSB, yüksek PM2,5 İlleri (${{katB_cities.length}} İl)
+                <div style="color:#f87171; font-size:14px; font-weight:700; margin-bottom:6px;">
+                    Kategori B: Yüksek OSB, Yüksek PM2.5 İlleri (${{katB_cities.length}} İl)
                 </div>
                 <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Yüksek OSB kümelenmesi (OSB ≥ ${{q3_osb.toFixed(0)}}), yüksek emisyon (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
                 <div>${{katBPills}}</div>
             </div>
+        </div>
+        
+        <div style="background:rgba(2,18,32,0.6); border:1px solid #1e293b; border-left:3px solid #38bdf8; padding:10px 14px; border-radius:6px; margin-top:14px; font-size:12px; color:#94a3b8;">
+            <strong>Bilgi Notu:</strong> Listelenmeyen 68 il, belirlenen uç çeyreklik eşiklerinin dışında kalarak orta segmentte yer alan 'Dengeli Profil' grubundadır.
         </div>
     `;
     

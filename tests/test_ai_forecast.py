@@ -81,7 +81,7 @@ def test_create_forecast_figure():
     # Çizginin dash=dash olduğunu doğrula
     assert fig.data[0].line.dash == "dash"
     # Başlıktaki formatı doğrula
-    assert "[Kategori B (Yüksek OSB, yüksek PM2,5) — Yıllık +%5 Artış Trendi]" in fig.layout.title.text
+    assert "[Kategori B (Yüksek OSB, Yüksek PM2.5) — Yıllık +%5 Artış Trendi]" in fig.layout.title.text
     # Çizgi etiketlerinin yshift ve yanchor='bottom' ile kaydırıldığını doğrula
     assert fig.layout.annotations[0].yshift == 8
     assert fig.layout.annotations[1].yshift == 8
@@ -108,8 +108,16 @@ def test_ai_forecast_page_apptest_rendering():
 
     all_markdown = " ".join([m.value for m in at.markdown])
 
-    # 1. Başlıklar ve kod sızıntısı temizliği
-    assert "📋 81 İl Dağılım Grupları" in all_markdown
+    # 1. Başlıklar, emoji temizliği ve tipografik hiyerarşi
+    assert "81 İl Dağılım Grupları" in all_markdown
+    assert "📋" not in all_markdown
+    assert "📊" not in all_markdown
+    assert "⛰️" not in all_markdown
+    assert "🏭" not in all_markdown
+    assert "Kategori A: Düşük OSB, Yüksek PM2.5 İlleri" in all_markdown
+    assert "Kategori B: Yüksek OSB, Yüksek PM2.5 İlleri" in all_markdown
+    assert "Bilgi Notu:" in all_markdown
+    assert "Listelenmeyen 68 il, belirlenen uç çeyreklik eşiklerinin dışında kalarak orta segmentte yer alan 'Dengeli Profil' grubundadır." in all_markdown
     assert "(Pandas Filtreleme)" not in all_markdown
     assert "İl Grupları" in all_markdown
 
