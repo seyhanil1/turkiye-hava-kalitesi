@@ -296,11 +296,11 @@ def create_duel_dumbbell_chart(
 
     # Ham metinler
     raw_a = [
-        f"{float(city_a['solunum_olum_100k']):.1f} / 100k".replace(".", ","),
+        f"{float(city_a['solunum_olum_100k']):.1f} / yüz binde".replace(".", ","),
         f"{float(city_a['pm25']):.1f} µg/m³".replace(".", ",")
     ]
     raw_b = [
-        f"{float(city_b['solunum_olum_100k']):.1f} / 100k".replace(".", ","),
+        f"{float(city_b['solunum_olum_100k']):.1f} / yüz binde".replace(".", ","),
         f"{float(city_b['pm25']):.1f} µg/m³".replace(".", ",")
     ]
 
@@ -317,16 +317,9 @@ def create_duel_dumbbell_chart(
             hoverinfo="none"
         ))
 
-    # Dinamik metin pozisyonları (yakın noktalarda üst üste binmeyi önler: biri üstte diğeri altta)
-    pos_a = []
-    pos_b = []
-    for va, vb in zip(vals_a, vals_b):
-        if abs(va - vb) < 12:
-            pos_a.append("top center")
-            pos_b.append("bottom center")
-        else:
-            pos_a.append("top center")
-            pos_b.append("top center")
+    # Dinamik metin pozisyonları (yakın noktalarda çakışmayı önler: 1. İl daima üstte, 2. İl daima altta)
+    pos_a = ["top center" for _ in vals_a]
+    pos_b = ["bottom center" for _ in vals_b]
 
     # Şehir A noktaları (Mavi)
     fig.add_trace(go.Scatter(
