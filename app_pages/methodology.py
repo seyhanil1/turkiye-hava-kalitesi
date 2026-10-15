@@ -32,10 +32,10 @@ def render_methodology_page(df: pd.DataFrame = None):
     - **Hava Kalitesi Verisi:** Platformdaki ince partikül madde (PM2.5) verileri, 
       **Copernicus Atmosphere Monitoring Service (CAMS)** atmosferik reanaliz modelleri ve Open-Meteo Air Quality API aracılığıyla elde edilmektedir.
       *Önemli Not:* Bu veriler zemin seviyesindeki fiziksel ölçüm istasyonu verisi değil; uydu gözlemleri, kimyasal taşınım modelleri ve meteorolojik verilerin harmanlandığı **0.1° (~11 km) çözünürlüklü ızgaralanmış atmosferik model tahmin/reanaliz verisidir**.
-    - **Veri Dönemi:** Doğrulanmış 12 Aylık Konsolidasyon Dönemi (yıllık model ve istasyon konsolidasyonu; Copernicus CAMS zaman serisi 11.07.2026 – 10.10.2026 gözlem aralığını kapsar). Canlı veya anlık veri iddiası taşımamaktadır.
+    - **Veri Dönemi:** Doğrulanmış 12 Aylık Konsolidasyon Dönemi (yıllık model ve istasyon konsolidasyonu; Copernicus CAMS zaman serisi 11.10.2025 – 10.10.2026 (12 Aylık Doğrulanmış Konsolidasyon) gözlem aralığını kapsar). Canlı veya anlık veri iddiası taşımamaktadır.
     - **Nüfus Verisi:** TÜİK Adrese Dayalı Nüfus Kayıt Sistemi (ADNKS 2023/2024 resmi il nüfusları).
     - **Ölüm ve Sağlık İstatistikleri:** TÜİK Ölüm ve Ölüm Nedeni İstatistikleri (2022–2024). Dolaşım ve solunum sistemi hastalıklarına (ICD-10 J00-J99) bağlı **ham ölüm hızlarıdır** (yaşa göre standardize edilmemiştir).
-    - **Sanayi ve OSB Verisi:** OSB verileri: OSBÜK (Ekim 2026) (81 ildeki faal/onaylı OSB sayıları ve hektar büyüklükleri).
+    - **Sanayi ve OSB Verisi:** OSB verileri: OSBÜK (Ekim 2026) (81 ildeki faal/onaylı OSB sayıları ve faal işletme/üretim oranları (OSBÜK Ekim 2026)).
     """)
 
     # 2. Seviye Eşikleri ve Kademelendirme
@@ -77,11 +77,14 @@ def render_methodology_page(df: pd.DataFrame = None):
     st.markdown(table_html, unsafe_allow_html=True)
 
     # 3. İstatistiksel Hesaplamalar
-    st.markdown("### 3. İstatistiksel Hesaplamalar ve Ortalamalar")
+    st.markdown("### 3. İstatistiksel Hesaplamalar ve Modeller")
     st.markdown("""
     - **81 İl Ortalaması:** 81 ilin PM2.5 değerlerinin ağırlıksız aritmetik ortalamasıdır. İllerin yüzölçümü veya nüfusu hesaba katılmaksızın her il eşit ağırlıktadır.
     - **Bölge Ortalamaları:** İlgili coğrafi bölgedeki illerin PM2.5 konsantrasyonlarının bölgesel aritmetik ortalamasıdır.
-    - **Korelasyonlar:** Sanayi alanı (hektar) ve hava kirliliği arasındaki ilişki, doğrusal olmayan dağılımlara duyarlı **Spearman Sıra Korelasyon Katsayısı (ρ)** ile hesaplanmakta ve iki yönlü p-değeri ile test edilmektedir.
+    - **Korelasyonlar:** Sanayi göstergeleri ve hava kirliliği arasındaki ilişki, doğrusal olmayan dağılımlara duyarlı **Spearman Sıra Korelasyon Katsayısı (ρ)** ve Pearson katsayısı ile hesaplanmakta, iki yönlü p-değeri ile test edilmektedir.
+    - **Çoklu Regresyon (OLS):** PM2.5 kirlilik yükünün OSB sayısı, ortalama rakım ve il nüfusu (100 Bin Kişi normalize) bağımsız değişkenleriyle doğrusal ilişkisi modellenmiştir.
+    - **Mekânsal Otokorelasyon (Global Moran's I):** İllerin enlem/boylam koordinatları üzerinden ters mesafe ağırlık matrisi (W) oluşturularak kirliliğin coğrafi havzalarda kümelenme eğilimi (Spatial Lag) test edilmiştir.
+    - **Bölgesel Varyans Analizi:** Coğrafi bölgeler arası farklar Tek Yönlü ANOVA (F testi), Kruskal-Wallis (H testi) ve Levene varyans homojenliği testi ile sınanmıştır.
     """)
 
     # 4. Eksik Veri Yaklaşımı ve Sınırlamalar
@@ -89,4 +92,6 @@ def render_methodology_page(df: pd.DataFrame = None):
     st.markdown("""
     - **Eksik Veri (Missing Data):** Eksik veya sıfır bildirilmiş kayıtlar hesaplamaya dahil edilmemiş, yalnızca geçerli gözlem günleri baz alınmıştır.
     - **Model Çözünürlüğü:** CAMS ızgara çözünürlüğü (~11 km) genel bölgesel arka plan kirliliğini çok iyi yakalamakla birlikte; yoğun trafik arterleri, sokak kanyonları veya vadi tabanlarındaki mikro-ölçekli kirlilik birikimlerini yer istasyonları kadar hassas yansıtmayabilir.
+    - **Kaba Ölüm Hızı ve Yaş Standardizasyonu:** Kullanılan TÜİK solunum ölüm oranları 'kaba ölüm hızı' olup il nüfuslarının yaş piramidine göre standardize edilmemiştir. Yaşlı nüfusu yoğun illerde oranlar yapısal olarak daha yüksektir.
+    - **Ekolojik Yanılgı (Ecological Fallacy):** İl düzeyinde saptanan makro-mekânsal ve endüstriyel korelasyonlar, bireylerin kişisel maruziyetine veya tekil sağlık çıktılarına doğrudan nedensellik atfetmek için kullanılamaz.
     """)

@@ -41,9 +41,18 @@ def test_methodology_no_code_leaks():
     assert "dropna()" not in content
     assert "with st.expander(\"Yöntem ve Kaynaklar\")" not in content
     assert "Doğrulanmış 12 Aylık Konsolidasyon Dönemi" in content
+    assert "Copernicus CAMS zaman serisi 11.10.2025 – 10.10.2026 (12 Aylık Doğrulanmış Konsolidasyon) gözlem aralığını kapsar" in content
+    assert "11.07.2026" not in content
     assert "OSB verileri: OSBÜK (Ekim 2026)" in content
+    assert "faal işletme/üretim oranları (OSBÜK Ekim 2026)" in content
+    assert "hektar büyüklükleri" not in content
     assert "81 ilin PM2.5 değerlerinin ağırlıksız aritmetik ortalamasıdır." in content
     assert "İlgili coğrafi bölgedeki illerin PM2.5 konsantrasyonlarının bölgesel aritmetik ortalamasıdır." in content
+    assert "Çoklu Regresyon (OLS):" in content
+    assert "Mekânsal Otokorelasyon (Global Moran's I):" in content
+    assert "Bölgesel Varyans Analizi:" in content
+    assert "Kaba Ölüm Hızı ve Yaş Standardizasyonu:" in content
+    assert "Ekolojik Yanılgı (Ecological Fallacy):" in content
     assert "Eksik veya sıfır bildirilmiş kayıtlar hesaplamaya dahil edilmemiş, yalnızca geçerli gözlem günleri baz alınmıştır." in content
 
 
