@@ -16,6 +16,7 @@ from visualization.time_charts import create_timeseries_chart
 from visualization.distribution_charts import (
     create_ranking_bar_chart,
     create_regional_boxplot,
+    create_regional_distribution_strip,
     create_correlation_heatmap,
     create_regression_scatter,
     create_duel_radar_chart
@@ -39,6 +40,7 @@ __all__ = [
     "create_timeseries_chart",
     "create_ranking_bar_chart",
     "create_regional_boxplot",
+    "create_regional_distribution_strip",
     "create_correlation_heatmap",
     "create_regression_scatter",
     "create_duel_radar_chart",

@@ -9,7 +9,10 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-from visualization.distribution_charts import create_regional_boxplot
+from visualization.distribution_charts import (
+    create_regional_boxplot,
+    create_regional_distribution_strip
+)
 from data_processing.aggregator import aggregate_by_region
 from analytics.hypothesis_tests import run_regional_anova
 
@@ -97,18 +100,27 @@ def create_regional_benchmark_bar(df: pd.DataFrame, pollutant: str = "pm25") -> 
         x=5,
         line_width=2,
         line_dash="dash",
-        line_color="#ef4444",
-        annotation_text="DSÖ Yıllık Kılavuz Değeri (5 µg/m³)",
-        annotation_position="top right",
-        annotation_font=dict(color="#ef4444", size=11, family="Plus Jakarta Sans", weight="bold")
+        line_color="#ef4444"
+    )
+    fig.add_annotation(
+        x=5,
+        y=1.04,
+        yref="paper",
+        xref="x",
+        text="DSÖ Yıllık Kılavuz Değeri (5 µg/m³)",
+        showarrow=False,
+        yanchor="bottom",
+        xanchor="left",
+        font=dict(color="#ef4444", size=11, family="Plus Jakarta Sans", weight="bold")
     )
 
     fig.update_layout(
-        margin=dict(l=140, r=20, t=30, b=25),
+        margin=dict(l=140, r=20, t=40, b=25),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         height=340,
         xaxis=dict(
+            range=[0, 50],
             showgrid=True,
             gridcolor="rgba(255, 255, 255, 0.07)",
             tickfont=dict(color="#8faec9", size=11),
@@ -171,26 +183,15 @@ def render_regions_page(df: pd.DataFrame):
         use_container_width=True,
         hide_index=True
     )
+    st.caption("Metodolojik Not: Bölgesel solunum ölüm hızları TÜİK kaba ölüm hızı verileridir. Nüfus yaş piramidi standardize edilmediği için yaşlı nüfus payı yüksek olan Ege ve Karadeniz bölgelerinde kaba ölüm oranları yapısal olarak daha yüksek görünmektedir.")
 
     st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
     # 3. BÖLÜM: DAĞILIM VE OSB GRAFİKLERİ
     col_box, col_bar = st.columns([1.2, 1.0])
     with col_box:
-        st.markdown("### Bölgesel PM2.5 Dağılımı (Kutu Grafiği)")
-        fig_box = create_regional_boxplot(df, pollutant="pm25")
-        fig_box.update_traces(
-            boxpoints="outliers",
-            marker=dict(color="#00d2ee", size=5),
-            line=dict(color="#00d2ee", width=1.5),
-            fillcolor="rgba(0, 210, 238, 0.2)"
-        )
-        fig_box.update_layout(
-            height=400,
-            margin=dict(b=70, t=40, l=50, r=20),
-            xaxis=dict(title=None, tickangle=-45, tickfont=dict(color="#94a3b8", size=11)),
-            yaxis=dict(gridcolor="#1e293b", tickfont=dict(color="#94a3b8", size=10))
-        )
+        st.markdown("### Bölgesel PM2.5 İl Dağılımı ve Kümelenmesi")
+        fig_box = create_regional_distribution_strip(df, pollutant="pm25")
         st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
 
     with col_bar:
@@ -211,13 +212,14 @@ def render_regions_page(df: pd.DataFrame):
             textfont=dict(color="#f8fafc", size=11)
         )
         fig_osb.update_layout(
-            height=400, 
+            height=420, 
             showlegend=False, 
             margin=dict(b=70, t=40, l=50, r=20),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(title=None, tickfont=dict(color="#94a3b8", size=11), tickangle=-45),
             yaxis=dict(
+                range=[0, 115],
                 title=dict(text="OSB Sayısı", font=dict(color="#94a3b8", size=11)),
                 gridcolor="#1e293b", 
                 tickfont=dict(color="#94a3b8", size=10)
@@ -238,6 +240,16 @@ def render_regions_page(df: pd.DataFrame):
         h_p_str = f"{anova_res['kruskal_p']:.3f}".replace(".", ",")
         levene_p_str = f"{anova_res['levene_p']:.3f}".replace(".", ",")
 
+        anova_badge_text = "Fark Anlamlı (p < 0.05)" if anova_res["anova_significant"] else "Fark Anlamsız (p > 0.05)"
+        anova_badge_bg = "rgba(0, 229, 153, 0.12)" if anova_res["anova_significant"] else "rgba(250, 204, 21, 0.12)"
+        anova_badge_color = "#00e599" if anova_res["anova_significant"] else "#facc15"
+        anova_badge_border = "rgba(0, 229, 153, 0.3)" if anova_res["anova_significant"] else "rgba(250, 204, 21, 0.3)"
+
+        kw_badge_text = "Fark Anlamlı (p < 0.05)" if anova_res["kruskal_significant"] else "Fark Anlamsız (p > 0.05)"
+        kw_badge_bg = "rgba(0, 229, 153, 0.12)" if anova_res["kruskal_significant"] else "rgba(250, 204, 21, 0.12)"
+        kw_badge_color = "#00e599" if anova_res["kruskal_significant"] else "#facc15"
+        kw_badge_border = "rgba(0, 229, 153, 0.3)" if anova_res["kruskal_significant"] else "rgba(250, 204, 21, 0.3)"
+
         st.markdown(f"""
         <div style='background:#031b2e; border:1px solid #093452; border-radius:12px; padding:20px;'>
             <div style='font-size:14px; font-weight:700; color:#00d2ee; margin-bottom:8px;'>
@@ -251,16 +263,30 @@ def render_regions_page(df: pd.DataFrame):
                     <div style='font-size:11px; color:#8faec9;'>Tek Yönlü ANOVA (F)</div>
                     <div style='font-size:18px; font-weight:700; color:#f8fafc;'>F = {f_val_str}</div>
                     <div style='font-size:11px; color:{"#00e599" if anova_res["anova_significant"] else "#facc15"};'>p = {f_p_str}</div>
+                    <div style='margin-top:6px;'>
+                        <span style='display:inline-block; font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; background:{anova_badge_bg}; color:{anova_badge_color}; border:1px solid {anova_badge_border};'>
+                            {anova_badge_text}
+                        </span>
+                    </div>
                 </div>
                 <div style='background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;'>
                     <div style='font-size:11px; color:#8faec9;'>Kruskal-Wallis (H)</div>
                     <div style='font-size:18px; font-weight:700; color:#f8fafc;'>H = {h_val_str}</div>
                     <div style='font-size:11px; color:{"#00e599" if anova_res["kruskal_significant"] else "#facc15"};'>p = {h_p_str}</div>
+                    <div style='margin-top:6px;'>
+                        <span style='display:inline-block; font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; background:{kw_badge_bg}; color:{kw_badge_color}; border:1px solid {kw_badge_border};'>
+                            {kw_badge_text}
+                        </span>
+                    </div>
                 </div>
                 <div style='background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;'>
                     <div style='font-size:11px; color:#8faec9;'>Levene Varyans Homojenliği</div>
                     <div style='font-size:16px; font-weight:700; color:#f8fafc;'>p = {levene_p_str}</div>
-                    <div style='font-size:11px; color:#8faec9;'>{'Varyanslar Eşit' if anova_res['equal_variance'] else 'Heterojen Varyans'}</div>
+                    <div style='margin-top:6px;'>
+                        <span style='display:inline-block; font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; background:rgba(14, 165, 233, 0.12); color:#38bdf8; border:1px solid rgba(14, 165, 233, 0.3);'>
+                            {'Varyanslar Eşit' if anova_res['equal_variance'] else 'Heterojen Varyans'}
+                        </span>
+                    </div>
                 </div>
             </div>
             <div style='background:#021220; border-left:4px solid #00e599; padding:12px; border-radius:6px; font-size:13px; color:#cbd5e1;'>

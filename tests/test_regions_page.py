@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from streamlit.testing.v1 import AppTest
 from data_sources.local_official_data import build_master_dataset
-from visualization.distribution_charts import create_regional_boxplot
+from visualization.distribution_charts import create_regional_boxplot, create_regional_distribution_strip
 from app_pages.regions_page import create_regional_benchmark_bar, render_regions_page
 from analytics.hypothesis_tests import run_regional_anova
 
@@ -27,10 +27,17 @@ def test_regional_benchmark_bar_marmara_rounding_and_colors():
     # Koyu ve açık mavi tonlarının varlığını doğrula
     assert any("083358" in c or "0284c7" in c or "38bdf8" in c for c in colors)
 
+    # DSÖ vline ve tavan boşluğu kontrolü
+    assert list(fig.layout.xaxis.range) == [0, 50]
+    ann = [a for a in fig.layout.annotations if "DSÖ Yıllık Kılavuz Değeri" in a.text][0]
+    assert ann.y == 1.04
+    assert ann.yanchor == "bottom"
+    assert ann.x == 5
 
-def test_regional_boxplot_sorting_and_margins():
+
+def test_regional_distribution_strip_sorting_and_properties():
     df = build_master_dataset()
-    fig = create_regional_boxplot(df, pollutant="pm25")
+    fig = create_regional_distribution_strip(df, pollutant="pm25")
     
     # Başlığın kaldırıldığını doğrula
     assert fig.layout.title.text is None
@@ -45,9 +52,20 @@ def test_regional_boxplot_sorting_and_margins():
     assert fig.layout.margin.t == 40
     assert fig.layout.margin.l == 50
     assert fig.layout.margin.r == 20
-    assert fig.layout.height == 400
-    assert fig.data[0].boxpoints == "outliers"
+    assert fig.layout.height == 420
+    assert fig.data[0].boxpoints == "all"
+    assert fig.data[0].jitter == 0.35
+    assert fig.data[0].pointpos == 0
+    assert fig.data[0].marker.color == "#0ea5e9"
+    assert fig.data[0].marker.size == 8
+    assert fig.data[0].marker.opacity == 0.75
+    assert fig.data[0].fillcolor == "rgba(0,0,0,0)"
+    assert fig.data[0].line.color == "rgba(0,0,0,0)"
+    assert len(fig.layout.shapes) == 7
+    assert fig.layout.yaxis.title.text == "PM2.5 Düzeyi (µg/m³)"
     assert fig.layout.xaxis.title.text is None
+    # Hover text format kontrolü (örn. "Iğdır: 82,1 µg/m³ (16,4x DSÖ)")
+    assert any("µg/m³" in t and "x DSÖ" in t for t in fig.data[0].hovertext)
 
 
 def test_regional_anova_academic_turkish():
@@ -75,7 +93,7 @@ def test_regions_page_apptest_rendering():
         render_regions_page(df)
 
     at = AppTest.from_function(app_regions)
-    at.run()
+    at.run(timeout=15)
     
     assert not at.exception
     
@@ -86,6 +104,7 @@ def test_regions_page_apptest_rendering():
     assert "Tüm bölge ortalamaları bu eşiğin 6 ila 9 katı üzerindedir" in all_captions
     assert "son 12 ay" not in all_captions
     assert "Doğrulanmış 12 Aylık Konsolidasyon Dönemi" in all_captions
+    assert "Metodolojik Not: Bölgesel solunum ölüm hızları TÜİK kaba ölüm hızı verileridir." in all_captions
     
     # Tabloyu kontrol et
     assert len(at.dataframe) >= 1
@@ -105,3 +124,6 @@ def test_regions_page_apptest_rendering():
     assert "İstatistiki Sonuç:" not in all_md
     assert "F = 1,04" in all_md
     assert "p = 0,407" in all_md
+    assert "Bölgesel PM2.5 İl Dağılımı ve Kümelenmesi" in all_md
+    assert "Fark Anlamsız (p > 0.05)" in all_md
+

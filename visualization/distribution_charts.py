@@ -67,43 +67,90 @@ def create_ranking_bar_chart(
     
     return fig
 
-def create_regional_boxplot(
+def create_regional_distribution_strip(
     df: pd.DataFrame, 
     pollutant: str = "pm25"
 ) -> go.Figure:
     """
-    7 Coğrafi Bölgenin kirlilik dağılımını gösteren Kutu Grafiği (Boxplot).
-    Medyan, çeyreklikler (Q1, Q3) ve aykırı değerleri görselleştirir.
+    7 Coğrafi Bölgenin kirlilik dağılımını gösteren modern Strip & Jitter Dağılım Grafiği.
+    Her il gerçek birer veri noktası olarak gösterilir ve her bölgenin merkezinde
+    yatay medyan çizgisi yer alır.
     """
-    val_col = pollutant if pollutant in df.columns else "pm25"
-    label = "PM2.5"
-    
+    candidates = [pollutant, pollutant.lower(), "pm25", "PM2.5"]
+    val_col = "pm25"
+    for c in candidates:
+        if c in df.columns:
+            val_col = c
+            break
+
+    clean_df = df.copy()
+    clean_df[val_col] = pd.to_numeric(
+        clean_df[val_col].astype(str).str.strip().str.replace(",", "."),
+        errors="coerce"
+    )
+    if "bolge" in clean_df.columns:
+        clean_df["bolge"] = clean_df["bolge"].astype(str).str.strip()
+    if "il" in clean_df.columns:
+        clean_df["il"] = clean_df["il"].astype(str).str.strip()
+
+    clean_df = clean_df.dropna(subset=[val_col, "bolge", "il"])
+
     # Bölgeleri ortalama kirliliğe göre yüksekten düşüğe doğru sırala
-    order = df.groupby("bolge")[val_col].mean().sort_values(ascending=False).index.tolist()
-    
-    fig = px.box(
-        df,
-        x="bolge",
-        y=val_col,
-        category_orders={"bolge": order},
-        points="outliers",
-        hover_name="il"
-    )
-    
-    fig.update_traces(
-        boxpoints="outliers",
-        marker=dict(color="#00d2ee", size=5),
-        line=dict(color="#00d2ee", width=1.5),
-        fillcolor="rgba(0, 210, 238, 0.2)"
-    )
-    
+    order = clean_df.groupby("bolge")[val_col].mean().sort_values(ascending=False).index.tolist()
+    clean_df["bolge"] = pd.Categorical(clean_df["bolge"], categories=order, ordered=True)
+    clean_df = clean_df.sort_values("bolge")
+
+    # Hover Bilgisi: İl adı, PM2.5 konsantrasyonu ve DSÖ katı (örn: "Iğdır: 82,1 µg/m³ (16,4x DSÖ)")
+    hover_texts = []
+    for _, row in clean_df.iterrows():
+        val = float(row[val_col])
+        val_str = f"{val:.1f}".replace(".", ",")
+        ratio = val / 5.0
+        ratio_str = f"{ratio:.1f}".replace(".", ",")
+        hover_texts.append(f"{row['il']}: {val_str} µg/m³ ({ratio_str}x DSÖ)")
+
+    fig = go.Figure()
+    fig.add_trace(go.Box(
+        x=clean_df["bolge"],
+        y=clean_df[val_col],
+        boxpoints="all",
+        jitter=0.35,
+        pointpos=0,
+        fillcolor="rgba(0,0,0,0)",
+        line_color="rgba(0,0,0,0)",
+        marker=dict(color="#0ea5e9", opacity=0.75, size=8),
+        text=hover_texts,
+        hovertext=hover_texts,
+        hoverinfo="text",
+        hoveron="points",
+        showlegend=False
+    ))
+
+    # Her bölgenin merkezine ince, zarif ve net bir yatay medyan çizgisi
+    for i, r in enumerate(order):
+        sub = clean_df[clean_df["bolge"] == r]
+        if not sub.empty:
+            med = float(sub[val_col].median())
+            fig.add_shape(
+                type="line",
+                x0=i - 0.28,
+                x1=i + 0.28,
+                y0=med,
+                y1=med,
+                line=dict(color="#38bdf8", width=2),
+            )
+
     fig.update_layout(
         title=None,
-        height=400,
+        height=420,
         margin=dict(b=70, t=40, l=50, r=20),
-        xaxis=dict(title=None, tickfont=dict(color="#94a3b8", size=11), tickangle=-45),
+        xaxis=dict(
+            title=None,
+            tickfont=dict(color="#94a3b8", size=11),
+            tickangle=-45
+        ),
         yaxis=dict(
-            title=dict(text=f"{label} Konsantrasyonu (µg/m³)", font=dict(color="#94a3b8", size=11)),
+            title=dict(text="PM2.5 Düzeyi (µg/m³)", font=dict(color="#94a3b8", size=11)),
             gridcolor="#1e293b",
             tickfont=dict(color="#94a3b8", size=10)
         ),
@@ -111,8 +158,13 @@ def create_regional_boxplot(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)"
     )
-    
+
     return fig
+
+
+# Geriye dönük uyumluluk takma adı (backward compatibility alias)
+create_regional_boxplot = create_regional_distribution_strip
+
 
 def create_correlation_heatmap(
     corr_df: pd.DataFrame, 
