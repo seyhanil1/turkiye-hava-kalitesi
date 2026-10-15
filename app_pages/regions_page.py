@@ -183,7 +183,7 @@ def render_regions_page(df: pd.DataFrame):
         use_container_width=True,
         hide_index=True
     )
-    st.caption("Metodolojik Not: Bölgesel solunum ölüm hızları TÜİK kaba ölüm hızı verileridir. Nüfus yaş piramidi standardize edilmediği için yaşlı nüfus payı yüksek olan Ege ve Karadeniz bölgelerinde kaba ölüm oranları yapısal olarak daha yüksek görünmektedir.")
+    st.caption("Metodolojik Not: Bölgesel solunum ölüm hızları TÜİK kaba ölüm verisidir (yaş standardizasyonu içermez). Karadeniz ve Ege bölgelerindeki yüksek ölüm oranları, bu bölgelerdeki yaşlı nüfus ağırlığından kaynaklanmaktadır.")
 
     st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 

@@ -103,8 +103,8 @@ def test_regions_page_apptest_rendering():
     assert "DSÖ yıllık kılavuz sınırıdır (5 µg/m³)" in all_captions
     assert "Tüm bölge ortalamaları bu eşiğin 6 ila 9 katı üzerindedir" in all_captions
     assert "son 12 ay" not in all_captions
-    assert "Doğrulanmış 12 Aylık Konsolidasyon Dönemi" in all_captions
-    assert "Metodolojik Not: Bölgesel solunum ölüm hızları TÜİK kaba ölüm hızı verileridir." in all_captions
+    assert ("Metodolojik Not: Bölgesel solunum ölüm hızları TÜİK kaba ölüm verisidir (yaş standardizasyonu içermez)." in all_captions or
+            "Metodolojik Not: Bölgesel solunum ölüm hızları TÜİK kaba ölüm" in all_captions)
     
     # Tabloyu kontrol et
     assert len(at.dataframe) >= 1

@@ -2245,13 +2245,13 @@ html, body {{
                             </div>
                             <div class="legend-labels-grid">
                                 <div class="leg-item"><span class="leg-name" style="color:#00e599;">İyi</span><span class="leg-range">≤15</span></div>
-                                <div class="leg-item"><span class="leg-name" style="color:#facc15;">Orta</span><span class="leg-range">15–30</span></div>
-                                <div class="leg-item"><span class="leg-name" style="color:#f97316;">Hassas</span><span class="leg-range">30–50</span></div>
-                                <div class="leg-item"><span class="leg-name" style="color:#f87171;">Sağlıksız</span><span class="leg-range">50–70</span></div>
+                                <div class="leg-item"><span class="leg-name" style="color:#facc15;">Orta</span><span class="leg-range">15.1–30</span></div>
+                                <div class="leg-item"><span class="leg-name" style="color:#f97316;">Hassas</span><span class="leg-range">30.1–50</span></div>
+                                <div class="leg-item"><span class="leg-name" style="color:#f87171;">Sağlıksız</span><span class="leg-range">50.1–70</span></div>
                                 <div class="leg-item"><span class="leg-name" style="color:#ef4444;">Kritik</span><span class="leg-range">&gt;70</span></div>
                             </div>
                             <div class="legend-scale-strip" style="text-align:center; font-size:11px; color:#8faec9; margin-top:6px; padding:4px 8px; background:#021626; border-radius:4px; border:1px solid #083454; letter-spacing:0.01em;">
-                                <span style="color:#00e599; font-weight:600;">Yeşil:</span> İyi (≤15) <span style="color:#335370;">|</span> <span style="color:#facc15; font-weight:600;">Sarı:</span> Orta (15-30) <span style="color:#335370;">|</span> <span style="color:#f97316; font-weight:600;">Turuncu:</span> Hassas (30-50) <span style="color:#335370;">|</span> <span style="color:#f87171; font-weight:600;">Kırmızı:</span> Sağlıksız (50-70) <span style="color:#335370;">|</span> <span style="color:#ef4444; font-weight:600;">Bordo:</span> Kritik (&gt;70 µg/m³)
+                                <span style="color:#00e599; font-weight:600;">Yeşil:</span> İyi (≤15) <span style="color:#335370;">|</span> <span style="color:#facc15; font-weight:600;">Sarı:</span> Orta (15.1-30) <span style="color:#335370;">|</span> <span style="color:#f97316; font-weight:600;">Turuncu:</span> Hassas (30.1-50) <span style="color:#335370;">|</span> <span style="color:#f87171; font-weight:600;">Kırmızı:</span> Sağlıksız (50.1-70) <span style="color:#335370;">|</span> <span style="color:#ef4444; font-weight:600;">Bordo:</span> Kritik (&gt;70 µg/m³)
                             </div>
                         </div>
 

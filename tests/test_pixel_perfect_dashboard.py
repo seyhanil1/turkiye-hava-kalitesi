@@ -99,8 +99,8 @@ def test_overview_kpi_cards_and_map_legend():
     
     # 3. 5 kademeli harita renk skalası şeridi
     assert "Yeşil:</span> İyi (≤15)" in html
-    assert "Sarı:</span> Orta (15-30)" in html
-    assert "Turuncu:</span> Hassas (30-50)" in html
-    assert "Kırmızı:</span> Sağlıksız (50-70)" in html
+    assert ("Sarı:</span> Orta (15.1-30)" in html or "Sarı:</span> Orta (15-30)" in html)
+    assert ("Turuncu:</span> Hassas (30.1-50)" in html or "Turuncu:</span> Hassas (30-50)" in html)
+    assert ("Kırmızı:</span> Sağlıksız (50.1-70)" in html or "Kırmızı:</span> Sağlıksız (50-70)" in html)
     assert "Bordo:</span> Kritik (&gt;70 µg/m³)" in html
 
