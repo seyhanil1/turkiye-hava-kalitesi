@@ -351,7 +351,7 @@ def render_correlation_page(df: pd.DataFrame):
 
     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-    var_names = ["Sabit Terim (β₀)", "OSB Sayısı (β₁)", "Ortalama Rakım (β₂)", "İl Nüfusu (100k Kişi) (β₃)"]
+    var_names = ["Sabit Terim (β₀)", "OSB Sayısı (β₁)", "Ortalama Rakım (β₂)", "İl Nüfusu (100 Bin Kişi) (β₃)"]
     ols_table = pd.DataFrame({
         "Değişken Adı": var_names,
         "Katsayı (Beta)": [f"{b:+.4f}".replace(".", ",") for b in beta_coeffs],
@@ -529,4 +529,4 @@ def render_correlation_page(df: pd.DataFrame):
         ),
         hoverlabel=dict(bgcolor="#021626", font_color="#ffffff", font_size=11)
     )
-    st.plotly_chart(fig_moran, use_container_width=True)
+    st.plotly_chart(fig_moran, use_container_width=True, config={"displayModeBar": False})

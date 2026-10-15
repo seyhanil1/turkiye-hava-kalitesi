@@ -3394,7 +3394,7 @@ function renderCorrelationModule() {{
                             <td style="padding:8px; color:#94a3b8;">❌ Anlamsız (p ≥ 0.05)</td>
                         </tr>
                         <tr>
-                            <td style="padding:8px; font-weight:600; color:#ffffff;">İl Nüfusu (100k Kişi) (β₃)</td>
+                            <td style="padding:8px; font-weight:600; color:#ffffff;">İl Nüfusu (100 Bin Kişi) (β₃)</td>
                             <td style="padding:8px;">+0,0257</td>
                             <td style="padding:8px;">0,1024</td>
                             <td style="padding:8px;">+0,25</td>
