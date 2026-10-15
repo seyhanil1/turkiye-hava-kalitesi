@@ -3692,7 +3692,7 @@ function renderIndustryModule() {{
             '75 OSB | PM2.5: 34,0 µg/m³ (%17,9)',
             '100 OSB | PM2.5: 35,7 µg/m³ (%23,9)'
         ];
-        const bColors = ['#0369a1', '#0284c7', '#0369a1', '#0ea5e9', '#0284c7', '#38bdf8', '#00f2fe'];
+        const bColors = '#0369a1';
 
         Plotly.newPlot('industryBarChart', [{{
             type: 'bar',
@@ -3711,7 +3711,7 @@ function renderIndustryModule() {{
             height: 330,
             paper_bgcolor: 'rgba(0,0,0,0)',
             plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: {{ t: 10, l: 110, r: 20, b: 35 }},
+            margin: {{ t: 20, l: 140, r: 40, b: 40 }},
             xaxis: {{
                 title: {{ text: 'OSB Sayısı (Adet)', font: {{ color: '#8faec9', size: 11 }} }},
                 tickfont: {{ color: '#94a3b8' }},

@@ -153,12 +153,7 @@ def render_industry_page(df: pd.DataFrame):
             y=b_names,
             orientation="h",
             marker=dict(
-                color=b_osb,
-                colorscale=[
-                    [0.0, "#075985"],
-                    [0.5, "#0369a1"],
-                    [1.0, "#0284c7"]
-                ],
+                color="#0369a1",
                 line=dict(color="rgba(255,255,255,0.25)", width=1)
             ),
             text=b_texts,
@@ -181,7 +176,7 @@ def render_industry_page(df: pd.DataFrame):
                 gridcolor="rgba(255,255,255,0.06)",
                 range=[0, 135]
             ),
-            margin=dict(t=10, l=10, r=30, b=30)
+            margin=dict(l=140, r=40, t=20, b=40)
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 

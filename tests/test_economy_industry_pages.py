@@ -87,6 +87,8 @@ def test_industry_page_barchart_descending_and_formatting():
     fig_bar_code = content.split("fig_bar = go.Figure")[1].split("st.plotly_chart")[0]
     assert "#ef4444" not in fig_bar_code
     assert "#00f2fe" not in fig_bar_code
+    assert 'color="#0369a1"' in fig_bar_code
+    assert 'margin=dict(l=140, r=40, t=20, b=40)' in fig_bar_code
     assert 'weight="bold"' in fig_bar_code
 
     # PM2.5 virgül formatlama kodunun varlığını doğrula
