@@ -25,12 +25,16 @@ def test_glossary_definitions_content():
 
 
 def test_action_guide_content_and_translations():
-    """Verify clean translations and absence of emojis in Action Guide."""
+    """Verify clean translations, 5-tier level terminology and absence of emojis in Action Guide."""
     source = inspect.getsource(render_action_guide_page)
     
-    # Check translations
+    # Check translations and 5-tier scale text
     assert "çift cam ve ısı yalıtımı" in source
     assert "dış ortam fiziksel aktiviteleri" in source
+    assert "PM2.5 düzeyinin" in source
+    assert "'Hassas', 'Sağlıksız' veya 'Kritik'" in source
+    assert '"Hassas" veya "Kritik"' not in source
+    assert "'Hassas' veya 'Kritik'" not in source
     
     # Verify no emojis in source
     for char in source:
@@ -69,7 +73,11 @@ def test_apptest_navigation_and_glossary_search():
     search_box.input("").run()
     assert not at.exception
     
-    # Navigate to Yapılması Gerekenler
+    # Navigate to Eylem Rehberi (ve geriye dönük Yapılması Gerekenler)
+    at.session_state["active_page"] = "Eylem Rehberi"
+    at.run()
+    assert not at.exception
+
     at.session_state["active_page"] = "Yapılması Gerekenler"
     at.run()
     assert not at.exception

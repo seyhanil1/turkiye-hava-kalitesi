@@ -14,6 +14,7 @@ pages_to_test = [
     "Sanayi Profili",
     "AI Tahmin",
     "Senaryolar",
+    "Eylem Rehberi",
     "Yapılması Gerekenler",
     "Terimler Sözlüğü",
     "AI Asistan",

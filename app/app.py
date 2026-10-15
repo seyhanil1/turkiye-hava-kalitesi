@@ -138,9 +138,10 @@ CATEGORIES = ["Keşfet", "Analiz", "Rehber"]
 CATEGORY_PAGES = {
     "Keşfet": ["Genel Bakış", "Şehir Karnesi", "Düello"],
     "Analiz": ["Bölgeler", "Korelasyon", "Sanayi Profili", "İl Grupları"],
-    "Rehber": ["Yapılması Gerekenler", "Terimler Sözlüğü", "AI Asistan", "Veri ve Yöntem", "Sürüm Notları"],
+    "Rehber": ["Eylem Rehberi", "Terimler Sözlüğü", "AI Asistan", "Veri ve Yöntem", "Sürüm Notları"],
 }
 PAGE_TO_CATEGORY = {p: c for c, pages in CATEGORY_PAGES.items() for p in pages}
+PAGE_TO_CATEGORY["Yapılması Gerekenler"] = "Rehber"
 
 # URL query parameter üzerinden sayfa yönlendirme desteği
 query_page = st.query_params.get("page") or st.query_params.get("sayfa")
@@ -461,6 +462,7 @@ PAGE_ROUTING = {
     "Korelasyon": view_correlation,
     "Sanayi Profili": view_industry,
     "İl Grupları": view_city_groups,
+    "Eylem Rehberi": view_action_guide,
     "Yapılması Gerekenler": view_action_guide,
     "Terimler Sözlüğü": view_glossary,
     "AI Asistan": view_chat_assistant,

@@ -1,5 +1,5 @@
 """
-Yapılması Gerekenler — Önlemler & Eylem Rehberi
+Eylem Rehberi — Önlemler & Eylem Rehberi
 HavaAtlası — Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 """
 
@@ -70,7 +70,7 @@ def render_action_guide_page(df: pd.DataFrame = None):
                     Kirlilik seviyesinin pik yaptığı <strong>sabah ve akşam iş/okul çıkışı saatlerinde</strong> dış ortamda ağır fiziksel aktivitelerden (koşu, antrenman, spor) kaçınılmalıdır.
                 </li>
                 <li>
-                    PM2.5'in <strong>"Hassas" veya "Kritik"</strong> olduğu günlerde dışarı çıkması zorunlu olan risk grupları (yaşlılar, çocuklar, solunum hastaları) standart cerrahi maske yerine partikül tutucu <strong>FFP2/N95 maske</strong> tercih etmelidir.
+                    PM2.5 düzeyinin <strong>'Hassas', 'Sağlıksız' veya 'Kritik'</strong> olduğu günlerde dışarı çıkması zorunlu olan risk grupları (yaşlılar, çocuklar, solunum hastaları) standart cerrahi maske yerine partikül tutucu <strong>FFP2/N95 maske</strong> tercih etmelidir.
                 </li>
             </ul>
         </div>
