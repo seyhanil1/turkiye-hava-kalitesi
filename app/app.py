@@ -398,7 +398,7 @@ def view_overview():
 
 
 def view_report_card():
-    render_shared_top_bar()
+    render_shared_top_bar(show_city=False)
     render_report_card_page(df_master)
 
 

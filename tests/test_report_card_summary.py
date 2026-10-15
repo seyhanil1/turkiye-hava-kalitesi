@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from streamlit.testing.v1 import AppTest
 from data_sources.local_official_data import build_master_dataset
-from app_pages.report_card import generate_city_summary, render_report_card_page, to_tr_num
+from app_pages.report_card import generate_city_summary, render_report_card_page, to_tr_num, get_dso_risk_tier
 
 
 def test_generate_city_summary_all_81_provinces():
@@ -131,3 +131,60 @@ def test_report_card_apptest_rendering_and_dom():
     assert "en temiz" not in all_markdown.lower()
     assert "en kirli" not in all_markdown.lower()
     assert "sanayi yok" not in all_markdown.lower()
+
+
+def test_dso_risk_tier_5_scales_and_afyonkarahisar():
+    """5 kademeli resmi DSÖ ölçeğini ve Afyonkarahisar'ın 'Hassas' sınıfını doğrular."""
+    # Eşik kontrolleri
+    assert get_dso_risk_tier(10.0) == "İyi"
+    assert get_dso_risk_tier(15.0) == "İyi"
+    assert get_dso_risk_tier(15.1) == "Orta"
+    assert get_dso_risk_tier(30.0) == "Orta"
+    assert get_dso_risk_tier(30.1) == "Hassas"
+    assert get_dso_risk_tier(33.94) == "Hassas"
+    assert get_dso_risk_tier(50.0) == "Hassas"
+    assert get_dso_risk_tier(50.1) == "Sağlıksız"
+    assert get_dso_risk_tier(70.0) == "Sağlıksız"
+    assert get_dso_risk_tier(70.1) == "Kritik"
+
+    # Afyonkarahisar kontrolü
+    df = build_master_dataset()
+    afyon = df[df["il"] == "Afyonkarahisar"].iloc[0]
+    assert afyon["dso_risk"] == "Hassas"
+    assert afyon["dso_risk"] != "Yüksek Risk"
+
+
+def test_report_card_afyonkarahisar_rendering_and_query_sync():
+    """URL parametresi ?il=Afyonkarahisar ile gelindiğinde 'Hassas' rozetinin basıldığını doğrular."""
+    def app_afyon():
+        import streamlit as st
+        from app_pages.report_card import render_report_card_page
+        from data_sources.local_official_data import build_master_dataset
+        st.query_params["il"] = "Afyonkarahisar"
+        d = build_master_dataset()
+        render_report_card_page(d)
+
+    at = AppTest.from_function(app_afyon)
+    at.run()
+
+    assert not at.exception
+    all_markdown = " ".join([m.value for m in at.markdown])
+    assert "Afyonkarahisar" in all_markdown
+    assert "Hassas" in all_markdown
+    assert "Yüksek Risk" not in all_markdown
+
+
+def test_report_card_top_bar_hides_upper_city_selector():
+    """Şehir Karnesi sayfasında üst navbarda şehir seçici bulunmadığını doğrular."""
+    def app_top_bar():
+        from app.app import render_shared_top_bar
+        render_shared_top_bar(show_city=False)
+
+    at = AppTest.from_function(app_top_bar)
+    at.run()
+
+    assert not at.exception
+    select_labels = [s.label for s in at.selectbox]
+    assert "İl veya bölge ara:" not in select_labels
+    assert "Kirletici:" in select_labels
+

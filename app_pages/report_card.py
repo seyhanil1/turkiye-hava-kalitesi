@@ -40,6 +40,20 @@ def get_disp_val(val: float, decimals: int = 1) -> float:
     return float(dec)
 
 
+def get_dso_risk_tier(val: float) -> str:
+    """5 kademeli resmi ölçeğe göre DSÖ risk sınıfı etiketini döndürür."""
+    if val <= 15.0:
+        return "İyi"
+    elif val <= 30.0:
+        return "Orta"
+    elif val <= 50.0:
+        return "Hassas"
+    elif val <= 70.0:
+        return "Sağlıksız"
+    else:
+        return "Kritik"
+
+
 def generate_city_summary(df: pd.DataFrame, city_name: str) -> dict:
     """
     Seçilen il için yalnızca veriden hesaplanan nesnel f-string özet cümleleri ve künye verilerini üretir.
@@ -141,20 +155,45 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
         unsafe_allow_html=True
     )
     
+    # Dinamik Şehir Seçici ve State/URL Senkronizasyonu
+    iller = sorted(df["il"].unique().tolist())
+    if "city" in st.query_params:
+        del st.query_params["city"]
+    q_il = st.query_params.get("il")
+
+    if q_il and q_il in iller:
+        active_city = q_il
+    elif st.session_state.get("selected_city") in iller:
+        active_city = st.session_state["selected_city"]
+    elif "İstanbul" in iller:
+        active_city = "İstanbul"
+    else:
+        active_city = iller[0] if iller else ""
+
+    st.session_state["selected_city"] = active_city
+    st.query_params["il"] = active_city
+
+    if st.session_state.get("_report_card_city_select") != active_city:
+        st.session_state["_report_card_city_select"] = active_city
+
     col_sel1, col_sel2 = st.columns([2, 1])
     with col_sel1:
-        iller = sorted(df["il"].unique().tolist())
-        q_il = st.query_params.get("il")
-        current_session_city = st.session_state.get("selected_city")
-        if q_il and q_il in iller:
-            default_index = iller.index(q_il)
-        elif current_session_city and current_session_city in iller:
-            default_index = iller.index(current_session_city)
-        else:
-            default_index = iller.index("İstanbul") if "İstanbul" in iller else 0
-        secilen_il = st.selectbox("İl Seçimi:", iller, index=default_index, key="_report_card_city_select")
-        if secilen_il != st.session_state.get("selected_city"):
+        def on_city_change():
+            chosen = st.session_state.get("_report_card_city_select")
+            if chosen and chosen in iller:
+                st.session_state["selected_city"] = chosen
+                st.query_params["il"] = chosen
+
+        secilen_il = st.selectbox(
+            "İl Seçimi:",
+            iller,
+            key="_report_card_city_select",
+            on_change=on_city_change,
+            help="Detaylı karnesini görüntülemek istediğiniz ili seçiniz."
+        )
+        if secilen_il and secilen_il != st.session_state.get("selected_city"):
             st.session_state["selected_city"] = secilen_il
+            st.query_params["il"] = secilen_il
         
     il_row = df[df["il"] == secilen_il].iloc[0]
     bolge = il_row["bolge"]
@@ -186,9 +225,10 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
             delta_type="positive" if delta_bolge > 0 else "negative"
         )
     with c2:
+        dso_risk_tier = get_dso_risk_tier(float(il_row["pm25"]))
         render_metric_card(
             title="DSÖ Risk Sınıfı",
-            value=il_row["dso_risk"],
+            value=dso_risk_tier,
             unit="",
             delta=f"DSÖ Eşiğinin {to_tr_num(il_row['dso_limit_kat'], 1)} Katı",
             delta_type="positive" if il_row["pm25"] > 15 else "neutral"

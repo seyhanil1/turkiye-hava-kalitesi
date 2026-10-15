@@ -207,16 +207,18 @@ def build_master_dataset() -> pd.DataFrame:
         (df_master["solunum_olum"] / df_master["nufus"]) * 100_000
     ).round(1)
     
-    # 5. DSÖ Risk Sınıfı Kılavuzu (2021)
+    # 5. DSÖ Risk Sınıfı Kılavuzu (2021) - Resmi 5 Kademeli Ölçek
     def dso_sinifla(val: float) -> str:
-        if val <= 10.0:
-            return "Düşük Risk (DSÖ Hedefi)"
-        elif val <= 25.0:
-            return "Orta Risk"
+        if val <= 15.0:
+            return "İyi"
+        elif val <= 30.0:
+            return "Orta"
         elif val <= 50.0:
-            return "Yüksek Risk"
+            return "Hassas"
+        elif val <= 70.0:
+            return "Sağlıksız"
         else:
-            return "Kritik Risk"
+            return "Kritik"
     
     df_master["dso_risk"] = df_master["pm25"].apply(dso_sinifla)
     
