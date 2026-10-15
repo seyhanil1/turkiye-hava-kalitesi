@@ -422,7 +422,7 @@ def view_industry():
 
 
 def view_city_groups():
-    render_shared_top_bar()
+    render_shared_top_bar(show_city=False)
     render_ai_forecast_page(df_master)
 
 

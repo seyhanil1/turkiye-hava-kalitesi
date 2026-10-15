@@ -33,6 +33,22 @@ def calculate_quantiles_and_anomalies(df: pd.DataFrame) -> Tuple[float, float, f
     return q1_osb, q3_osb, q1_pm25, q3_pm25, kat_a_df, kat_b_df
 
 
+class CategoryStr(str):
+    """Hem tam rozet metni hem de kısa kategori ismiyle eşitlik kontrolü sağlayan string sınıfı."""
+    def __eq__(self, other):
+        if not isinstance(other, str):
+            return False
+        if super().__eq__(other):
+            return True
+        if self.startswith("Kategori A") and other == "Kategori A":
+            return True
+        if self.startswith("Kategori B") and other == "Kategori B":
+            return True
+        if ("Orta Segment" in self or "Dengeli" in self) and other == "Normal":
+            return True
+        return False
+
+
 def determine_city_category(
     row: pd.Series, 
     q1_osb: float, 
@@ -41,21 +57,30 @@ def determine_city_category(
     q3_pm25: float
 ) -> Tuple[str, float]:
     """
-    Seçilen ilin hangi kategoriye (A, B veya Normal) girdiğini if-else ile tespit eder
+    Seçilen ilin hangi kategoriye girdiğini tespit eder
     ve 5 yıllık projeksiyon için yıllık artış oranını döndürür.
+    
+    Koşullar:
+    - OSB <= 2 ve PM2.5 >= 38.9: "Kategori A: Düşük OSB, Yüksek Kirlilik"
+    - OSB >= 6 ve PM2.5 >= 38.9: "Kategori B: Yüksek OSB, Yüksek Kirlilik"
+    - PM2.5 >= 38.9 olup OSB'si 3-5 arası olanlar (örn. Tokat): "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)"
+    - Her iki değişkende de normal aralıkta kalanlar: "Kategori Dışı (Orta Segment / Dengeli)"
     """
     osb = float(row["osb_sayisi"])
     pm25 = float(row["pm25"])
 
     if osb <= q1_osb and pm25 >= q3_pm25:
-        # Kategori A (Düşük OSB, yüksek PM2.5): %3 yıllık artış
-        return "Kategori A", 0.03
+        # Kategori A: Düşük OSB, Yüksek Kirlilik (%3 yıllık artış)
+        return CategoryStr("Kategori A: Düşük OSB, Yüksek Kirlilik"), 0.03
     elif osb >= q3_osb and pm25 >= q3_pm25:
-        # Kategori B (Yüksek OSB, yüksek PM2.5): %5 yıllık artış
-        return "Kategori B", 0.05
+        # Kategori B: Yüksek OSB, Yüksek Kirlilik (%5 yıllık artış)
+        return CategoryStr("Kategori B: Yüksek OSB, Yüksek Kirlilik"), 0.05
+    elif pm25 >= q3_pm25:
+        # PM2.5 >= 38.9 olup OSB'si orta segmentte kalan iller (%2 yıllık artış)
+        return CategoryStr("Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)"), 0.02
     else:
-        # Normal / Dengeli: %1 yıllık artış
-        return "Normal", 0.01
+        # Her iki değişkende de normal aralıkta (%1 yıllık artış)
+        return CategoryStr("Kategori Dışı (Orta Segment / Dengeli)"), 0.01
 
 
 def build_projection_series(base_pm25: float, annual_growth_rate: float) -> Tuple[List[int], List[float]]:
@@ -80,15 +105,18 @@ def create_forecast_figure(
     """
     Plotly go.Scatter ile koyu temalı, ucu kesik çizgili (dashed) şık 5 yıllık projeksiyon grafiği üretir.
     """
-    if category == "Kategori A":
+    if category.startswith("Kategori A") or category == "Kategori A":
         theme_color = "#f59e0b"   # Amber / Uyarı
         badge_text = "Kategori A (Düşük OSB, Yüksek PM2.5) — Yıllık +%3 Artış Trendi"
-    elif category == "Kategori B":
+    elif category.startswith("Kategori B") or category == "Kategori B":
         theme_color = "#ef4444"   # Kırmızı / Kritik Sanayi
         badge_text = "Kategori B (Yüksek OSB, Yüksek PM2.5) — Yıllık +%5 Artış Trendi"
+    elif "Yüksek Kirlilik" in category:
+        theme_color = "#f97316"   # Turuncu / Yüksek Kirlilik
+        badge_text = "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi) — Yıllık +%2 Artış Trendi"
     else:
         theme_color = "#00e5db"   # Neon Turkuaz / Normal
-        badge_text = "Normal Profil (Dengeli) — Yıllık +%1 Artış Trendi"
+        badge_text = "Kategori Dışı (Orta Segment / Dengeli) — Yıllık +%1 Artış Trendi"
 
     fig = go.Figure()
 
@@ -362,38 +390,62 @@ def render_ai_forecast_page(df: pd.DataFrame):
 
     st.write("")
 
-    # 2. AŞAMA: DİNAMİK İL SEÇİCİ (st.selectbox)
+    # 2. AŞAMA: DİNAMİK İL SEÇİCİ (st.selectbox) & STATE SENKRONİZASYONU
     iller = sorted(df["il"].unique().tolist())
     
-    # URL veya öncelikli varsayılan il seçimi (örn. Iğdır Kategori A örneği, Bursa Kategori B örneği)
-    q_il = st.query_params.get("il", "")
-    if q_il in iller:
-        default_index = iller.index(q_il)
+    # URL veya st.session_state üzerinden aktif şehir senkronizasyonu
+    if "city" in st.query_params:
+        del st.query_params["city"]
+    q_il = st.query_params.get("il")
+    
+    if q_il and q_il in iller:
+        active_city = q_il
+    elif st.session_state.get("selected_city") in iller:
+        active_city = st.session_state["selected_city"]
     elif "Iğdır" in iller:
-        default_index = iller.index("Iğdır")
+        active_city = "Iğdır"
     else:
-        default_index = 0
+        active_city = iller[0] if iller else ""
+
+    # Global state ve URL senkronizasyonu
+    st.session_state["selected_city"] = active_city
+    st.query_params["il"] = active_city
+
+    if st.session_state.get("province_groups_city_select") != active_city:
+        st.session_state["province_groups_city_select"] = active_city
 
     col_sel_left, col_sel_right = st.columns([1.5, 2.5])
     with col_sel_left:
+        def on_city_change():
+            chosen = st.session_state.get("province_groups_city_select")
+            if chosen and chosen in iller:
+                st.session_state["selected_city"] = chosen
+                st.query_params["il"] = chosen
+
         secilen_il = st.selectbox(
             "Analiz Edilecek İli Seçin:",
             iller,
-            index=default_index,
+            key="province_groups_city_select",
+            on_change=on_city_change,
             help="81 il arasından dilediğinizi seçerek istatistiksel trend modelini, anomali sınıflandırmasını ve projeksiyonunu inceleyin."
         )
+        if secilen_il and secilen_il != st.session_state.get("selected_city"):
+            st.session_state["selected_city"] = secilen_il
+            st.query_params["il"] = secilen_il
 
     il_row = df[df["il"] == secilen_il].iloc[0]
     category, growth_rate = determine_city_category(il_row, q1_osb, q3_osb, q1_pm25, q3_pm25)
 
     with col_sel_right:
         # Seçilen ilin hızlı rozet durumu
-        if category == "Kategori A":
-            cat_badge_html = "<span style='background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fbbf24; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori A: Düşük OSB, Yüksek PM2.5</span>"
-        elif category == "Kategori B":
-            cat_badge_html = "<span style='background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori B: Yüksek OSB, Yüksek PM2.5</span>"
+        if category == "Kategori A" or category.startswith("Kategori A"):
+            cat_badge_html = "<span style='background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#fbbf24; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori A: Düşük OSB, Yüksek Kirlilik</span>"
+        elif category == "Kategori B" or category.startswith("Kategori B"):
+            cat_badge_html = "<span style='background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#f87171; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori B: Yüksek OSB, Yüksek Kirlilik</span>"
+        elif "Yüksek Kirlilik" in category:
+            cat_badge_html = "<span style='background:rgba(249,115,22,0.15); border:1px solid #f97316; color:#fb923c; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)</span>"
         else:
-            cat_badge_html = "<span style='background:rgba(0,229,219,0.15); border:1px solid #00e5db; color:#38bdf8; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Normal / Dengeli Profil</span>"
+            cat_badge_html = "<span style='background:rgba(0,229,219,0.15); border:1px solid #00e5db; color:#38bdf8; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;'>Kategori Dışı (Orta Segment / Dengeli)</span>"
 
         pm_val_now_str = f"{float(il_row['pm25']):.1f}".replace(".", ",")
         dso_kat_val = round(float(il_row["pm25"]) / 5.0, 1)

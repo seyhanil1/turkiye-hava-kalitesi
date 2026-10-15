@@ -56,7 +56,14 @@ def test_determine_city_category(master_df):
     tunceli_row = master_df[master_df["il"] == "Tunceli"].iloc[0]
     cat_tunceli, rate_tunceli = determine_city_category(tunceli_row, q1_osb, q3_osb, q1_pm25, q3_pm25)
     assert cat_tunceli == "Normal"
+    assert cat_tunceli == "Kategori Dışı (Orta Segment / Dengeli)"
     assert rate_tunceli == 0.01
+
+    # Tokat Kategori Dışı (Yüksek Kirlilik / Orta Sanayi) olmalı (PM2.5 >= Q3 ancak OSB 3-5 arası)
+    tokat_row = master_df[master_df["il"] == "Tokat"].iloc[0]
+    cat_tokat, rate_tokat = determine_city_category(tokat_row, q1_osb, q3_osb, q1_pm25, q3_pm25)
+    assert cat_tokat == "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)"
+    assert rate_tokat == 0.02
 
 
 def test_build_projection_series():
@@ -102,7 +109,7 @@ def test_ai_forecast_page_apptest_rendering():
         render_ai_forecast_page(df)
 
     at = AppTest.from_function(app_forecast)
-    at.run()
+    at.run(timeout=15)
 
     assert not at.exception
 
@@ -131,4 +138,34 @@ def test_ai_forecast_page_apptest_rendering():
 
     # 4. Metin temizliği (Yapay Zeka Analizi kalktı)
     assert "Yapay Zeka Analizi:" not in all_markdown
+
+
+def test_province_groups_state_sync_and_tokat_badge():
+    """İl Grupları sayfasında Tokat'ın rozetini ve şehir seçiminin state senkronizasyonunu test eder."""
+    from streamlit.testing.v1 import AppTest
+
+    def app_forecast():
+        import streamlit as st
+        from data_sources.local_official_data import build_master_dataset
+        from app_pages.ai_forecast_page import render_ai_forecast_page
+        df = build_master_dataset()
+        render_ai_forecast_page(df)
+
+    at = AppTest.from_function(app_forecast)
+    at.session_state["selected_city"] = "Tokat"
+    at.run(timeout=15)
+
+    assert not at.exception
+    all_markdown = " ".join([m.value for m in at.markdown])
+
+    # Tokat seçildiğinde yeşil "Normal / Dengeli" basılmamalı, turuncu "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)" basılmalı
+    assert "Normal / Dengeli Profil" not in all_markdown
+    assert "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)" in all_markdown
+
+    # Şehir değişimi senkronizasyonu
+    at.selectbox[0].select("Van").run(timeout=15)
+    assert not at.exception
+    assert at.session_state["selected_city"] == "Van"
+    assert at.query_params["il"] == "Van"
+
 

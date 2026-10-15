@@ -3752,11 +3752,11 @@ function renderAIForecastModule(targetCity) {{
     window.currentAICity = selectedCity;
     const cityObj = CITIES.find(c => c.il === selectedCity) || CITIES[0];
     
-    let category = "Normal";
+    let category = "Kategori Dışı (Orta Segment / Dengeli)";
     let growthRate = 0.01;
     let pulseClass = "pulse-box-normal";
     let badgeColor = "#00e5db";
-    let badgeLabel = "Normal Profil (Dengeli)";
+    let badgeLabel = "Kategori Dışı (Orta Segment / Dengeli)";
     let nedenSonuc = `${{cityObj.il}} ilinde OSB sayısı ve PM2.5 konsantrasyonu çeyreklik uç değer sınırlarının dışındadır.`;
     let onlem = `Düzenli hava kalitesi izleme ve mevzuat standartlarına uyumun takibi önerilir.`;
     
@@ -3768,7 +3768,7 @@ function renderAIForecastModule(targetCity) {{
         growthRate = 0.03;
         pulseClass = "pulse-box-a";
         badgeColor = "#f59e0b";
-        badgeLabel = "Kategori A: Düşük OSB, Yüksek PM2.5";
+        badgeLabel = "Kategori A: Düşük OSB, Yüksek Kirlilik";
         nedenSonuc = `${{cityObj.il}} ilinde OSB sayısı Q1 alt çeyreklik eşiğinde veya altında iken, PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerindedir.`;
         onlem = `Emisyon envanteri ve topoğrafik özelliklerin detaylı incelenmesi önerilir.`;
     }} else if (cityOsb >= q3_osb && cityPm >= q3_pm) {{
@@ -3776,9 +3776,17 @@ function renderAIForecastModule(targetCity) {{
         growthRate = 0.05;
         pulseClass = "pulse-box-b";
         badgeColor = "#ef4444";
-        badgeLabel = "Kategori B: Yüksek OSB, Yüksek PM2.5";
+        badgeLabel = "Kategori B: Yüksek OSB, Yüksek Kirlilik";
         nedenSonuc = `${{cityObj.il}} ilinde hem OSB sayısı hem de PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerindedir.`;
         onlem = `Sanayi emisyon denetimlerinin ve sürekli izleme sistemlerinin sürdürülmesi önerilir.`;
+    }} else if (cityPm >= q3_pm) {{
+        category = "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)";
+        growthRate = 0.02;
+        pulseClass = "pulse-box-a";
+        badgeColor = "#f97316";
+        badgeLabel = "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)";
+        nedenSonuc = `${{cityObj.il}} ilinde PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerinde iken, OSB sayısı orta aralıktadır.`;
+        onlem = `Kentsel ısınma, ulaşım ve yerel emisyon kaynaklarının incelenmesi önerilir.`;
     }}
     
     const years = [2026, 2027, 2028, 2029, 2030, 2031];
