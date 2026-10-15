@@ -2162,14 +2162,14 @@ html, body {{
                             <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                         </div>
                         <div class="stat-info">
-                            <span class="stat-label" title="Dönemin en yüksek ortalamasına sahip ili (Birim: µg/m³)">En Yüksek İl ⓘ</span>
+                            <span class="stat-label notranslate" translate="no" id="card2Label" title="Dönemin en yüksek ortalamasına sahip ili (Birim: µg/m³)">En Yüksek İl (PM2.5) ⓘ</span>
                             <div class="stat-value" id="card2Value" style="color: #ef4444;">{max_val_str}<span>µg/m³</span></div>
                         </div>
                     </div>
                     <div class="stat-bottom-row">
                         <div class="stat-delta red">
                             <span id="card2City">{max_il}</span>
-                            <span class="stat-subtext" id="card2Diff">(ortalamanın {max_diff_str} µg/m³ üzerinde)</span>
+                            <span class="stat-subtext notranslate" translate="no" id="card2Diff">(ortalamanın +{max_diff_str} µg/m³ üzerinde)</span>
                         </div>
                     </div>
                 </div>
@@ -2249,6 +2249,9 @@ html, body {{
                                 <div class="leg-item"><span class="leg-name" style="color:#f97316;">Hassas</span><span class="leg-range">30–50</span></div>
                                 <div class="leg-item"><span class="leg-name" style="color:#f87171;">Sağlıksız</span><span class="leg-range">50–70</span></div>
                                 <div class="leg-item"><span class="leg-name" style="color:#ef4444;">Kritik</span><span class="leg-range">&gt;70</span></div>
+                            </div>
+                            <div class="legend-scale-strip" style="text-align:center; font-size:11px; color:#8faec9; margin-top:6px; padding:4px 8px; background:#021626; border-radius:4px; border:1px solid #083454; letter-spacing:0.01em;">
+                                <span style="color:#00e599; font-weight:600;">Yeşil:</span> İyi (≤15) <span style="color:#335370;">|</span> <span style="color:#facc15; font-weight:600;">Sarı:</span> Orta (15-30) <span style="color:#335370;">|</span> <span style="color:#f97316; font-weight:600;">Turuncu:</span> Hassas (30-50) <span style="color:#335370;">|</span> <span style="color:#f87171; font-weight:600;">Kırmızı:</span> Sağlıksız (50-70) <span style="color:#335370;">|</span> <span style="color:#ef4444; font-weight:600;">Bordo:</span> Kritik (&gt;70 µg/m³)
                             </div>
                         </div>
 
@@ -2940,6 +2943,8 @@ function updateKpiCards() {{
     const card1Val = document.getElementById('card1Value');
     if (card1Val) card1Val.innerHTML = fmt(mean) + '<span>µg/m³</span>';
     
+    const card2Label = document.getElementById('card2Label');
+    if (card2Label) card2Label.innerHTML = 'En Yüksek İl (PM2.5) ⓘ';
     const card2Val = document.getElementById('card2Value');
     if (card2Val) card2Val.innerHTML = fmt(maxCity[polKey]) + '<span>µg/m³</span>';
     const card2City = document.getElementById('card2City');

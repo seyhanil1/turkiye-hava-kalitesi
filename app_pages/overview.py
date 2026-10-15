@@ -86,6 +86,16 @@ def render_overview_page(
         st.markdown(f"#### Türkiye Hava Kalitesi Haritası <span style='font-size:12px; color:#38bdf8;'>({val_col.upper()})</span>", unsafe_allow_html=True)
         fig_map = create_turkey_choropleth_map(filtered_df, pollutant=val_col)
         st.plotly_chart(fig_map, use_container_width=True)
+        st.markdown(
+            "<div style='text-align:center; font-size:11px; color:#8faec9; margin-top:-8px; margin-bottom:10px; padding:4px 8px; background:#021626; border-radius:4px; border:1px solid #083454;'>"
+            "<span style='color:#00e599; font-weight:600;'>Yeşil:</span> İyi (≤15) <span style='color:#335370;'>|</span> "
+            "<span style='color:#facc15; font-weight:600;'>Sarı:</span> Orta (15-30) <span style='color:#335370;'>|</span> "
+            "<span style='color:#f97316; font-weight:600;'>Turuncu:</span> Hassas (30-50) <span style='color:#335370;'>|</span> "
+            "<span style='color:#f87171; font-weight:600;'>Kırmızı:</span> Sağlıksız (50-70) <span style='color:#335370;'>|</span> "
+            "<span style='color:#ef4444; font-weight:600;'>Bordo:</span> Kritik (&gt;70 µg/m³)"
+            "</div>",
+            unsafe_allow_html=True
+        )
         
     with col_rank:
         st.markdown(f"#### Şehir Sıralaması <span style='font-size:12px; color:#94a3b8;'>(Ortalama {val_col.upper()})</span>", unsafe_allow_html=True)

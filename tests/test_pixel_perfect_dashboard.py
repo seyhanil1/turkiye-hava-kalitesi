@@ -79,3 +79,28 @@ def test_dashboard_html_structure_and_no_old_health_shield():
     # Eski statik metinler ve healthShieldSection ID'si kaldırıldı
     assert 'id="healthShieldSection"' not in html
     assert "Hassas Gruplar (Kronik/Çocuk/Yaşlı)" not in html
+
+
+def test_overview_kpi_cards_and_map_legend():
+    """Genel Bakış sayfasındaki KPI kartları simetrisi ve harita altı 5 kademeli lejant şeridini test eder."""
+    df = build_master_dataset()
+    html = generate_pixel_perfect_dashboard_html(df)
+    
+    # 1. KPI kartları başlık simetrisi
+    assert 'En Yüksek İl (PM2.5) ⓘ' in html
+    assert 'En Düşük İl (PM2.5) ⓘ' in html
+    
+    # 2. 2. KPI kartı alt metni formatı ve artı işareti kontrolü
+    assert '(ortalamanın +' in html
+    assert 'üzerinde)' in html
+    # Hatalı "ortalamanın  ı" veya "ortalamanın ı" olmamalı
+    assert 'ortalamanın  ı' not in html
+    assert 'ortalamanın ı' not in html
+    
+    # 3. 5 kademeli harita renk skalası şeridi
+    assert "Yeşil:</span> İyi (≤15)" in html
+    assert "Sarı:</span> Orta (15-30)" in html
+    assert "Turuncu:</span> Hassas (30-50)" in html
+    assert "Kırmızı:</span> Sağlıksız (50-70)" in html
+    assert "Bordo:</span> Kritik (&gt;70 µg/m³)" in html
+
