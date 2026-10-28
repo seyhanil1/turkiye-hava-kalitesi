@@ -14,7 +14,7 @@ Platformdaki PM2.5 değerlerinin **istasyon ölçümü değil, CAMS model tahmin
 | `master_data.csv` | Yukarıdakilerin birleşimi | Türetilmiş | `python scripts/export_web_data.py` |
 | `../web/src/data/*.json` | Sitenin okuduğu il tablosu, istatistikler, günlük seriler ve harita geometrisi | Türetilmiş | `python scripts/export_web_data.py` (her gece GitHub Actions ile) |
 
-Nüfus (TÜİK ADNKS 2023), il merkezi koordinatları ve DSÖ 2021 kılavuz değerleri `data_sources/constants.py` içindedir.
+Nüfus (TÜİK ADNKS, 31 Aralık 2025), il merkezi koordinatları ve DSÖ 2021 kılavuz değerleri `data_sources/constants.py` içindedir.
 
 ## Bilinen sınırlamalar
 

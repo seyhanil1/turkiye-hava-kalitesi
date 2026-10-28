@@ -35,6 +35,7 @@ from data_processing.aggregator import aggregate_by_region  # noqa: E402
 from data_sources.cams_city_connector import load_city_daily, refresh_city_daily  # noqa: E402
 from data_sources.constants import (  # noqa: E402
     DSO_KILAVUZ_DEGERLERI,
+    NUFUS_YILI,
     IL_RAKIM,
     KIRLILIK_KADEMELERI,
     KOORDINATLAR,
@@ -340,6 +341,8 @@ def main() -> None:
     write_json("meta.json", {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "cams_year": CAMS_YILI,
+        "olum_yili": int(df["olum_yili"].iloc[0]),
+        "nufus_yili": NUFUS_YILI,
         "daily_start": date_info["start_date"],
         "daily_end": date_info["end_date"],
         "sources": date_info["sources"],

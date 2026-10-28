@@ -109,29 +109,31 @@ KOORDINATLAR = {
     "Düzce": (40.8438, 31.1565)
 }
 
-# TÜİK Adrese Dayalı Nüfus Kayıt Sistemi (ADNKS Resmi İl Nüfusları - 2023/2024)
+# TÜİK Adrese Dayalı Nüfus Kayıt Sistemi (ADNKS) — 31 Aralık 2025 il nüfusları.
+# 81 ilin toplamı TÜİK'in açıkladığı Türkiye nüfusuna (86.092.168) birebir eşittir.
+NUFUS_YILI = 2025
 NUFUSLAR = {
-    "Adana": 2270298, "Adıyaman": 604978, "Afyonkarahisar": 751344, "Ağrı": 510626,
-    "Amasya": 339529, "Ankara": 5803482, "Antalya": 2696249, "Artvin": 172356,
-    "Aydın": 1161702, "Balıkesir": 1273519, "Bilecik": 228058, "Bingöl": 285655,
-    "Bitlis": 357367, "Bolu": 324789, "Burdur": 277452, "Bursa": 3214571,
-    "Çanakkale": 570077, "Çankırı": 200244, "Çorum": 524130, "Denizli": 1059082,
-    "Diyarbakır": 1818133, "Edirne": 419913, "Elazığ": 604411, "Erzincan": 243399,
-    "Erzurum": 749993, "Eskişehir": 915418, "Gaziantep": 2164134, "Giresun": 461712,
-    "Gümüşhane": 148539, "Hakkari": 287431, "Hatay": 1544640, "Isparta": 449777,
-    "Mersin": 1938389, "İstanbul": 15655924, "İzmir": 4479525, "Kars": 278335,
-    "Kastamonu": 388990, "Kayseri": 1445495, "Kırklareli": 377156, "Kırşehir": 247179,
-    "Kocaeli": 2102907, "Konya": 2320641, "Kütahya": 575670, "Malatya": 742725,
-    "Manisa": 1475716, "Kahramanmaraş": 1116618, "Mardin": 888874, "Muğla": 1066736,
-    "Muş": 399879, "Nevşehir": 315994, "Niğde": 377080, "Ordu": 775800,
-    "Rize": 350506, "Sakarya": 1098115, "Samsun": 1377546, "Siirt": 331311,
-    "Sinop": 229702, "Sivas": 650401, "Tekirdağ": 1167459, "Tokat": 606934,
-    "Trabzon": 824352, "Tunceli": 89317, "Şanlıurfa": 2213964, "Uşak": 377001,
-    "Van": 1127612, "Yozgat": 418442, "Zonguldak": 591492, "Aksaray": 438504,
-    "Bayburt": 86047, "Karaman": 263960, "Kırıkkale": 285744, "Batman": 647205,
-    "Şırnak": 570745, "Bartın": 207238, "Ardahan": 92819, "Iğdır": 209738,
-    "Yalova": 304780, "Karabük": 255242, "Kilis": 155179, "Osmaniye": 557666,
-    "Düzce": 409865
+    "Adana": 2283609, "Adıyaman": 617821, "Afyonkarahisar": 751808, "Ağrı": 491489,
+    "Amasya": 342242, "Ankara": 5910320, "Antalya": 2777677, "Artvin": 167531,
+    "Aydın": 1172107, "Balıkesir": 1284517, "Bilecik": 228995, "Bingöl": 282299,
+    "Bitlis": 360423, "Bolu": 327173, "Burdur": 277226, "Bursa": 3263011,
+    "Çanakkale": 573976, "Çankırı": 200549, "Çorum": 519590, "Denizli": 1060975,
+    "Diyarbakır": 1852356, "Edirne": 422438, "Elazığ": 605678, "Erzincan": 239625,
+    "Erzurum": 736877, "Eskişehir": 927956, "Gaziantep": 2222415, "Giresun": 455074,
+    "Gümüşhane": 138807, "Hakkari": 279681, "Hatay": 1577531, "Isparta": 445303,
+    "Mersin": 1956428, "İstanbul": 15754053, "İzmir": 4504185, "Kars": 268991,
+    "Kastamonu": 379934, "Kayseri": 1458991, "Kırklareli": 379595, "Kırşehir": 242777,
+    "Kocaeli": 2161171, "Konya": 2343409, "Kütahya": 570478, "Malatya": 755854,
+    "Manisa": 1477756, "Kahramanmaraş": 1146278, "Mardin": 903576, "Muğla": 1099547,
+    "Muş": 389127, "Nevşehir": 320150, "Niğde": 374492, "Ordu": 768087,
+    "Rize": 346947, "Sakarya": 1123693, "Samsun": 1392403, "Siirt": 332369,
+    "Sinop": 225848, "Sivas": 631401, "Tekirdağ": 1208441, "Tokat": 614141,
+    "Trabzon": 823323, "Tunceli": 85083, "Şanlıurfa": 2265800, "Uşak": 374405,
+    "Van": 1112013, "Yozgat": 413208, "Zonguldak": 585203, "Aksaray": 441136,
+    "Bayburt": 82836, "Karaman": 262355, "Kırıkkale": 282830, "Batman": 662626,
+    "Şırnak": 573666, "Bartın": 206663, "Ardahan": 90392, "Iğdır": 205071,
+    "Yalova": 311635, "Karabük": 249614, "Kilis": 157363, "Osmaniye": 564123,
+    "Düzce": 415622
 }
 
 # Meteoroloji Genel Müdürlüğü (MGM) Resmi İl Merkezi İstasyon Rakımları (Metre)
@@ -292,7 +294,7 @@ def get_dataset_date_info() -> dict:
         "sources": {
             "istasyon": "Temiz Hava Hakkı Platformu, Kara Rapor 2025 (ÇŞİDB istasyonlarının 2024 verisi)",
             "model": "Copernicus CAMS (Open-Meteo) — 2025 yıllık ve son 90 gün günlük model değerleri",
-            "saglik": "TÜİK Ölüm Nedeni İstatistikleri (2024; 2022-2024 ortalaması)",
+            "saglik": "TÜİK Ölüm Nedeni İstatistikleri (en güncel tam yıl) ve ADNKS nüfusu",
             "sanayi": "OSB verileri: OSBÜK (Ekim 2026)"
         }
     }

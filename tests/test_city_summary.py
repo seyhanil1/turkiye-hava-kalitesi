@@ -76,7 +76,7 @@ def test_city_summary_turkish_characters_and_edge_cases():
     assert "81 il içinde nüfus büyüklüğünde 1. sırada" in ist_text
     marmara_ort = df[df["bolge"] == "Marmara"]["pm25"].mean()
     assert f"Marmara Bölgesi ortalamasına ({to_tr_num(marmara_ort, 1)} µg/m³)" in ist_text
-    assert ist["kunye"]["nufus"] == 15655924
+    assert ist["kunye"]["nufus"] == 15754053  # TÜİK ADNKS, 31.12.2025
     assert ist["kunye"]["plaka"] == 34
     assert ist["kunye"]["faal_osb"] == 8
 

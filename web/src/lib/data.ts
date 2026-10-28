@@ -110,6 +110,8 @@ export interface MapData {
 export interface Meta {
   generated_at: string;
   cams_year: number;
+  olum_yili: number;
+  nufus_yili: number;
   daily_start: string;
   daily_end: string;
   sources: Record<string, string>;

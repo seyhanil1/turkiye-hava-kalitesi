@@ -131,10 +131,10 @@ def parse_tuik_saglik(filepath: str = "data/tuik_saglik.xlsx") -> pd.DataFrame:
     df_tuik = df_tuik[df_tuik["il"].isin(il_map.keys())].copy()
     df_tuik["il"] = df_tuik["il"].map(il_map)
     
-    # 2024 veya en güncel geçerli yılı ve 2022-2025 ortalamalarını hesapla
-    df_latest = df_tuik[df_tuik["yil"] == 2024].copy()
-    if df_latest.empty:
-        df_latest = df_tuik.sort_values("yil").groupby("il").last().reset_index()
+    # 81 ilin tamamının bulunduğu en güncel yıl kullanılır (dosyaya yeni yıl eklendiğinde kendiliğinden geçer)
+    il_sayisi = df_tuik.groupby("yil")["il"].nunique()
+    son_yil = int(il_sayisi[il_sayisi == len(PLAKA_ILLER)].index.max())
+    df_latest = df_tuik[df_tuik["yil"] == son_yil].copy()
     
     # İl bazlı özet istatistikler
     df_summary = df_tuik.groupby("il").agg(
@@ -232,7 +232,7 @@ def build_master_dataset() -> pd.DataFrame:
     # 4. TÜİK Sağlık Verisi
     df_master = pd.merge(
         df_master,
-        df_tuik[["il", "solunum_olum", "toplam_olum", "solunum_olum_ortalama"]],
+        df_tuik[["il", "yil", "solunum_olum", "toplam_olum", "solunum_olum_ortalama"]].rename(columns={"yil": "olum_yili"}),
         on="il",
         how="left"
     )

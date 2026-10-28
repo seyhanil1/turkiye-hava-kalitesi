@@ -5,7 +5,15 @@ export const metadata: Metadata = { title: "Sürüm Notları" };
 
 const RELEASES: { version: string; date: string; title: string; current?: boolean; items: [string, string][] }[] = [
   {
-    version: "v3.0.0", date: "28 Ekim 2026", current: true,
+    version: "v3.0.1", date: "28 Ekim 2026", current: true,
+    title: "Güncel nüfus ve ölüm verileri",
+    items: [
+      ["Nüfus", "İl nüfusları TÜİK ADNKS 31 Aralık 2025 sonuçlarına güncellendi (önceden 2023)."],
+      ["Ölüm istatistikleri", "Solunum ölüm hızı, solunum ölüm payı ve atfedilebilir ölüm tahmini TÜİK 2025 verisiyle hesaplanıyor (önceden 2024). Yeni yıl eklendiğinde en güncel tam yıl kendiliğinden kullanılır."],
+    ],
+  },
+  {
+    version: "v3.0.0", date: "28 Ekim 2026",
     title: "Yeni web sitesi (Next.js)",
     items: [
       ["Yeni altyapı", "Platform Streamlit'ten statik bir Next.js sitesine taşındı. Sayfalar daha hızlı açılır ve sunucu gerektirmez."],

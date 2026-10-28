@@ -41,9 +41,9 @@ export default function MethodologyPage() {
             {meta.daily_start} – {meta.daily_end}. &quot;Türkiye geneli&quot; serisi 81 ilin nüfus ağırlıklı ortalamasıdır. Veri
             alınamazsa sentetik değer üretilmez.
           </Item>
-          <Item title="Nüfus">TÜİK Adrese Dayalı Nüfus Kayıt Sistemi (ADNKS 2023).</Item>
+          <Item title="Nüfus">TÜİK Adrese Dayalı Nüfus Kayıt Sistemi (ADNKS, 31 Aralık {meta.nufus_yili}).</Item>
           <Item title="Ölüm istatistikleri">
-            TÜİK Ölüm ve Ölüm Nedeni İstatistikleri (2024). Solunum sistemi hastalıklarından ölümler kaba hızdır; yaşa göre
+            TÜİK Ölüm ve Ölüm Nedeni İstatistikleri ({meta.olum_yili}). Solunum sistemi hastalıklarından ölümler kaba hızdır; yaşa göre
             standardize edilmemiştir.
           </Item>
           <Item title="Sanayi">OSBÜK (Ekim 2026) OSB envanteri: il bazında toplam ve faal OSB sayısı, alan ve parsel.</Item>

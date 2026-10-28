@@ -3,7 +3,7 @@
 import CitySelect, { useCityParam } from "@/components/CitySelect";
 import { CityCompareChart, DailySeriesChart } from "@/components/charts";
 import { Card, Note, Stat, TierBadge } from "@/components/ui";
-import { byName, regionMean, tierOf } from "@/lib/data";
+import { byName, meta, regionMean, tierOf } from "@/lib/data";
 import { roundDisp, trNum, trSign } from "@/lib/format";
 
 export default function ReportCard() {
@@ -37,7 +37,7 @@ export default function ReportCard() {
         <Stat
           label="Solunum ölüm oranı"
           value={<>{trNum(p.solunum_olum_100k, 1)} <span className="text-sm text-muted">yüz binde</span></>}
-          sub="TÜİK 2024 · Kaba hız, yaşa göre düzeltilmemiş"
+          sub={`TÜİK ${meta.olum_yili} · Kaba hız, yaşa göre düzeltilmemiş`}
           accent="text-white"
         />
       </div>
@@ -71,7 +71,7 @@ export default function ReportCard() {
         </Card>
         <Card title="İl künyesi">
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-            <dt className="text-muted">Nüfus (ADNKS)</dt><dd className="text-white">{trNum(p.nufus, 0)} kişi</dd>
+            <dt className="text-muted">Nüfus (ADNKS {meta.nufus_yili})</dt><dd className="text-white">{trNum(p.nufus, 0)} kişi</dd>
             <dt className="text-muted">Bölge</dt><dd className="text-white">{p.bolge}</dd>
             <dt className="text-muted">Plaka</dt><dd className="text-white">{String(p.plaka).padStart(2, "0")}</dd>
             <dt className="text-muted">Toplam OSB</dt><dd className="text-white">{p.toplam_osb} adet</dd>
