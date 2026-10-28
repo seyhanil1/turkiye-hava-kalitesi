@@ -10,6 +10,7 @@ const RELEASES: { version: string; date: string; title: string; current?: boolea
     items: [
       ["Nüfus", "İl nüfusları TÜİK ADNKS 31 Aralık 2025 sonuçlarına güncellendi (önceden 2023)."],
       ["Ölüm istatistikleri", "Solunum ölüm hızı, solunum ölüm payı ve atfedilebilir ölüm tahmini TÜİK 2025 verisiyle hesaplanıyor (önceden 2024). Yeni yıl eklendiğinde en güncel tam yıl kendiliğinden kullanılır."],
+      ["OSB", "22 Ekim 2026'da ilan edilen Burdur Batı ve Amasya Gümüşhacıköy OSB'leri eklendi (toplam 421; 304'ü faal)."],
     ],
   },
   {

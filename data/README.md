@@ -9,7 +9,7 @@ Platformdaki PM2.5 değerlerinin **istasyon ölçümü değil, CAMS model tahmin
 | `daily_city_air_quality.csv` | 81 il merkezi için son ~90 günün günlük PM2.5 ortalaması (en az 18 saat dolu günler) | CAMS / Open-Meteo | `python scripts/export_web_data.py --refresh` |
 | `kara_rapor_2025_istasyon.csv` | 2024 yılı en yüksek 10 istasyonun yıllık PM2.5 ortalaması | Temiz Hava Hakkı Platformu, [Kara Rapor 2025](https://temizhavahakki.org/kara-rapor-2025/) — D. Gümüşel sunumu, "Yıllık PM2,5 ortalamaları" (s. 12) | Elle aktarıldı; rapor yalnızca ilk 10 istasyonu yayımlıyor |
 | `tuik_saglik.xlsx` | İl bazında 2022–2025 toplam, dolaşım, tümör ve solunum sistemi ölümleri | TÜİK Ölüm ve Ölüm Nedeni İstatistikleri | TÜİK veri portalından indirilen tablo |
-| `sanayi.txt` | 81 ilin OSB listesi (tür, durum, alan, parsel) | OSBÜK (Ekim 2026) | Sekme ayrımlı dışa aktarım |
+| `sanayi.txt` | 81 ilin OSB listesi (tür, durum, alan, parsel) | OSBÜK (Ekim 2026) + 22 Ekim 2026'da ilan edilen 2 OSB | Sekme ayrımlı dışa aktarım; son iki satır (Burdur Batı 118 ha, Amasya Gümüşhacıköy 38 ha) Sanayi ve Teknoloji Bakanlığı duyurusundan elle eklendi, parsel sayıları henüz yok |
 | `tr-cities.json` | 81 il sınırları (GeoJSON) | Açık kaynak coğrafi veri | — |
 | `master_data.csv` | Yukarıdakilerin birleşimi | Türetilmiş | `python scripts/export_web_data.py` |
 | `../web/src/data/*.json` | Sitenin okuduğu il tablosu, istatistikler, günlük seriler ve harita geometrisi | Türetilmiş | `python scripts/export_web_data.py` (her gece GitHub Actions ile) |
@@ -27,6 +27,9 @@ Nüfus (TÜİK ADNKS, 31 Aralık 2025), il merkezi koordinatları ve DSÖ 2021 k
   Karşılaştırmalarda `solunum_olum_payi` (solunum ölümlerinin tüm ölümlere oranı) ve `atfedilen_olum_tahmini` daha uygundur.
 - **Atfedilebilir ölüm yaklaşık bir tahmindir.** AirQ+ yöntemi (RR = 1,08 / 10 µg/m³, karşı-olgu 5 µg/m³) tüm yaşlardaki
   ölümlere uygulanır; Kara Rapor 30+ yaş ve dış nedenler hariç ölümleri kullanır.
+
+- **OSB sayısında 1'lik fark.** Dosyada Sanayi ve Teknoloji Bakanlığı onaylı 375 OSB var; Bakanlık 22 Ekim 2026'da toplamı 374 olarak
+  açıkladı. Fark açıklanmadı (bir OSB'nin iptali veya birleşmesi olabilir); OSBÜK'ün güncel listesiyle kontrol edilmelidir.
 
 ## Kaldırılan dosyalar
 
