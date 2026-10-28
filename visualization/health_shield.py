@@ -6,8 +6,8 @@ HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 1. Üst Kısım - DSÖ Kılavuz Rozetleri (Hap Bilgi Baloncukları):
    - 🟢 DSÖ Yıllık Kılavuz Değeri: 5 µg/m³
    - 🟡 DSÖ 24 Saatlik Kılavuz Değeri: 15 µg/m³
-   - 🔴 Türkiye Ölçüm Ortalaması (Kara Rapor): 36,3 µg/m³ (Kılavuz Değerin ~7,3 Katı)
-   - 🚨 Kritik Alarm Seviyesi: >50 µg/m³
+   - 🔴 Kara Rapor 2025 en yüksek istasyon yıllık ortalaması (Iğdır, 2024): 46,8 µg/m³
+   - 🚨 DSÖ Ara Hedef-1 (yıllık): 35 µg/m³
 2. Alt Kısım - 4 Tematik Sağlık & Korunma Baloncuğu (st.columns(4)):
    - 🫁 1. Kart: Hassas Gruplar (Kronik/Çocuk/Yaşlı)
    - 😷 2. Kart: Bireysel Maske & Filtre
@@ -151,10 +151,10 @@ def render_health_shield_section():
                     <span>🟡</span> DSÖ 24 Saatlik Kılavuz Değeri: <strong style='color:#ffffff; margin-left:3px;'>15 µg/m³</strong>
                 </div>
                 <div class='badge-pill badge-red'>
-                    <span>🔴</span> Türkiye Ölçüm Ortalaması (Kara Rapor): <strong style='color:#ffffff; margin-left:3px;'>36,3 µg/m³</strong> <span style='font-size:11.5px; opacity:0.9;'>(Kılavuz Değerin ~7,3 Katı)</span>
+                    <span>🔴</span> En Yüksek İstasyon (Iğdır, Kara Rapor 2025): <strong style='color:#ffffff; margin-left:3px;'>46,8 µg/m³</strong> <span style='font-size:11.5px; opacity:0.9;'>(Kılavuz Değerin ~9,4 Katı)</span>
                 </div>
                 <div class='badge-pill badge-alarm'>
-                    <span>🚨</span> Kritik Alarm Seviyesi: <strong style='color:#ffffff; margin-left:3px;'>&gt;50 µg/m³</strong>
+                    <span>🚨</span> DSÖ Ara Hedef-1 (yıllık): <strong style='color:#ffffff; margin-left:3px;'>35 µg/m³</strong>
                 </div>
             </div>
         </div>

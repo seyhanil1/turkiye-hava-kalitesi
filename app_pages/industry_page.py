@@ -63,7 +63,7 @@ def render_industry_page(df: pd.DataFrame):
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="background: rgba(0, 242, 254, 0.15); color: #00f2fe; border: 1px solid #00f2fe; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">
-                        SANAYİ SİCİLİ • BAKANLIK VERİSİ
+                        OSB ENVANTERİ • OSBÜK
                     </span>
                 </div>
                 <span style="background: rgba(2, 18, 32, 0.8); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 600;">
@@ -77,7 +77,7 @@ def render_industry_page(df: pd.DataFrame):
                 {toplam_osb} <span style="font-size:20px; color:#00f2fe; font-weight:700;">Adet OSB</span>
             </div>
             <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-top: 6px;">
-                Bakanlık siciline kayıtlı 81 ilde {toplam_faal} faal üretimde ve {toplam_plan} planlama/altyapı aşamasında organize sanayi bölgesi.
+                OSBÜK envanterine göre 81 ilde {toplam_faal} faal üretimde ve {toplam_plan} planlama/altyapı aşamasında organize sanayi bölgesi.
             </div>
         </div>
         """).strip(), unsafe_allow_html=True)
@@ -95,7 +95,7 @@ def render_industry_page(df: pd.DataFrame):
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="background: rgba(255, 159, 61, 0.15); color: #ff9f3d; border: 1px solid #ff9f3d; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">
-                        BAKANLIK SİCİLİ • FAAL ORANI
+                        OSBÜK • FAAL ORANI
                     </span>
                 </div>
                 <span style="background: rgba(2, 18, 32, 0.8); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 600;">
@@ -128,15 +128,18 @@ def render_industry_page(df: pd.DataFrame):
         </div>
         """).strip(), unsafe_allow_html=True)
 
-        # 7 Coğrafi Bölge Verileri (OSB sayısına göre kesin büyükten küçüğe sıralı)
+        # 7 Coğrafi Bölge Verileri: master tablodan hesaplanır (OSB sayısına göre büyükten küçüğe)
+        reg = df.groupby("bolge").agg(osb=("toplam_osb", "sum"), pm25=("pm25", "mean")).reset_index()
+        reg = reg.sort_values("osb", ascending=False)
+        toplam_osb_reg = max(1, int(reg["osb"].sum()))
         regions_data = [
-            {"bolge": "Marmara", "osb": 100, "pm25": 35.7, "pay": "%23,9"},
-            {"bolge": "İç Anadolu", "osb": 75, "pm25": 34.0, "pay": "%17,9"},
-            {"bolge": "Karadeniz", "osb": 70, "pm25": 31.4, "pay": "%16,7"},
-            {"bolge": "Ege", "osb": 66, "pm25": 36.3, "pay": "%15,8"},
-            {"bolge": "Akdeniz", "osb": 44, "pm25": 35.1, "pay": "%10,5"},
-            {"bolge": "Güneydoğu Anadolu", "osb": 35, "pm25": 38.7, "pay": "%8,4"},
-            {"bolge": "Doğu Anadolu", "osb": 29, "pm25": 44.2, "pay": "%6,9"}
+            {
+                "bolge": r["bolge"],
+                "osb": int(r["osb"]),
+                "pm25": float(r["pm25"]),
+                "pay": f"%{r['osb'] / toplam_osb_reg * 100:.1f}".replace(".", ","),
+            }
+            for _, r in reg.iterrows()
         ]
         
         # Horizontal bar için sıralı listeler (Plotly alttan yukarı çizdiği için [::-1] ile en büyük Marmara en üste gelir)
@@ -187,7 +190,20 @@ def render_industry_page(df: pd.DataFrame):
         </div>
         """).strip(), unsafe_allow_html=True)
 
-        st.markdown(strip_html("""
+        reg_ozet = df.groupby("bolge").agg(
+            osb=("toplam_osb", "sum"), faal=("faal_osb", "sum"), pm25=("pm25", "mean")
+        )
+        marmara = reg_ozet.loc["Marmara"] if "Marmara" in reg_ozet.index else None
+        gdo = reg_ozet.loc["Güneydoğu Anadolu"] if "Güneydoğu Anadolu" in reg_ozet.index else None
+        gaziantep = df[df["il"] == "Gaziantep"]
+        marmara_osb = int(marmara["osb"]) if marmara is not None else 0
+        marmara_faal = int(marmara["faal"]) if marmara is not None else 0
+        gdo_osb = int(gdo["osb"]) if gdo is not None else 0
+        gdo_pm = f"{float(gdo['pm25']):.1f}".replace(".", ",") if gdo is not None else "-"
+        gaziantep_osb = int(gaziantep["toplam_osb"].iloc[0]) if not gaziantep.empty else 0
+        gaziantep_pm = f"{float(gaziantep['pm25'].iloc[0]):.1f}".replace(".", ",") if not gaziantep.empty else "-"
+
+        st.markdown(strip_html(f"""
         <div style="display:flex; flex-direction:column; gap:12px;">
             <!-- KART 1: MARMARA -->
             <div style="background: rgba(17, 26, 46, 0.92);
@@ -205,12 +221,12 @@ def render_industry_page(df: pd.DataFrame):
                             YÜKSEK OSB
                         </span>
                         <span style="background: rgba(0, 242, 254, 0.15); color: #00f2fe; border: 1px solid #00f2fe; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;">
-                            SANAYİ SİCİLİ
+                            OSBÜK
                         </span>
                     </div>
                 </div>
                 <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                    Marmara bölgesi genelinde 100 tescilli OSB (78 faal üretimde) yer almakta olup en yoğun sanayi kümelenmesi bu koridordadır.
+                    Marmara bölgesi genelinde {marmara_osb} OSB ({marmara_faal} faal üretimde) yer almakta olup en yoğun sanayi kümelenmesi bu koridordadır.
                 </div>
                 <div style="margin-top:8px; font-size:11px; color:#f87171; font-weight:600; display:flex; align-items:center; gap:4px;">
                     <span>•</span> Gösterge Notu: OSB sayısı ve faal üretim kapasitesi bakımından en yoğun bölgedir.
@@ -230,18 +246,18 @@ def render_industry_page(df: pd.DataFrame):
                     </span>
                     <div style="display:flex; gap:6px;">
                         <span style="background: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid #f59e0b; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;">
-                            YÜKSEK PM2,5
+                            BÖLGE MERKEZİ
                         </span>
                         <span style="background: rgba(0, 242, 254, 0.15); color: #00f2fe; border: 1px solid #00f2fe; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;">
-                            SANAYİ SİCİLİ
+                            OSBÜK
                         </span>
                     </div>
                 </div>
                 <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                    Gaziantep 8 OSB ve yüksek PM2.5 seviyesiyle bölgenin en yüksek sanayi altyapısına sahip ilidir.
+                    Gaziantep {gaziantep_osb} OSB ile bölgenin en büyük sanayi altyapısına sahip ilidir; CAMS 2025 yıllık PM2.5 ortalaması {gaziantep_pm} µg/m³ (Kara Rapor 2025'te Gaziantep-Beydilli istasyonu 36,4 µg/m³).
                 </div>
                 <div style="margin-top:8px; font-size:11px; color:#fbbf24; font-weight:600; display:flex; align-items:center; gap:4px;">
-                    <span>•</span> Gösterge Notu: Bölgede 35 OSB yer almakta olup ortalama PM2.5 38,7 µg/m³ seviyesindedir.
+                    <span>•</span> Gösterge Notu: Bölgede {gdo_osb} OSB yer almakta olup il ortalaması PM2.5 {gdo_pm} µg/m³ (CAMS 2025) seviyesindedir.
                 </div>
             </div>
         </div>

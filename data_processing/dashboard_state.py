@@ -59,7 +59,7 @@ CATEGORIES = [
 NO_DATA_COLOR = "#2b3c52"
 
 SOURCES = {
-    "resmi": "Resmî istasyon ölçümü · 2025 yıllık ortalama (Kara Rapor)",
+    "resmi": "CAMS atmosfer modeli · 2025 yıllık ortalama (12 ay)",
     "cams": "CAMS atmosfer modeli · il merkezi günlük ortalama",
 }
 
@@ -114,7 +114,7 @@ def fmt_num(value: Optional[float], digits: int = 1) -> str:
 # ---------------------------------------------------------------------------
 @dataclass
 class DashboardData:
-    master: pd.DataFrame                    # 81 il yıllık resmi veri + sanayi + sağlık
+    master: pd.DataFrame                    # 81 il yıllık CAMS + sanayi + sağlık
     city_daily: Optional[pd.DataFrame]      # il bazlı günlük CAMS (date, il, pm25, n_hours)
     messages: list = field(default_factory=list)   # [(seviye, metin)]
     master_updated: Optional[str] = None

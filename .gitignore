@@ -23,3 +23,6 @@ htmlcov/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Geçici çalışma dosyaları
+scratch/

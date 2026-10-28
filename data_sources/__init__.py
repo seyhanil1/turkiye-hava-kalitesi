@@ -13,7 +13,8 @@ from data_sources.constants import (
     DSO_LIMITLERI
 )
 from data_sources.local_official_data import (
-    parse_kara_rapor,
+    parse_kara_rapor_istasyon,
+    parse_cams_annual,
     parse_tuik_saglik,
     parse_sanayi_osb,
     build_master_dataset
@@ -32,7 +33,8 @@ __all__ = [
     "KOORDINATLAR",
     "NUFUSLAR",
     "DSO_LIMITLERI",
-    "parse_kara_rapor",
+    "parse_kara_rapor_istasyon",
+    "parse_cams_annual",
     "parse_tuik_saglik",
     "parse_sanayi_osb",
     "build_master_dataset",

@@ -32,7 +32,8 @@ def test_action_guide_content_and_translations():
     assert "çift cam ve ısı yalıtımı" in source
     assert "dış ortam fiziksel aktiviteleri" in source
     assert "PM2.5 düzeyinin" in source
-    assert "'Hassas', 'Sağlıksız' veya 'Kritik'" in source
+    assert "'Yüksek', 'Çok Yüksek' veya 'Kritik'" in source
+    assert "Sağlıksız" not in source
     assert '"Hassas" veya "Kritik"' not in source
     assert "'Hassas' veya 'Kritik'" not in source
     

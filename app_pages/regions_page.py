@@ -4,6 +4,7 @@ HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 """
 
 from decimal import Decimal, ROUND_HALF_UP
+import math
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -120,7 +121,7 @@ def create_regional_benchmark_bar(df: pd.DataFrame, pollutant: str = "pm25") -> 
         plot_bgcolor="rgba(0,0,0,0)",
         height=340,
         xaxis=dict(
-            range=[0, 50],
+            range=[0, max(20, math.ceil(max(x_values, default=0) * 1.6 / 5) * 5)],
             showgrid=True,
             gridcolor="rgba(255, 255, 255, 0.07)",
             tickfont=dict(color="#8faec9", size=11),
@@ -155,8 +156,11 @@ def render_regions_page(df: pd.DataFrame):
     st.markdown("### 7 Coğrafi Bölge Benchmark &amp; DSÖ Aşım Analizi", unsafe_allow_html=True)
     fig_bench = create_regional_benchmark_bar(df, pollutant="pm25")
     st.plotly_chart(fig_bench, use_container_width=True, config={'displayModeBar': False})
-    st.caption("* Kesikli kırmızı çizgi DSÖ yıllık kılavuz sınırıdır (5 µg/m³). Tüm bölge ortalamaları bu eşiğin 6 ila 9 katı üzerindedir.")
-    st.caption("Not: Gösterilen bölgesel veriler Doğrulanmış 12 Aylık Konsolidasyon Dönemi ölçümlerini yansıtmakta olup DSÖ yıllık referans kılavuz çizgisi ile karşılaştırılmıştır.")
+    bolge_ort = df.groupby("bolge")["pm25"].mean()
+    kat_min = f"{bolge_ort.min() / 5.0:.1f}".replace(".", ",")
+    kat_max = f"{bolge_ort.max() / 5.0:.1f}".replace(".", ",")
+    st.caption(f"* Kesikli kırmızı çizgi DSÖ yıllık kılavuz sınırıdır (5 µg/m³). Tüm bölge ortalamaları bu eşiğin {kat_min} ila {kat_max} katı üzerindedir.")
+    st.caption("Not: Bölgesel değerler, CAMS 2025 yıllık model ortalamalarının (12 ay) il düzeyinde ortalamasıdır ve DSÖ yıllık kılavuz çizgisiyle karşılaştırılmıştır.")
 
     st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 

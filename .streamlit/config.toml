@@ -3,9 +3,9 @@ gatherUsageStats = false
 
 [server]
 headless = true
-enableCORS = false
-enableXsrfProtection = false
-runOnSave = true
+enableCORS = true
+enableXsrfProtection = true
+runOnSave = false
 
 [client]
 toolbarMode = "minimal"

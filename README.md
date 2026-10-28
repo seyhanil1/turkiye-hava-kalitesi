@@ -3,11 +3,12 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.65.0-FF4B4B.svg)](https://streamlit.io/)
 [![Plotly](https://img.shields.io/badge/Plotly-7.1.0-3F4F75.svg)](https://plotly.com/)
-[![Tests](https://img.shields.io/badge/Tests-19%20Passed-success.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **"Havanın hikâyesini veriler anlatır."**  
-> HavaAtlası; Türkiye'nin 81 iline ait hava kirliliği ölçümlerini (PM2.5), sanayi parsel yoğunluklarını, TÜİK resmi ölüm istatistiklerini ve Dünya Sağlık Örgütü (WHO) kılavuz sınırlarını bir araya getiren, ileri düzey istatistiksel hipotez testleriyle desteklenmiş analitik bir karar destek platformudur.
+> HavaAtlası; Türkiye'nin 81 ili için Copernicus CAMS model tabanlı PM2.5 tahminlerini, Kara Rapor 2025 istasyon ölçümlerini, OSB envanterini, TÜİK ölüm istatistiklerini ve Dünya Sağlık Örgütü (DSÖ) kılavuz değerlerini bir araya getiren, istatistiksel testlerle desteklenmiş bir analiz platformudur.
+>
+> ⚠️ İl PM2.5 değerleri **istasyon ölçümü değil, model tahminidir** ve yerel kirliliği düşük gösterebilir. Ayrıntılar: [`data/README.md`](data/README.md).
 
 ---
 
@@ -15,7 +16,7 @@
 
 HavaAtlası, yalnızca görsel bir dashboard olmanın ötesinde; Python istatistik motoru (`scipy`, `statsmodels`) ile donatılmış, bilimsel hipotez testleri çalıştıran (t-Testi, Mann-Whitney U, Tek Yönlü ANOVA, Kruskal-Wallis, Levene, Shapiro-Wilk) ve nedensellik ayrımını gözeten tam teşekküllü bir veri bilimi platformudur.
 
-Koyu lacivert ve camgöbeği/neon yeşil tasarım diliyle geliştirilen arayüz; Türkiye'nin 81 ilini kapsayan gerçek GeoJSON haritası, 7/30/90 günlük zaman serisi projeksiyonları, şehir düelloları ve sektörel analizler sunar.
+Koyu lacivert ve camgöbeği/neon yeşil tasarım diliyle geliştirilen arayüz; Türkiye'nin 81 ilini kapsayan gerçek GeoJSON haritası, 7/30/90 günlük CAMS zaman serileri, şehir düelloları ve sektörel analizler sunar.
 
 ---
 
@@ -30,8 +31,9 @@ HavaAtlası modüler bir analitik mimariden oluşmaktadır:
    - Son 7, 30 ve 90 günlük dinamik zaman serisi çizgisi ve 7 günlük hareketli ortalama (MA7) bandı.
    - Dinamik Veri Bilimi Yorum Paneli ve Hızlı Modül Erişim Kartları.
 2. **🏙️ Şehir Karnesi (City Report Card):**
-   - 81 il için detaylı hava kalitesi, DSÖ risk sınıfı (Düşük, Orta, Yüksek, Kritik) ve aşım katsayısı.
-   - TÜİK resmi solunum yolu vefat sayıları ve 100.000 kişi başına oranları.
+   - 81 il için CAMS 2025 yıllık PM2.5, DSÖ 2021 yıllık ara hedeflerine dayalı kirlilik kademesi (Düşük, Orta, Yüksek, Çok Yüksek, Kritik) ve DSÖ kılavuzuna oran.
+   - Varsa Kara Rapor 2025 istasyon değeri, solunum ölüm payı ve PM2.5'e atfedilebilir ölüm tahmini (AirQ+).
+   - TÜİK solunum yolu ölüm sayıları ve 100.000 kişi başına kaba (yaşa göre düzeltilmemiş) oranlar.
    - OSB verileri: OSBÜK (Ekim 2026) parsel ve hektar alanı dökümü.
    - Bölge ve Türkiye ortalamasıyla karşılaştırma grafiği.
 3. **⚔️ Şehir Düellosu (City Duel & Hypothesis Testing):**
@@ -79,11 +81,12 @@ Uygulama, profesyonel veri analitiği estetiğine sadık kalarak tasarlanmışt�
 
 | Kaynak | Veri Kapsamı | Yöntem / Dosya | Lisans / Kullanım |
 | :--- | :--- | :--- | :--- |
-| **Temiz Hava Hakkı Platformu** | 81 İl Yıllık PM2.5 Kirlilik Düzeyi | `data/hava_kirliligi.xlsx` (Kara Rapor 2025) | Açık kamuoyu çevre raporu |
+| **Copernicus CAMS & Open-Meteo** | 81 il 2025 yıllık PM2.5 / PM10 (ana gösterge) | `data/cams_annual_2025.csv` | CC-BY 4.0 (Copernicus Atmosphere Service) |
+| **Temiz Hava Hakkı Platformu** | 2024 en yüksek 10 istasyonun yıllık PM2.5 ortalaması (doğrulama katmanı) | `data/kara_rapor_2025_istasyon.csv` (Kara Rapor 2025) | Açık kamuoyu çevre raporu |
 | **TÜİK (TurkStat)** | İl Bazlı Ölüm ve Ölüm Nedenleri (2022-2025) | `data/tuik_saglik.xlsx` (Ölüm İstatistikleri) | Resmi İstatistik Programı (TÜİK Açık Veri) |
 | **OSBÜK** | 81 İl OSB Dizini, Parsel ve Hektar Verisi | `data/sanayi.txt` | OSB verileri: OSBÜK (Ekim 2026) |
 | **TÜİK ADNKS** | 81 İl Resmi Nüfus Sayımları | `data_sources/constants.py` | Resmi Nüfus İstatistikleri |
-| **Copernicus CAMS & Open-Meteo** | Saatlik / Günlük PM2.5 Zaman Serisi | `air-quality-api.open-meteo.com` | CC-BY 4.0 (Copernicus Atmosphere Service) |
+| **Copernicus CAMS & Open-Meteo** | Son ~90 gün il bazlı günlük PM2.5 | `data/daily_city_air_quality.csv` | CC-BY 4.0 (Copernicus Atmosphere Service) |
 | **OpenAQ v3 API** | Küresel Hava Kalitesi İstasyon Verileri | `data_sources/openaq_connector.py` | OpenAQ Açık Veri Lisansı |
 | **Dünya Sağlık Örgütü (WHO)** | Küresel Hava Kalitesi Kılavuz Limitleri (2021) | `data_sources/constants.py` | DSÖ Halk Sağlığı Kılavuzları |
 | **Türkiye İl Sınırları GeoJSON** | 81 İl Coğrafi Vektör Sınırları | `data/tr-cities.json` | Açık Kaynak Coğrafi Veri |
@@ -100,8 +103,8 @@ Uygulama, profesyonel veri analitiği estetiğine sadık kalarak tasarlanmışt�
 
 ```bash
 # 1. Depoyu klonlayın
-git clone https://github.com/kullanici/havaatlasi.git
-cd havaatlasi
+git clone https://github.com/seyhanil1/turkiye-hava-kalitesi.git
+cd turkiye-hava-kalitesi
 
 # 2. Sanal ortam (venv) oluşturun ve etkinleştirin
 python -m venv venv
@@ -121,7 +124,7 @@ pip install -r requirements.txt
 ```bash
 copy .env.example .env
 ```
-`.env` dosyası içerisine `OPENAQ_API_KEY=anahtariniz` değerini yazabilirsiniz. (Belirtilmediğinde sistem otomatik olarak doğrulanmış Kara Rapor ve Copernicus CAMS reanaliz verilerini kullanır).
+`.env` dosyası içerisine `OPENAQ_API_KEY=anahtariniz` değerini yazabilirsiniz. (Belirtilmediğinde sistem depodaki CAMS ve Kara Rapor verilerini kullanır).
 
 ---
 
@@ -189,17 +192,21 @@ havakirliligi/
 │   ├── ai_forecast_page.py        # 6. İl Grupları ve Çeyreklik Analizi
 │   └── industry_page.py           # 7. Sanayi Profili ve OSB Analizi
 ├── data/
-│   ├── daily_air_quality_90d.csv  # 90 günlük Copernicus CAMS zaman serisi
-│   ├── hava_kirliligi.xlsx        # Kara Rapor 2025 PM2.5 ölçümleri
-│   ├── master_data.csv            # 81 il doğrulanmış analitik ana veri tablosu
+│   ├── README.md                  # Her veri dosyasının kaynağı ve güncelleme komutu
+│   ├── cams_annual_2025.csv       # CAMS 2025 yıllık PM2.5/PM10 (81 il)
+│   ├── daily_city_air_quality.csv # CAMS son ~90 gün günlük PM2.5 (81 il)
+│   ├── kara_rapor_2025_istasyon.csv # Kara Rapor 2025 istasyon PM2.5 (ilk 10)
+│   ├── master_data.csv            # 81 il birleşik analitik tablo (önbellek)
 │   ├── sanayi.txt                 # OSB verileri: OSBÜK (Ekim 2026)
 │   ├── tr-cities.json             # 81 İl GeoJSON sınır haritası
 │   └── tuik_saglik.xlsx           # TÜİK resmi ölüm istatistikleri (2022-2025)
 ├── data_sources/
 │   ├── __init__.py
 │   ├── constants.py               # İl kodları, bölgeler, koordinatlar ve nüfuslar
-│   ├── local_official_data.py     # Kara Rapor, TÜİK ve OSB ayrıştırıcıları
-│   ├── openmeteo_connector.py     # CAMS / Open-Meteo zaman serisi istemcisi
+│   ├── local_official_data.py     # Master tablo: CAMS, Kara Rapor, TÜİK ve OSB birleştirme
+│   ├── cams_annual_connector.py   # CAMS yıllık il ortalamaları
+│   ├── cams_city_connector.py     # CAMS günlük il serileri
+│   ├── openmeteo_connector.py     # Ulusal (nüfus ağırlıklı) günlük seri
 │   └── openaq_connector.py        # OpenAQ v3 API bağlayıcısı
 ├── data_processing/
 │   ├── __init__.py
@@ -237,9 +244,10 @@ havakirliligi/
 
 ## 10. Veri Sınırlılıkları
 
-1. **İstasyon Dağılımı ve Temsiliyet:** Bazı illerde ölçüm istasyonları trafik ve sanayi odaklıyken, bazı illerde kırsal arka plan istasyonları mevcuttur. Bu durum il geneli ortalamalarda varyans yaratabilir.
-2. **Kış Enversiyonu:** Coğrafi çanak topoğrafyasına sahip illerde (örn. Iğdır, Düzce, Erzincan) kış aylarındaki sıcaklık enversiyonu kirliliği artırmaktadır; bu artış tek başına sanayi emisyonu kaynaklı değildir.
-3. **Ölçüm Sıklığı:** Kara Rapor 2025 verileri yıllık ortalama PM2.5 konsantrasyonunu yansıtırken, zaman serisi grafikleri Copernicus CAMS reanaliz modellemesiyle desteklenmektedir.
+1. **Model Tahmini:** İl PM2.5 değerleri CAMS modelinin (~10 km) il merkezi noktasındaki tahminidir. Konut ısınması, trafik ve kapalı havza (inversiyon) kirliliğini düşük gösterir (ör. Iğdır: CAMS ~12, Kara Rapor istasyonu 46,8 µg/m³).
+2. **Eksik İstasyon Verisi:** Kara Rapor 2025, il bazında tam PM2.5 tablosu yayımlamaz; PM2.5 ölçen 189 istasyonun yalnızca 113'ünden yeterli veri alınabilmiştir.
+3. **Kaba Ölüm Hızları:** TÜİK il verisi yaş grubu içermediğinden ölüm hızları yaşa göre standardize edilemez; yaşlı nüfuslu iller yapısal olarak yüksek çıkar.
+4. **Ekolojik Korelasyon:** İl düzeyindeki ilişkiler (ör. OSB–PM2.5) nüfus ve şehirleşmeyle karışır; nedensellik göstermez.
 
 ---
 

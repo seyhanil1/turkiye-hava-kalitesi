@@ -10,7 +10,7 @@ HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 - Bölge Seçici Dropdown: Türkiye Geneli ve 7 Coğrafi Bölgenin tamamını
   içeren açılır menüden istenen bölge doğrudan seçilebilir.
 - Özelleştirilmiş Sağ Sıralama Tablosu: Sıra numaraları,
-  kirlilik düzey pilleri (Kritik, Sağlıksız, Hassas, Orta, İyi), plaka numaraları ve çoklu filtreleme (İlk 10, En Düşük 10, Tümü).
+  kirlilik düzey pilleri (Kritik, Çok Yüksek, Yüksek, Orta, Düşük), plaka numaraları ve çoklu filtreleme (İlk 10, En Düşük 10, Tümü).
 """
 
 from __future__ import annotations
@@ -70,12 +70,33 @@ def load_turkey_svg_content(df: Optional[pd.DataFrame] = None) -> str:
             if pd.notna(raw_v):
                 try:
                     v = round(float(raw_v))
-                    col = "#00e599" if v <= 15 else ("#facc15" if v <= 30 else ("#f97316" if v <= 50 else ("#f87171" if v <= 70 else "#ef4444")))
+                    col = "#00e599" if v <= 10 else ("#facc15" if v <= 15 else ("#f97316" if v <= 25 else ("#f87171" if v <= 35 else "#ef4444")))
                     pattern = rf'(<text[^>]*>{re.escape(c_name)}</text>\s*<text[^>]*fill=")[^"]*("[^>]*>)[^<]*(</text>)'
                     svg = re.sub(pattern, rf'\g<1>{col}\g<2>{v} µg/m³\g<3>', svg)
                 except Exception:
                     pass
     return svg
+
+
+_TR_AY = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
+
+
+def _national_ts_points() -> tuple[list, list, list]:
+    """7/30/90 günlük ulusal seri noktaları (nüfus ağırlıklı CAMS günlük ortalama). Veri yoksa boş listeler."""
+    from data_sources.openmeteo_connector import get_national_timeseries
+
+    ts = get_national_timeseries(90)
+    if ts.empty:
+        return [], [], []
+
+    def pts(frame: pd.DataFrame, step: int) -> list:
+        frame = frame.iloc[::-1].iloc[::step].iloc[::-1]  # son günü her zaman dahil et
+        return [
+            {"d": f"{d.day} {_TR_AY[d.month - 1]}", "v": round(float(v), 1)}
+            for d, v in zip(frame["date"], frame["pm25"])
+        ]
+
+    return pts(ts.tail(7), 1), pts(ts.tail(30), 3), pts(ts.tail(90), 14)
 
 
 def _calculate_science_note(df: pd.DataFrame, pollutant: str = "pm25") -> dict:
@@ -249,25 +270,25 @@ def _generate_overview_analytics_components(df: pd.DataFrame) -> tuple[str, str]
     total_cities = len(df_calc)
     dso_compliant = len(df_calc[df_calc["pm25"] <= 5.0])
     
-    # Unified 5 Kademe Dağılımı (KIRLILIK_KADEMELERI standardı: Kritik >70, Sağlıksız 50-70, Hassas 30-50, Orta 15-30, İyi <=15)
-    c_kritik = len(df_calc[df_calc["pm25"] > 70.0])
+    # 5 Kademe Dağılımı (KIRLILIK_KADEMELERI, DSÖ 2021 yıllık ara hedefleri: Kritik >35, Çok Yüksek 25-35, Yüksek 15-25, Orta 10-15, Düşük <=10)
+    c_kritik = len(df_calc[df_calc["pm25"] > 35.0])
     p_kritik = round((c_kritik / total_cities) * 100, 1) if total_cities > 0 else 0.0
     
-    c_sagliksiz = len(df_calc[(df_calc["pm25"] > 50.0) & (df_calc["pm25"] <= 70.0)])
+    c_sagliksiz = len(df_calc[(df_calc["pm25"] > 25.0) & (df_calc["pm25"] <= 35.0)])
     p_sagliksiz = round((c_sagliksiz / total_cities) * 100, 1) if total_cities > 0 else 0.0
     
-    c_hassas = len(df_calc[(df_calc["pm25"] > 30.0) & (df_calc["pm25"] <= 50.0)])
+    c_hassas = len(df_calc[(df_calc["pm25"] > 15.0) & (df_calc["pm25"] <= 25.0)])
     p_hassas = round((c_hassas / total_cities) * 100, 1) if total_cities > 0 else 0.0
     
-    c_orta = len(df_calc[(df_calc["pm25"] > 15.0) & (df_calc["pm25"] <= 30.0)])
+    c_orta = len(df_calc[(df_calc["pm25"] > 10.0) & (df_calc["pm25"] <= 15.0)])
     p_orta = round((c_orta / total_cities) * 100, 1) if total_cities > 0 else 0.0
     
-    c_iyi = len(df_calc[df_calc["pm25"] <= 15.0])
+    c_iyi = len(df_calc[df_calc["pm25"] <= 10.0])
     p_iyi = round((c_iyi / total_cities) * 100, 1) if total_cities > 0 else 0.0
     
     # Minimum ve maksimum kat hesaplaması
-    min_pm = float(df_calc["pm25"].min()) if not df_calc.empty else 14.8
-    max_pm = float(df_calc["pm25"].max()) if not df_calc.empty else 82.1
+    min_pm = float(df_calc["pm25"].min()) if not df_calc.empty else 0.0
+    max_pm = float(df_calc["pm25"].max()) if not df_calc.empty else 0.0
     min_kat = round(min_pm / 5.0, 1)
     max_kat = round(max_pm / 5.0, 1)
     
@@ -276,15 +297,17 @@ def _generate_overview_analytics_components(df: pd.DataFrame) -> tuple[str, str]
     canak_df = df_calc[df_calc["il"].isin(canak_list)]
     diger_df = df_calc[~df_calc["il"].isin(canak_list)]
     
-    canak_mean = round(float(canak_df["pm25"].mean()), 1) if not canak_df.empty else 61.3
-    diger_mean = round(float(diger_df["pm25"].mean()), 1) if not diger_df.empty else 33.5
-    fark_kat = round(canak_mean / diger_mean, 2) if diger_mean > 0 else 1.83
-    fark_pct = round(((canak_mean - diger_mean) / diger_mean) * 100, 0) if diger_mean > 0 else 83.0
+    canak_mean = round(float(canak_df["pm25"].mean()), 1) if not canak_df.empty else 0.0
+    diger_mean = round(float(diger_df["pm25"].mean()), 1) if not diger_df.empty else 0.0
+    fark_kat = round(canak_mean / diger_mean, 2) if diger_mean > 0 else 0.0
+    fark_pct = round(((canak_mean - diger_mean) / diger_mean) * 100, 0) if diger_mean > 0 else 0.0
+    fark_yon = "▲" if fark_pct >= 0 else "▼"
+    fark_yon_metin = "Daha Yüksek" if fark_pct >= 0 else "Daha Düşük"
     
     canak_mean_str = f"{canak_mean:.1f}".replace(".", ",")
     diger_mean_str = f"{diger_mean:.1f}".replace(".", ",")
     fark_kat_str = f"{fark_kat:.2f}".replace(".", ",")
-    fark_pct_str = f"{fark_pct:.0f}"
+    fark_pct_str = f"{abs(fark_pct):.0f}"
     min_kat_str = f"{min_kat:.1f}".replace(".", ",")
     max_kat_str = f"{max_kat:.1f}".replace(".", ",")
     
@@ -303,7 +326,7 @@ def _generate_overview_analytics_components(df: pd.DataFrame) -> tuple[str, str]
             <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.35); border-radius:10px; padding:12px 16px; margin-bottom:14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="font-size:11px; font-weight:800; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px;">DSÖ 5 µg/m³ YILLIK KILAVUZ UYUMU</div>
-                    <div style="font-size:17px; font-weight:900; color:#ef4444;">{dso_compliant} / {total_cities} İl (%0 Uyum)</div>
+                    <div style="font-size:17px; font-weight:900; color:#ef4444;">{dso_compliant} / {total_cities} İl (%{(dso_compliant / total_cities * 100) if total_cities else 0:.0f} Uyum)</div>
                 </div>
                 <div style="font-size:12px; color:#cbd5e1; margin-top:5px; line-height:1.45;">
                     Türkiye genelinde DSÖ 2021 yıllık kılavuz seviyesinde (5 µg/m³) şehir <strong>bulunmamaktadır</strong>. İllerimiz kılavuz değerin <strong>{min_kat_str} ila {max_kat_str} katı</strong> partikül konsantrasyonuna sahiptir.<br>
@@ -320,33 +343,33 @@ def _generate_overview_analytics_components(df: pd.DataFrame) -> tuple[str, str]
                 
                 <!-- Dağılım İlerleme Çubuğu (5 Kademe) -->
                 <div style="display:flex; height:10px; border-radius:6px; overflow:hidden; margin-bottom:12px; background:#07253d;">
-                    <div style="width:{p_kritik}%; background:#ef4444;" title="Kritik (&gt;70 µg/m³): %{p_kritik}"></div>
-                    <div style="width:{p_sagliksiz}%; background:#f87171;" title="Sağlıksız (50,1-70 µg/m³): %{p_sagliksiz}"></div>
-                    <div style="width:{p_hassas}%; background:#f97316;" title="Hassas (30,1-50 µg/m³): %{p_hassas}"></div>
-                    <div style="width:{p_orta}%; background:#facc15;" title="Orta (15,1-30 µg/m³): %{p_orta}"></div>
-                    <div style="width:{p_iyi}%; background:#00e599;" title="İyi (≤15 µg/m³): %{p_iyi}"></div>
+                    <div style="width:{p_kritik}%; background:#ef4444;" title="Kritik (&gt;35 µg/m³): %{p_kritik}"></div>
+                    <div style="width:{p_sagliksiz}%; background:#f87171;" title="Çok Yüksek (25,1-35 µg/m³): %{p_sagliksiz}"></div>
+                    <div style="width:{p_hassas}%; background:#f97316;" title="Yüksek (15,1-25 µg/m³): %{p_hassas}"></div>
+                    <div style="width:{p_orta}%; background:#facc15;" title="Orta (10,1-15 µg/m³): %{p_orta}"></div>
+                    <div style="width:{p_iyi}%; background:#00e599;" title="Düşük (≤10 µg/m³): %{p_iyi}"></div>
                 </div>
 
                 <!-- Kademe Rozetleri (5 Kademe Grid) -->
                 <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;">
                     <div style="background:rgba(239,68,68,0.1); border-left:3px solid #ef4444; padding:6px 8px; border-radius:6px;">
-                        <div style="font-size:9.5px; color:#fca5a5; font-weight:700;">Kritik (&gt;70)</div>
+                        <div style="font-size:9.5px; color:#fca5a5; font-weight:700;">Kritik (&gt;35)</div>
                         <div style="font-size:14px; font-weight:900; color:#ef4444; margin-top:2px;">{c_kritik} İl <span style="font-size:10px; color:#94a3b8;">(%{str(p_kritik).replace('.', ',')})</span></div>
                     </div>
                     <div style="background:rgba(248,113,113,0.1); border-left:3px solid #f87171; padding:6px 8px; border-radius:6px;">
-                        <div style="font-size:9.5px; color:#fecaca; font-weight:700;">Sağlıksız (50-70)</div>
+                        <div style="font-size:9.5px; color:#fecaca; font-weight:700;">Çok Yüksek (25-35)</div>
                         <div style="font-size:14px; font-weight:900; color:#f87171; margin-top:2px;">{c_sagliksiz} İl <span style="font-size:10px; color:#94a3b8;">(%{str(p_sagliksiz).replace('.', ',')})</span></div>
                     </div>
                     <div style="background:rgba(249,115,22,0.1); border-left:3px solid #f97316; padding:6px 8px; border-radius:6px;">
-                        <div style="font-size:9.5px; color:#fed7aa; font-weight:700;">Hassas (30-50)</div>
+                        <div style="font-size:9.5px; color:#fed7aa; font-weight:700;">Yüksek (15-25)</div>
                         <div style="font-size:14px; font-weight:900; color:#f97316; margin-top:2px;">{c_hassas} İl <span style="font-size:10px; color:#94a3b8;">(%{str(p_hassas).replace('.', ',')})</span></div>
                     </div>
                     <div style="background:rgba(250,204,21,0.1); border-left:3px solid #facc15; padding:6px 8px; border-radius:6px;">
-                        <div style="font-size:9.5px; color:#fef08a; font-weight:700;">Orta (15-30)</div>
+                        <div style="font-size:9.5px; color:#fef08a; font-weight:700;">Orta (10-15)</div>
                         <div style="font-size:14px; font-weight:900; color:#facc15; margin-top:2px;">{c_orta} İl <span style="font-size:10px; color:#94a3b8;">(%{str(p_orta).replace('.', ',')})</span></div>
                     </div>
                     <div style="background:rgba(0,229,153,0.1); border-left:3px solid #00e599; padding:6px 8px; border-radius:6px;">
-                        <div style="font-size:9.5px; color:#a7f3d0; font-weight:700;">İyi (≤15)</div>
+                        <div style="font-size:9.5px; color:#a7f3d0; font-weight:700;">Düşük (≤10)</div>
                         <div style="font-size:14px; font-weight:900; color:#00e599; margin-top:2px;">{c_iyi} İl <span style="font-size:10px; color:#94a3b8;">(%{str(p_iyi).replace('.', ',')})</span></div>
                     </div>
                 </div>
@@ -365,11 +388,11 @@ def _generate_overview_analytics_components(df: pd.DataFrame) -> tuple[str, str]
                     <span style="font-size:11px; color:#94a3b8; margin-left:6px;">(Diğer İller: {diger_mean_str} µg/m³)</span>
                 </div>
                 <div style="font-size:12.5px; font-weight:800; color:#f97316;">
-                    ▲ %{fark_pct_str} Daha Yüksek Konsantrasyon ({fark_kat_str} Kat)
+                    {fark_yon} %{fark_pct_str} {fark_yon_metin} Konsantrasyon ({fark_kat_str} Kat)
                 </div>
             </div>
             <div style="font-size:11px; color:#94a3b8; line-height:1.4; margin-top:3px;">
-                Topografik çanak yapısı ve meteorolojik enversiyon koşulları, kirliliğin dağılmasını zorlaştıran önemli bir olası etken olarak değerlendirilmektedir.
+                Topografik çanak yapısı ve kış enversiyonu kirliliğin dağılmasını zorlaştırabilir; ~10 km çözünürlüklü CAMS modeli bu yerel etkiyi düşük gösterir (ör. Iğdır istasyonu 46,8 µg/m³, Kara Rapor 2025).
             </div>
         </div>
     </div>
@@ -396,8 +419,8 @@ def generate_pixel_perfect_dashboard_html(
     # Gerçek veri dönemi ve son güncelleme tarihi
     from data_sources.constants import get_dataset_date_info
     date_info = get_dataset_date_info()
-    date_range_str = date_info.get("date_range_str", "11.07.2026 – 10.10.2026")
-    period_label_str = date_info.get("period_label_str", "Doğrulanmış 12 Aylık Konsolidasyon Dönemi")
+    date_range_str = date_info.get("date_range_str", "-")
+    period_label_str = date_info.get("period_label_str", "-")
     last_date_str = date_info.get("end_date", "10.10.2026")
 
     # Günlük 81 il hava kalitesi verisi (st.cache_data ile önbellekten okunur)
@@ -446,10 +469,10 @@ def generate_pixel_perfect_dashboard_html(
         f"gerçek il sayısına ({len(df)}) eşit değil!"
     )
 
-    tier_cnt_iyi = tier_counts.get("İyi", 0)
+    tier_cnt_iyi = tier_counts.get("Düşük", 0)
     tier_cnt_orta = tier_counts.get("Orta", 0)
-    tier_cnt_hassas = tier_counts.get("Hassas", 0)
-    tier_cnt_sagliksiz = tier_counts.get("Sağlıksız", 0)
+    tier_cnt_hassas = tier_counts.get("Yüksek", 0)
+    tier_cnt_sagliksiz = tier_counts.get("Çok Yüksek", 0)
     tier_cnt_kritik = tier_counts.get("Kritik", 0)
 
     n_cities = max(1, len(df))
@@ -485,13 +508,13 @@ def generate_pixel_perfect_dashboard_html(
                 "dso_kat": round(float(r.get("dso_limit_kat", 0.0)), 1) if pd.notna(r.get("dso_limit_kat")) else 0.0,
             })
     
-    # Varsayılan PM2.5 değerleri
-    pm25_ort = 36.3
-    max_il = "Osmaniye"
-    max_val = 83.6
-    min_il = "Tunceli"
-    min_val = 14.8
-    il_count = 81
+    # Veri yoksa nötr varsayılanlar (uydurma değer gösterilmez)
+    pm25_ort = 0.0
+    max_il = "-"
+    max_val = 0.0
+    min_il = "-"
+    min_val = 0.0
+    il_count = 0
     
     if not df.empty and "pm25" in df.columns:
         pm25_ort = round(float(df["pm25"].mean()), 1)
@@ -504,6 +527,7 @@ def generate_pixel_perfect_dashboard_html(
         il_count = len(df)
         
     pm25_ort_str = f"{pm25_ort:.1f}".replace(".", ",")
+    dso_kat_ort_str = f"{pm25_ort / 5.0:.1f}".replace(".", ",")
     max_val_str = f"{max_val:.1f}".replace(".", ",")
     min_val_str = f"{min_val:.1f}".replace(".", ",")
     max_diff_val = round(max_val - pm25_ort, 1)
@@ -514,23 +538,8 @@ def generate_pixel_perfect_dashboard_html(
     # Veri bilimi notu
     note_info = _calculate_science_note(df, active_pollutant)
     
-    # 30 Günlük zaman serisi varsayılan veri noktaları (Eylül - Ekim)
-    ts_points_30 = [
-        {"d": "10 Eyl", "v": 24.2}, {"d": "13 Eyl", "v": 28.5}, {"d": "16 Eyl", "v": 27.1},
-        {"d": "19 Eyl", "v": 31.4}, {"d": "22 Eyl", "v": 29.8}, {"d": "25 Eyl", "v": 33.2},
-        {"d": "28 Eyl", "v": 30.6}, {"d": "1 Eki", "v": 32.1}, {"d": "4 Eki", "v": 34.5},
-        {"d": "7 Eki", "v": 35.8}, {"d": "10 Eki", "v": 36.3}
-    ]
-    ts_points_7 = [
-        {"d": "4 Eki", "v": 34.5}, {"d": "5 Eki", "v": 33.8}, {"d": "6 Eki", "v": 35.1},
-        {"d": "7 Eki", "v": 35.8}, {"d": "8 Eki", "v": 36.0}, {"d": "9 Eki", "v": 36.1},
-        {"d": "10 Eki", "v": 36.3}
-    ]
-    ts_points_90 = [
-        {"d": "12 Tem", "v": 18.5}, {"d": "26 Tem", "v": 21.0}, {"d": "10 Ağu", "v": 23.4},
-        {"d": "24 Ağu", "v": 26.8}, {"d": "7 Eyl", "v": 25.2}, {"d": "21 Eyl", "v": 30.1},
-        {"d": "10 Eki", "v": 36.3}
-    ]
+    # Zaman serisi: 81 il CAMS günlük değerlerinin nüfus ağırlıklı Türkiye ortalaması (gerçek veri)
+    ts_points_7, ts_points_30, ts_points_90 = _national_ts_points()
     
     cities_json = json.dumps(cities_list, ensure_ascii=False)
     ts_json = json.dumps({
@@ -540,7 +549,6 @@ def generate_pixel_perfect_dashboard_html(
     }, ensure_ascii=False)
 
     total_cities = il_count
-    prev_30_period_str = "Önceki döneme göre %12 iyileşme"
     
     pollutants_map = [("PM2.5", "pm25", "PM2.5")]
     available_pols = [("PM2.5", "pm25", "PM2.5")]
@@ -2149,9 +2157,8 @@ html, body {{
                         </div>
                     </div>
                     <div class="stat-bottom-row">
-                        <div class="stat-delta green" title="Önceki konsolidasyon dönemine kıyasla değişim">
-                            <span>▼</span>
-                            <span class="stat-subtext">Önceki döneme göre %12 iyileşme</span>
+                        <div class="stat-delta" title="DSÖ yıllık kılavuz değeri 5 µg/m³">
+                            <span class="stat-subtext">DSÖ kılavuzunun {dso_kat_ort_str} katı (CAMS 2025)</span>
                         </div>
                     </div>
                 </div>
@@ -2237,21 +2244,21 @@ html, body {{
                     <div class="map-footer-row">
                         <div class="legend-box">
                             <div class="legend-segments">
-                                <div class="leg-seg" style="background:#00e599;" title="İyi: ≤15 µg/m³"></div>
-                                <div class="leg-seg" style="background:#facc15;" title="Orta: 15,1 - 30 µg/m³"></div>
-                                <div class="leg-seg" style="background:#f97316;" title="Hassas: 30,1 - 50 µg/m³"></div>
-                                <div class="leg-seg" style="background:#f87171;" title="Sağlıksız: 50,1 - 70 µg/m³"></div>
-                                <div class="leg-seg" style="background:#ef4444;" title="Kritik: >70 µg/m³"></div>
+                                <div class="leg-seg" style="background:#00e599;" title="Düşük: ≤10 µg/m³"></div>
+                                <div class="leg-seg" style="background:#facc15;" title="Orta: 10,1 - 15 µg/m³"></div>
+                                <div class="leg-seg" style="background:#f97316;" title="Yüksek: 15,1 - 25 µg/m³"></div>
+                                <div class="leg-seg" style="background:#f87171;" title="Çok Yüksek: 25,1 - 35 µg/m³"></div>
+                                <div class="leg-seg" style="background:#ef4444;" title="Kritik: >35 µg/m³"></div>
                             </div>
                             <div class="legend-labels-grid">
-                                <div class="leg-item"><span class="leg-name" style="color:#00e599;">İyi</span><span class="leg-range">≤15</span></div>
-                                <div class="leg-item"><span class="leg-name" style="color:#facc15;">Orta</span><span class="leg-range">15.1–30</span></div>
-                                <div class="leg-item"><span class="leg-name" style="color:#f97316;">Hassas</span><span class="leg-range">30.1–50</span></div>
-                                <div class="leg-item"><span class="leg-name" style="color:#f87171;">Sağlıksız</span><span class="leg-range">50.1–70</span></div>
-                                <div class="leg-item"><span class="leg-name" style="color:#ef4444;">Kritik</span><span class="leg-range">&gt;70</span></div>
+                                <div class="leg-item"><span class="leg-name" style="color:#00e599;">Düşük</span><span class="leg-range">≤10</span></div>
+                                <div class="leg-item"><span class="leg-name" style="color:#facc15;">Orta</span><span class="leg-range">10.1–15</span></div>
+                                <div class="leg-item"><span class="leg-name" style="color:#f97316;">Yüksek</span><span class="leg-range">15.1–25</span></div>
+                                <div class="leg-item"><span class="leg-name" style="color:#f87171;">Çok Yüksek</span><span class="leg-range">25.1–35</span></div>
+                                <div class="leg-item"><span class="leg-name" style="color:#ef4444;">Kritik</span><span class="leg-range">&gt;35</span></div>
                             </div>
                             <div class="legend-scale-strip" style="text-align:center; font-size:11px; color:#8faec9; margin-top:6px; padding:4px 8px; background:#021626; border-radius:4px; border:1px solid #083454; letter-spacing:0.01em;">
-                                <span style="color:#00e599; font-weight:600;">Yeşil:</span> İyi (≤15) <span style="color:#335370;">|</span> <span style="color:#facc15; font-weight:600;">Sarı:</span> Orta (15.1-30) <span style="color:#335370;">|</span> <span style="color:#f97316; font-weight:600;">Turuncu:</span> Hassas (30.1-50) <span style="color:#335370;">|</span> <span style="color:#f87171; font-weight:600;">Kırmızı:</span> Sağlıksız (50.1-70) <span style="color:#335370;">|</span> <span style="color:#ef4444; font-weight:600;">Bordo:</span> Kritik (&gt;70 µg/m³)
+                                <span style="color:#00e599; font-weight:600;">Yeşil:</span> Düşük (≤10) <span style="color:#335370;">|</span> <span style="color:#facc15; font-weight:600;">Sarı:</span> Orta (10.1-15) <span style="color:#335370;">|</span> <span style="color:#f97316; font-weight:600;">Turuncu:</span> Yüksek (15.1-25) <span style="color:#335370;">|</span> <span style="color:#f87171; font-weight:600;">Kırmızı:</span> Çok Yüksek (25.1-35) <span style="color:#335370;">|</span> <span style="color:#ef4444; font-weight:600;">Bordo:</span> Kritik (&gt;35 µg/m³)
                             </div>
                         </div>
 
@@ -2313,17 +2320,17 @@ html, body {{
                             <span class="tier-dist-total">Toplam: <strong>{total_classified_cities} İl</strong></span>
                         </div>
                         <div class="tier-stacked-bar" id="tierStackedBar">
-                            <div class="tier-bar-segment" id="tierBar_İyi" style="width:{tier_pct_iyi}%; background:#00e599;" title="İyi: {tier_cnt_iyi} İl"></div>
+                            <div class="tier-bar-segment" id="tierBar_İyi" style="width:{tier_pct_iyi}%; background:#00e599;" title="Düşük: {tier_cnt_iyi} İl"></div>
                             <div class="tier-bar-segment" id="tierBar_Orta" style="width:{tier_pct_orta}%; background:#facc15;" title="Orta: {tier_cnt_orta} İl"></div>
-                            <div class="tier-bar-segment" id="tierBar_Hassas" style="width:{tier_pct_hassas}%; background:#f97316;" title="Hassas: {tier_cnt_hassas} İl"></div>
-                            <div class="tier-bar-segment" id="tierBar_Sağlıksız" style="width:{tier_pct_sagliksiz}%; background:#f87171;" title="Sağlıksız: {tier_cnt_sagliksiz} İl"></div>
+                            <div class="tier-bar-segment" id="tierBar_Hassas" style="width:{tier_pct_hassas}%; background:#f97316;" title="Yüksek: {tier_cnt_hassas} İl"></div>
+                            <div class="tier-bar-segment" id="tierBar_Sağlıksız" style="width:{tier_pct_sagliksiz}%; background:#f87171;" title="Çok Yüksek: {tier_cnt_sagliksiz} İl"></div>
                             <div class="tier-bar-segment" id="tierBar_Kritik" style="width:{tier_pct_kritik}%; background:#ef4444;" title="Kritik: {tier_cnt_kritik} İl"></div>
                         </div>
                         <div class="tier-legend-counts" id="tierLegendCounts">
-                            <div class="tier-count-pill"><span class="tier-dot" style="background:#00e599;"></span>İyi: <strong id="tierCount_İyi">{tier_cnt_iyi}</strong></div>
+                            <div class="tier-count-pill"><span class="tier-dot" style="background:#00e599;"></span>Düşük: <strong id="tierCount_İyi">{tier_cnt_iyi}</strong></div>
                             <div class="tier-count-pill"><span class="tier-dot" style="background:#facc15;"></span>Orta: <strong id="tierCount_Orta">{tier_cnt_orta}</strong></div>
-                            <div class="tier-count-pill"><span class="tier-dot" style="background:#f97316;"></span>Hassas: <strong id="tierCount_Hassas">{tier_cnt_hassas}</strong></div>
-                            <div class="tier-count-pill"><span class="tier-dot" style="background:#f87171;"></span>Sağlıksız: <strong id="tierCount_Sağlıksız">{tier_cnt_sagliksiz}</strong></div>
+                            <div class="tier-count-pill"><span class="tier-dot" style="background:#f97316;"></span>Yüksek: <strong id="tierCount_Hassas">{tier_cnt_hassas}</strong></div>
+                            <div class="tier-count-pill"><span class="tier-dot" style="background:#f87171;"></span>Çok Yüksek: <strong id="tierCount_Sağlıksız">{tier_cnt_sagliksiz}</strong></div>
                             <div class="tier-count-pill"><span class="tier-dot" style="background:#ef4444;"></span>Kritik: <strong id="tierCount_Kritik">{tier_cnt_kritik}</strong></div>
                         </div>
                     </div>
@@ -2334,7 +2341,7 @@ html, body {{
             <footer class="overview-footer">
                 <span><strong>HavaAtlası</strong> v2.1.0</span>
                 <span class="footer-sep">•</span>
-                <span>Veri Kaynağı: Copernicus <span class="notranslate" translate="no">CAMS</span> Yeniden Analiz Modeli &amp; ÇŞİDB İstasyon Envanteri</span>
+                <span>Veri Kaynağı: Copernicus <span class="notranslate" translate="no">CAMS</span> atmosfer modeli &amp; Kara Rapor 2025 istasyon karşılaştırması</span>
                 <span class="footer-sep">•</span>
                 <span>Veri Dönemi: {period_label_str}</span>
                 <span class="footer-sep">•</span>
@@ -2344,168 +2351,12 @@ html, body {{
             </footer>
         </div>
         
-        <!-- ========================================================
-             MODÜL 2: ŞEHİR KARNESİ (CITY REPORT CARD)
-             ======================================================== -->
-        <div id="view-sehir_karnesi" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">🏙️</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">Şehir Karnesi & İl Çevre Profili</div>
-                        <div style="font-size:11px; color:#6d8fae;">Türkiye'nin 81 ilinin hava kalitesi, sanayi baskısı ve solunum sağlığı profili karnesi.</div>
-                    </div>
-                    <span class="module-badge">Şehir Karnesi</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;">
-                <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px; background:#031b2e; padding:14px 18px; border-radius:10px; border:1px solid #093452;">
-                    <span style="font-weight:700; color:#cbd5e1; font-size:13px;">🎯 İncelenecek İli Seçin:</span>
-                    <select id="reportCardCitySelect" style="background:#021220; border:1px solid #00d2c4; border-radius:6px; color:#ffffff; padding:6px 14px; font-size:13.5px; font-weight:700; outline:none;" onchange="renderCityReportCard(this.value)">
-                    </select>
-                    <div id="reportCardPlateBadge" style="margin-left:auto; font-size:12.5px; color:#38bdf8; font-weight:700;"></div>
-                </div>
-                
-                <div id="reportCardBody">
-                    <!-- JS ile dinamik render edilir -->
-                </div>
-            </div>
-        </div>
-        
-        <!-- ========================================================
-             MODÜL 3: ŞEHİR DÜELLOSU (CITY DUEL)
-             ======================================================== -->
-        <div id="view-duello" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">⚔️</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">Şehir Düellosu & Hipotez Karşılaştırma</div>
-                        <div style="font-size:11px; color:#6d8fae;">İki ili kafa kafaya karşılaştırın, farkın istatistiksel anlamlılığını test edin</div>
-                    </div>
-                    <span class="module-badge">Hipotez Motoru</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;" id="duelModuleContent">
-                <!-- JS ile render edilir -->
-            </div>
-        </div>
-        
-        <!-- ========================================================
-             MODÜL 4: KORELASYON ANALİZİ (CORRELATION)
-             ======================================================== -->
-        <div id="view-korelasyon" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">📊</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">Korelasyon & Regresyon Analizi</div>
-                        <div style="font-size:11px; color:#6d8fae;">Sanayi, hava kirliliği ve solunum sağlığı arasındaki matematiksel ilişkiler</div>
-                    </div>
-                    <span class="module-badge">Spearman & Pearson</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;" id="correlationModuleContent">
-                <!-- JS ile render edilir -->
-            </div>
-        </div>
-        
-        <!-- ========================================================
-             MODÜL 5: BÖLGELER ANALİZİ (REGIONS)
-             ======================================================== -->
-        <div id="view-bolgeler" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">🗺️</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">7 Coğrafi Bölge Analizi & ANOVA</div>
-                        <div style="font-size:11px; color:#6d8fae;">Bölgeler arası hava kalitesi dağılımı, varyans analizi ve en düşük/yüksek PM2.5 seviyeleri</div>
-                    </div>
-                    <span class="module-badge">Bölgesel Profil</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;" id="regionsModuleContent">
-                <!-- JS ile render edilir -->
-            </div>
-        </div>
-        
-        <!-- ========================================================
-             MODÜL 7: SANAYİ PROFİLİ (INDUSTRY PROFILE)
-             ======================================================== -->
-        <div id="view-sanayi_profili" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">🏭</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">Sanayi Profili & OSB Kümelenmesi</div>
-                        <div style="font-size:11px; color:#6d8fae;">Organize sanayi bölgeleri, faal üretim durumu ve kirlilik baskı endeksi</div>
-                    </div>
-                    <span class="module-badge">Bakanlık OSB Sicili</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;" id="industryModuleContent">
-                <!-- JS ile render edilir -->
-            </div>
-        </div>
-
-        <!-- ========================================================
-             MODÜL 9: YAPAY ZEKA İÇGÖRÜ & TAHMİN MOTORU (AI FORECAST)
-             ======================================================== -->
-        <div id="view-ai_tahmin" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">🤖</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">Yapay Zeka İçgörü & Tahmin Motoru</div>
-                        <div style="font-size:11px; color:#6d8fae;">81 İl Çeyreklik (Quantile) Anomali Analizi, Kategori Tespiti ve 5 Yıllık Trend Projeksiyonu (2026–2031)</div>
-                    </div>
-                    <span class="module-badge" style="background:rgba(56,189,248,0.15); border-color:#38bdf8; color:#38bdf8;">Dinamik AI Motoru</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;" id="aiForecastModuleContent">
-                <!-- JS ile render edilir -->
-            </div>
-        </div>
-
-        <!-- ========================================================
-             MODÜL 10: AI VERİ ASİSTANI (CHATBOT)
-             ======================================================== -->
-        <div id="view-chat_assistant" class="view-section">
-            <div class="module-header-bar">
-                <div class="module-title-wrap">
-                    <span style="font-size:22px;">💬</span>
-                    <div>
-                        <div style="font-size:16px; font-weight:800; color:#ffffff;">HavaAtlası AI Veri Asistanı</div>
-                        <div style="font-size:11px; color:#6d8fae;">81 İl Hava Kalitesi, Sanayi Baskısı ve Sağlık Veritabanı Doğal Dil Sorgu Motoru</div>
-                    </div>
-                    <span class="module-badge" style="background:rgba(0,229,219,0.15); border-color:#00e5db; color:#00e5db;">AI Veri Asistanı</span>
-                </div>
-                <button class="back-to-overview-btn" onclick="switchView('genel_bakis')">← Genel Bakış'a Dön</button>
-            </div>
-            
-            <div style="padding:0 24px;" id="chatAssistantModuleContent">
-                <!-- JS ile render edilir -->
-            </div>
-        </div>
-
         <!-- FOOTER -->
         <footer class="app-footer">
             <div class="footer-left">
-                <span>HavaAtlası v2.0.0</span>
+                <span>HavaAtlası v2.1.0</span>
                 <span>|</span>
-                <span>Kaynak: T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı & Copernicus CAMS</span>
+                <span>Kaynak: Copernicus CAMS (model) &amp; Kara Rapor 2025 (istasyon karşılaştırması)</span>
                 <span>|</span>
                 <span>Veri Bitiş Tarihi: {last_date_str}</span>
                 <span>|</span>
@@ -2549,19 +2400,19 @@ function fmt(val) {{
 }}
 
 function getColor(val) {{
-    if (val <= 15) return '#00e599';
-    if (val <= 30) return '#facc15';
-    if (val <= 50) return '#f97316';
-    if (val <= 70) return '#f87171';
+    if (val <= 10) return '#00e599';
+    if (val <= 15) return '#facc15';
+    if (val <= 25) return '#f97316';
+    if (val <= 35) return '#f87171';
     return '#ef4444';
 }}
 
 function getStatusBadge(val) {{
-    if (val > 70) return '<span class="rank-badge-status" style="background:#ef444422; color:#ef4444; border:1px solid #ef444455;">Kritik</span>';
-    if (val > 50) return '<span class="rank-badge-status" style="background:#f8717122; color:#f87171; border:1px solid #f8717155;">Sağlıksız</span>';
-    if (val > 30) return '<span class="rank-badge-status" style="background:#f9731622; color:#f97316; border:1px solid #f9731655;">Hassas</span>';
-    if (val > 15) return '<span class="rank-badge-status" style="background:#facc1522; color:#facc15; border:1px solid #facc1555;">Orta</span>';
-    return '<span class="rank-badge-status" style="background:#00e59922; color:#00e599; border:1px solid #00e59955;">İyi</span>';
+    if (val > 35) return '<span class="rank-badge-status" style="background:#ef444422; color:#ef4444; border:1px solid #ef444455;">Kritik</span>';
+    if (val > 25) return '<span class="rank-badge-status" style="background:#f8717122; color:#f87171; border:1px solid #f8717155;">Çok Yüksek</span>';
+    if (val > 15) return '<span class="rank-badge-status" style="background:#f9731622; color:#f97316; border:1px solid #f9731655;">Yüksek</span>';
+    if (val > 10) return '<span class="rank-badge-status" style="background:#facc1522; color:#facc15; border:1px solid #facc1555;">Orta</span>';
+    return '<span class="rank-badge-status" style="background:#00e59922; color:#00e599; border:1px solid #00e59955;">Düşük</span>';
 }}
 
 
@@ -2802,10 +2653,10 @@ function updateTierDistribution(citiesToCount) {{
     let cntIyi = 0, cntOrta = 0, cntHassas = 0, cntSagliksiz = 0, cntKritik = 0;
     list.forEach(c => {{
         const v = c[polKey];
-        if (v <= 15) cntIyi++;
-        else if (v <= 30) cntOrta++;
-        else if (v <= 50) cntHassas++;
-        else if (v <= 70) cntSagliksiz++;
+        if (v <= 10) cntIyi++;
+        else if (v <= 15) cntOrta++;
+        else if (v <= 25) cntHassas++;
+        else if (v <= 35) cntSagliksiz++;
         else cntKritik++;
     }});
     
@@ -2821,10 +2672,10 @@ function updateTierDistribution(citiesToCount) {{
     const bHassas = document.getElementById('tierBar_Hassas');
     const bSag = document.getElementById('tierBar_Sağlıksız');
     const bKrit = document.getElementById('tierBar_Kritik');
-    if (bIyi) {{ bIyi.style.width = pIyi + '%'; bIyi.title = 'İyi: ' + cntIyi + ' İl'; }}
+    if (bIyi) {{ bIyi.style.width = pIyi + '%'; bIyi.title = 'Düşük: ' + cntIyi + ' İl'; }}
     if (bOrta) {{ bOrta.style.width = pOrta + '%'; bOrta.title = 'Orta: ' + cntOrta + ' İl'; }}
-    if (bHassas) {{ bHassas.style.width = pHassas + '%'; bHassas.title = 'Hassas: ' + cntHassas + ' İl'; }}
-    if (bSag) {{ bSag.style.width = pSagliksiz + '%'; bSag.title = 'Sağlıksız: ' + cntSagliksiz + ' İl'; }}
+    if (bHassas) {{ bHassas.style.width = pHassas + '%'; bHassas.title = 'Yüksek: ' + cntHassas + ' İl'; }}
+    if (bSag) {{ bSag.style.width = pSagliksiz + '%'; bSag.title = 'Çok Yüksek: ' + cntSagliksiz + ' İl'; }}
     if (bKrit) {{ bKrit.style.width = pKritik + '%'; bKrit.title = 'Kritik: ' + cntKritik + ' İl'; }}
     
     const cIyi = document.getElementById('tierCount_İyi');
@@ -3020,14 +2871,17 @@ function renderTimeSeriesChart() {{
             (currentPeriod === '90G' ? 'Son 90 günde hava kalitesi' : 'Son 30 günde hava kalitesi');
     }}
     const data = TS_DATA[currentPeriod] || TS_DATA['30G'];
-    if (!data || data.length === 0) return;
-    
+    if (!data || data.length === 0) {{
+        pathsGroup.innerHTML = '<text x="310" y="65" fill="#8faec9" font-size="12" text-anchor="middle">Günlük CAMS verisi bulunamadı</text>';
+        return;
+    }}
+
     const startX = 35;
     const endX = 585;
     const bottomY = 115;
     const topY = 15;
-    const maxVal = 120;
-    const stepX = (endX - startX) / (data.length - 1);
+    const maxVal = Math.max(10, Math.ceil(Math.max(...data.map(d => d.v)) * 1.25 / 5) * 5);
+    const stepX = (endX - startX) / Math.max(1, data.length - 1);
     
     const points = data.map((d, i) => {{
         const x = startX + i * stepX;
@@ -3063,1081 +2917,6 @@ function renderTimeSeriesChart() {{
         labelsHtml += `<text x="${{p.x}}" y="126" fill="${{color}}" font-size="8.5" font-weight="${{fw}}" text-anchor="middle">${{p.d}}</text>`;
     }});
     labelsGroup.innerHTML = labelsHtml;
-}}
-
-// ==========================================
-// 7. ŞEHİR KARNESİ DETAY MODÜLÜ (REPORT CARD VIEW)
-// ==========================================
-function populateCitySelect() {{
-    const sel = document.getElementById('reportCardCitySelect');
-    if (sel.options.length === 0) {{
-        CITIES.forEach(c => {{
-            const opt = document.createElement('option');
-            opt.value = c.il;
-            opt.textContent = c.il;
-            sel.appendChild(opt);
-        }});
-    }}
-    if (!sel.value) sel.value = "Osmaniye";
-    renderCityReportCard(sel.value);
-}}
-
-function openCityReportCard(cityName) {{
-    try {{
-        if (window.parent && window.parent.location) {{
-            const pUrl = new URL(window.parent.location.href);
-            pUrl.searchParams.set("il", cityName);
-            pUrl.searchParams.delete("city");
-            window.parent.history.replaceState({{}}, '', pUrl.toString());
-        }}
-    }} catch(e) {{}}
-    // Haritada ili vurgula
-    document.querySelectorAll('.province-path').forEach(el => {{
-        if (el.getAttribute('data-name') === cityName) {{
-            el.style.stroke = '#00f2fe';
-            el.style.strokeWidth = '2px';
-        }} else {{
-            el.style.stroke = '#031b2e';
-            el.style.strokeWidth = '0.7px';
-        }}
-    }});
-}}
-
-function renderCityReportCard(cityName) {{
-    const c = CITIES.find(ci => ci.il === cityName) || CITIES[0];
-    document.getElementById('reportCardPlateBadge').textContent = c.bolge + ' Bölgesi • Plaka: ' + String(c.plaka).padStart(2, '0');
-    
-    // Ortak bar ölçeği (en yüksek referans değerine göre orantılı)
-    const maxScale = Math.max(75, (c.pm25 || 0) * 1.25, (c.bolge_pm25 || 0) * 1.25, (c.turkiye_pm25 || 0) * 1.25);
-    const wCity = Math.min(100, Math.max(5, Math.round(((c.pm25 || 0) / maxScale) * 100)));
-    const wBolge = Math.min(100, Math.max(5, Math.round(((c.bolge_pm25 || 0) / maxScale) * 100)));
-    const wTr = Math.min(100, Math.max(5, Math.round(((c.turkiye_pm25 || 0) / maxScale) * 100)));
-
-    // DSÖ HRAPIE log-lineer Bağıl Risk Modeli ile il bazlı dinamik azalma
-    let reductionHtml = '';
-    if (c.pm25 > 5.0) {{
-        const deltaX = c.pm25 - 5.0;
-        const beta = 0.007696; // DSÖ HRAPIE: RR = 1.08 / 10 µg/m³
-        const azalisYuzde = Math.min(60, Math.max(1, Math.round((1 - Math.exp(-beta * deltaX)) * 100)));
-        reductionHtml = `
-            <p>• DSÖ 2021 kılavuz sınırına (5 µg/m³) inilmesi durumunda il genelinde solunum ölümlerinde <strong>%${{azalisYuzde}} azalma</strong> öngörülmektedir.</p>
-            <p style="font-size:10.5px; color:#64748b; margin-top:2px;">(Dayanak: DSÖ HRAPIE log-lineer Bağıl Risk modeli, RR = 1,08 / 10 µg/m³ PM2.5)</p>
-        `;
-    }} else {{
-        reductionHtml = `
-            <p style="color:#10b981;">• <strong>${{c.il}}</strong> PM2.5 seviyesi DSÖ 2021 yıllık kılavuz sınırı (5 µg/m³) altındadır.</p>
-        `;
-    }}
-
-    const body = document.getElementById('reportCardBody');
-    body.innerHTML = `
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:18px;">
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
-                <div style="font-size:12px; color:#8faec9;">PM2.5 Kirliliği</div>
-                <div style="font-size:26px; font-weight:800; color:#ef4444; margin-top:4px;">${{fmt(c.pm25)}} <span style="font-size:12px; color:#94a3b8;">µg/m³</span></div>
-                <div style="font-size:11px; color:#ef4444; margin-top:4px;">DSÖ Eşiğinin ${{fmt(c.pm25 / 5)}} Katı</div>
-            </div>
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
-                <div style="font-size:12px; color:#8faec9;">Solunum Ölüm Oranı</div>
-                <div style="font-size:26px; font-weight:800; color:#38bdf8; margin-top:4px;">${{fmt(c.solunum_olum_100k)}} <span style="font-size:12px; color:#94a3b8;">/100k</span></div>
-                <div style="font-size:11px; color:#94a3b8; margin-top:4px;">TÜİK 2024 Kaba Ölüm Hızı</div>
-                <div style="font-size:10px; color:#64748b; margin-top:6px; line-height:1.3;">* Tüm solunum sistemi hastalıklarından ölümlerdir; hava kirliliğine atfedilen kısım değildir. Yaşa göre standardize edilmemiş kaba hızdır.</div>
-            </div>
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
-                <div style="font-size:12px; color:#8faec9;">Sanayi Baskısı (OSB)</div>
-                <div style="font-size:26px; font-weight:800; color:#00e599; margin-top:4px;">${{c.osb_sayisi}} Adet</div>
-                <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${{fmt(c.osb)}} Hektar Sanayi Alanı</div>
-            </div>
-        </div>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px;">
-                <h4 style="font-size:14px; font-weight:700; color:#ffffff; margin-bottom:12px;">📊 Bölge ve Türkiye Ortalamasının Karşılaştırması</h4>
-                <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
-                    <div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                            <span>${{c.il}} PM2.5</span>
-                            <strong style="color:#ef4444;">${{fmt(c.pm25)}} µg/m³</strong>
-                        </div>
-                        <div style="height:8px; background:#021220; border-radius:4px;"><div style="height:100%; width:${{wCity}}%; background:#ef4444; border-radius:4px;"></div></div>
-                    </div>
-                    <div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                            <span>${{c.bolge}} Bölge Ortalaması</span>
-                            <strong style="color:#facc15;">${{fmt(c.bolge_pm25)}} µg/m³</strong>
-                        </div>
-                        <div style="height:8px; background:#021220; border-radius:4px;"><div style="height:100%; width:${{wBolge}}%; background:#facc15; border-radius:4px;"></div></div>
-                    </div>
-                    <div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                            <span>Türkiye Geneli Ortalama</span>
-                            <strong style="color:#38bdf8;">${{fmt(c.turkiye_pm25)}} µg/m³</strong>
-                        </div>
-                        <div style="height:8px; background:#021220; border-radius:4px;"><div style="height:100%; width:${{wTr}}%; background:#38bdf8; border-radius:4px;"></div></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px;">
-                <h4 style="font-size:14px; font-weight:700; color:#ffffff; margin-bottom:12px;">🏥 Sağlık Etkisi ve Azaltım Potansiyeli</h4>
-                <div style="font-size:13px; color:#cbd5e1; line-height:1.6;">
-                    ${{reductionHtml}}
-                    <div style="margin-top:14px; display:flex; gap:10px;">
-                        <button class="back-to-overview-btn" onclick="startDuelWithCity('${{c.il}}')">⚔️ Bu İli Düelloya Gönder</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}}
-
-function startDuelWithCity(cityName) {{
-    switchView('duello');
-    const selA = document.getElementById('duelCityA');
-    if (selA) {{
-        selA.value = cityName;
-        runDuelComparison();
-    }}
-}}
-
-// ==========================================
-// 8. DÜELLO MODÜLÜ (DUEL VIEW)
-// ==========================================
-function renderDuelModule() {{
-    const cont = document.getElementById('duelModuleContent');
-    cont.innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;">
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
-                <label style="font-size:12px; font-weight:700; color:#cbd5e1;">🏙️ 1. ŞEHİR (Grup A):</label>
-                <select id="duelCityA" style="width:100%; margin-top:8px; background:#021220; border:1px solid #00d2c4; border-radius:6px; color:#ffffff; padding:8px; font-size:13.5px; font-weight:700;" onchange="runDuelComparison()"></select>
-            </div>
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
-                <label style="font-size:12px; font-weight:700; color:#cbd5e1;">🏙️ 2. ŞEHİR (Grup B):</label>
-                <select id="duelCityB" style="width:100%; margin-top:8px; background:#021220; border:1px solid #38bdf8; border-radius:6px; color:#ffffff; padding:8px; font-size:13.5px; font-weight:700;" onchange="runDuelComparison()"></select>
-            </div>
-        </div>
-        <div id="duelResultPanel"></div>
-    `;
-    
-    const selA = document.getElementById('duelCityA');
-    const selB = document.getElementById('duelCityB');
-    CITIES.forEach(c => {{
-        const oA = document.createElement('option'); oA.value = c.il; oA.textContent = c.il; selA.appendChild(oA);
-        const oB = document.createElement('option'); oB.value = c.il; oB.textContent = c.il; selB.appendChild(oB);
-    }});
-    selA.value = "Osmaniye";
-    selB.value = "Tunceli";
-    runDuelComparison();
-}}
-
-function runDuelComparison() {{
-    const selA = document.getElementById('duelCityA');
-    const selB = document.getElementById('duelCityB');
-    if (!selA || !selB) return;
-    const cA = CITIES.find(c => c.il === selA.value) || CITIES[0];
-    const cB = CITIES.find(c => c.il === selB.value) || CITIES[1];
-    
-    const diff = cA.pm25 - cB.pm25;
-    const resPanel = document.getElementById('duelResultPanel');
-    resPanel.innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:20px;">
-                <h3 style="color:#00e5db; font-size:18px; margin-bottom:14px;">${{cA.il}} Profili</h3>
-                <p>• <strong>PM2.5:</strong> ${{fmt(cA.pm25)}} µg/m³</p>
-                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cA.osb)}} Hektar</p>
-                <p style="margin-top:6px;">• <strong>Solunum Ölümü:</strong> ${{fmt(cA.solunum_olum_100k)}} / 100k</p>
-            </div>
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:20px;">
-                <h3 style="color:#38bdf8; font-size:18px; margin-bottom:14px;">${{cB.il}} Profili</h3>
-                <p>• <strong>PM2.5:</strong> ${{fmt(cB.pm25)}} µg/m³</p>
-                <p style="margin-top:6px;">• <strong>OSB Alanı:</strong> ${{fmt(cB.osb)}} Hektar</p>
-                <p style="margin-top:6px;">• <strong>Solunum Ölümü:</strong> ${{fmt(cB.solunum_olum_100k)}} / 100k</p>
-            </div>
-        </div>
-        <div style="margin-top:18px; background:#021626; border:1px solid #00d2c4; border-radius:10px; padding:16px;">
-            <h4 style="color:#00f0db; font-size:14px; margin-bottom:6px;">🔬 İki Örneklem Hipotez Testi Sonucu (Welch's t-test)</h4>
-            <p style="font-size:13px; color:#cbd5e1;">
-                ${{cA.il}} ve ${{cB.il}} arasındaki PM2.5 farkı <strong>${{fmt(Math.abs(diff))}} µg/m³</strong> seviyesindedir.
-                İstatistiksel analiz: <strong>p &lt; 0,001 (t = 8,42, df = 58)</strong>. İki şehir arasındaki fark <strong>%99,9 güven düzeyinde istatistiksel olarak anlamlıdır</strong>.
-            </p>
-        </div>
-    `;
-}}
-
-// ==========================================
-// 9. KORELASYON MODÜLÜ
-// ==========================================
-function renderCorrelationModule() {{
-    const cont = document.getElementById('correlationModuleContent');
-    cont.innerHTML = `
-        <!-- 1. METODOLOJİK KALKAN & UYARI BANDI -->
-        <div style="background:rgba(3, 27, 46, 0.7); border:1px solid #093452; border-left:4px solid #00d2ee; border-radius:8px; padding:14px 18px; margin-bottom:16px;">
-            <div style="font-size:13.5px; font-weight:700; color:#ffffff; margin-bottom:6px;">
-                Metodolojik Çerçeve ve Epidemiyolojik Uyarı Bandı
-            </div>
-            <ul style="margin:0; padding-left:18px; font-size:12.5px; color:#cbd5e1; line-height:1.6;">
-                <li><strong>Korelasyon ≠ Nedensellik (Causation):</strong> OSB/sanayi ile kirlilik arasındaki istatistiksel ilişki tek başına nedensellik kanıtlamaz.</li>
-                <li><strong>Ekolojik Yanılgı (Ecological Fallacy):</strong> İl düzeyindeki makro bulgular doğrudan bireysel maruziyete genellenemez.</li>
-            </ul>
-            <div style="margin-top:8px; font-size:11px; color:#8faec9;">
-                Örneklem: <strong>N = 81 İl</strong> | Veri Kapsamı: <strong>Resmi Gözlem Dönemi</strong>
-            </div>
-        </div>
-
-        <!-- ÖZET KORELASYON KARTI & DÜZELTİLMİŞ BULGULAR -->
-        <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px; margin-bottom:20px;">
-            <h4 style="font-size:15px; color:#ffffff; margin: 0 0 6px 0;">
-                Organize Sanayi Bölgesi Alanı & Partikül Kirliliği İlişkisi
-            </h4>
-            <p style="font-size:12px; color:#8faec9; margin: 0 0 14px 0;">
-                81 ile ait hektar bazında OSB sanayi alanı büyüklüğü ile yıllık ortalama PM2.5 yoğunluğu arasındaki ilişki parametreleri.
-            </p>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:14px;">
-                <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
-                    <div style="font-size:11px; color:#8faec9; font-weight:600;">Spearman Sıra Korelasyonu</div>
-                    <div style="font-size:22px; font-weight:800; color:#00e5db; margin-top:2px;">ρ = +0,52</div>
-                    <div style="font-size:10px; color:#10b981;">Orta düzeyde pozitif</div>
-                </div>
-                <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
-                    <div style="font-size:11px; color:#8faec9; font-weight:600;">Pearson Korelasyonu</div>
-                    <div style="font-size:22px; font-weight:800; color:#38bdf8; margin-top:2px;">r = +0,48</div>
-                    <div style="font-size:10px; color:#38bdf8;">İstatistiksel olarak anlamlı</div>
-                </div>
-                <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
-                    <div style="font-size:11px; color:#8faec9; font-weight:600;">%95 Bootstrap Güven Aralığı</div>
-                    <div style="font-size:20px; font-weight:800; color:#facc15; margin-top:2px;">[%95 CI: 0,31, 0,62]</div>
-                    <div style="font-size:10px; color:#cbd5e1;">1.000 iterasyon</div>
-                </div>
-                <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
-                    <div style="font-size:11px; color:#8faec9; font-weight:600;">Anlamlılık Düzeyi</div>
-                    <div style="font-size:22px; font-weight:800; color:#10b981; margin-top:2px;">p &lt; 0,001</div>
-                    <div style="font-size:10px; color:#cbd5e1;">n = 81 İl Analiz Edildi</div>
-                </div>
-            </div>
-            <div style="background:rgba(2,18,32,0.6); border-left:3px solid #00d2ee; padding:10px 14px; border-radius:4px; font-size:12.5px; color:#cbd5e1; line-height:1.6;">
-                <strong>Bulgular:</strong> Marmara ve Çukurova hattında sanayi/OSB yoğunluğu kirlilikle pozitif ilişkilidir (r = +0,48). Ancak Doğu Anadolu'daki yüksek kirlilik (Iğdır, Erzincan) sanayiden ziyade kapalı topografik havza, kış inversiyonu ve sınır ötesi toz taşınımı kaynaklıdır. Bu durum tek değişkenli modellerin yetersizliğini ve mekânsal faktörlerin önemini gösterir.
-            </div>
-        </div>
-
-        <!-- 2. ETKİLEŞİMLİ SAÇILIM GRAFİĞİ -->
-        <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                <div>
-                    <h4 style="font-size:15px; color:#ffffff; margin:0;">Etkileşimli Saçılım Grafiği (OSB Alanı & PM2.5 Dağılımı)</h4>
-                    <p style="font-size:11.5px; color:#8faec9; margin:2px 0 0 0;">OLS doğrusal regresyon trend çizgisi ve uç değer (outlier) vurguları</p>
-                </div>
-                <div style="font-size:11.5px; color:#cbd5e1;">
-                    <span style="display:inline-block; width:10px; height:10px; background:#ef4444; border-radius:50%; margin-right:4px;"></span>Uç Değerler (Iğdır, Osmaniye, Erzincan)
-                </div>
-            </div>
-            <div id="dashboardCorrScatterDiv" style="height:360px; width:100%;"></div>
-        </div>
-
-        <!-- 3. ÇOKLU REGRESYON MODELİ (OLS ÖZETİ) -->
-        <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px; margin-bottom:20px;">
-            <h4 style="font-size:15px; color:#ffffff; margin:0 0 4px 0;">Çoklu Regresyon Modeli (OLS Özeti)</h4>
-            <p style="font-size:12px; color:#8faec9; margin:0 0 14px 0;">
-                Model: <strong>PM2.5 = β₀ + β₁(OSB) + β₂(Rakım) + β₃(Nüfus/100k)</strong>
-            </p>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:14px;">
-                <div style="background:#021220; padding:10px 14px; border-radius:6px; border:1px solid #07253d;">
-                    <div style="font-size:10.5px; color:#8faec9; font-weight:700;">BELİRLİLİK KATSAYISI (R²)</div>
-                    <div style="font-size:20px; font-weight:800; color:#00d2ee; margin-top:2px;">%2,4</div>
-                    <div style="font-size:10.5px; color:#cbd5e1;">Açıklanan varyans: R² = 0,0241</div>
-                </div>
-                <div style="background:#021220; padding:10px 14px; border-radius:6px; border:1px solid #07253d;">
-                    <div style="font-size:10.5px; color:#8faec9; font-weight:700;">DÜZELTİLMİŞ R² (ADJUSTED R²)</div>
-                    <div style="font-size:20px; font-weight:800; color:#38bdf8; margin-top:2px;">-0,0137</div>
-                    <div style="font-size:10.5px; color:#cbd5e1;">Serbestlik derecesi düzeltmesi</div>
-                </div>
-                <div style="background:#021220; padding:10px 14px; border-radius:6px; border:1px solid #07253d;">
-                    <div style="font-size:10.5px; color:#8faec9; font-weight:700;">GÖZLEM / SERBESTLİK DERECESİ</div>
-                    <div style="font-size:20px; font-weight:800; color:#facc15; margin-top:2px;">N = 81 (k = 3)</div>
-                    <div style="font-size:10.5px; color:#cbd5e1;">Artık SD = 77</div>
-                </div>
-            </div>
-            <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
-                    <thead>
-                        <tr style="border-bottom:1px solid #093452; color:#8faec9;">
-                            <th style="padding:8px;">Değişken Adı</th>
-                            <th style="padding:8px;">Katsayı (Beta)</th>
-                            <th style="padding:8px;">Standart Hata</th>
-                            <th style="padding:8px;">t-İstatistiği</th>
-                            <th style="padding:8px;">p-Değeri</th>
-                            <th style="padding:8px;">Durum</th>
-                        </tr>
-                    </thead>
-                    <tbody style="color:#cbd5e1;">
-                        <tr style="border-bottom:1px solid #052033;">
-                            <td style="padding:8px; font-weight:600; color:#ffffff;">Sabit Terim (β₀)</td>
-                            <td style="padding:8px;">+31,3748</td>
-                            <td style="padding:8px;">4,5381</td>
-                            <td style="padding:8px;">+6,91</td>
-                            <td style="padding:8px;">&lt; 0,0001</td>
-                            <td style="padding:8px; color:#10b981;">✅ p &lt; 0.05</td>
-                        </tr>
-                        <tr style="border-bottom:1px solid #052033;">
-                            <td style="padding:8px; font-weight:600; color:#ffffff;">OSB Sayısı (β₁)</td>
-                            <td style="padding:8px;">+0,2686</td>
-                            <td style="padding:8px;">0,5560</td>
-                            <td style="padding:8px;">+0,48</td>
-                            <td style="padding:8px;">0,6304</td>
-                            <td style="padding:8px; color:#94a3b8;">❌ Anlamsız (p ≥ 0.05)</td>
-                        </tr>
-                        <tr style="border-bottom:1px solid #052033;">
-                            <td style="padding:8px; font-weight:600; color:#ffffff;">Ortalama Rakım (β₂)</td>
-                            <td style="padding:8px;">+0,0048</td>
-                            <td style="padding:8px;">0,0035</td>
-                            <td style="padding:8px;">+1,37</td>
-                            <td style="padding:8px;">0,1734</td>
-                            <td style="padding:8px; color:#94a3b8;">❌ Anlamsız (p ≥ 0.05)</td>
-                        </tr>
-                        <tr>
-                            <td style="padding:8px; font-weight:600; color:#ffffff;">İl Nüfusu (100 Bin Kişi) (β₃)</td>
-                            <td style="padding:8px;">+0,0257</td>
-                            <td style="padding:8px;">0,1024</td>
-                            <td style="padding:8px;">+0,25</td>
-                            <td style="padding:8px;">0,8024</td>
-                            <td style="padding:8px; color:#94a3b8;">❌ Anlamsız (p ≥ 0.05)</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div style="background:rgba(2,18,32,0.6); border:1px dashed #093452; border-radius:6px; padding:10px 14px; margin-top:12px; font-size:12px; color:#cbd5e1; line-height:1.5;">
-                <strong>İstatistiksel Yorum:</strong> Doğrusal çoklu regresyon modeli kirlilik varyansının yalnızca %2,4'ünü açıklayabilmektedir (Düzeltilmiş R² negatiftir). Bu durum, il bazındaki kirliliğin klasik makro göstergelerle doğrusal olarak açıklanamayacağını; mikro-klima, topoğrafik çanak havza hapsi ve sınır ötesi taşınım gibi mekânsal faktörlerin belirleyici olduğunu göstermektedir.
-            </div>
-        </div>
-
-        <!-- 4. MEKÂNSAL OTOKORELASYON: GLOBAL MORAN'S I ANALİZİ -->
-        <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px;">
-            <h4 style="font-size:15px; color:#ffffff; margin:0 0 4px 0;">Mekânsal Otokorelasyon: Global Moran's I Analizi</h4>
-            <p style="font-size:12px; color:#8faec9; margin:0 0 14px 0;">İllerin enlem/boylam koordinatları üzerinden ters mesafe ağırlık matrisi (W) ile mekânsal kümelenme testi.</p>
-            
-            <div style="background:#021626; border:1px solid #00d2ee; border-radius:8px; padding:14px 18px; margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="background:rgba(0,210,238,0.18); color:#00d2ee; font-weight:800; font-size:13.5px; padding:4px 10px; border-radius:6px; border:1px solid rgba(0,210,238,0.4);">
-                            Moran's I ≈ +0,35, p &lt; 0,01
-                        </span>
-                        <strong style="color:#ffffff; font-size:13.5px;">Mekânsal Otokorelasyon Çıkarımı:</strong>
-                    </div>
-                    <span style="font-size:11px; color:#8faec9;">Ters Mesafe Ağırlık Matrisi (W)</span>
-                </div>
-                <p style="margin:8px 0 0 0; font-size:12.5px; color:#cbd5e1; line-height:1.5;">
-                    <strong>Pozitif Mekânsal Kümelenme:</strong> Komşu iller benzer kirlilik desenine sahip; kirlilik coğrafi havzalarda kümeleniyor.
-                </p>
-            </div>
-            
-            <div id="dashboardMoranScatterDiv" style="height:360px; width:100%;"></div>
-        </div>
-    `;
-
-    // Plotly Etkileşimli Grafikleri Çiz
-    if (window.Plotly && typeof CITIES !== 'undefined') {{
-        setTimeout(() => {{
-            // 1. Saçılım Grafiği
-            const scatterDiv = document.getElementById('dashboardCorrScatterDiv');
-            if (scatterDiv) {{
-                const outliers = ['Iğdır', 'Osmaniye', 'Erzincan', 'Malatya', 'Düzce'];
-                const xVals = CITIES.map(c => c.osb_alani || 0);
-                const yVals = CITIES.map(c => c.pm25);
-                const texts = CITIES.map(c => `<b>${{c.il}}</b> (${{c.bolge}})<br>PM2.5: ${{fmt(c.pm25)}} µg/m³<br>OSB: ${{c.osb_alani || 0}} Ha`);
-                const colors = CITIES.map(c => outliers.includes(c.il) ? '#ef4444' : '#00d2ee');
-                const sizes = CITIES.map(c => outliers.includes(c.il) ? 10 : 7);
-
-                // Trendline min-max
-                const minX = Math.min(...xVals);
-                const maxX = Math.max(...xVals);
-                const trendX = [minX, maxX];
-                const trendY = [28 + 0.0008 * minX, 28 + 0.0008 * maxX];
-
-                Plotly.newPlot(scatterDiv, [
-                    {{
-                        x: xVals,
-                        y: yVals,
-                        mode: 'markers',
-                        text: texts,
-                        hoverinfo: 'text',
-                        marker: {{ size: sizes, color: colors, opacity: 0.88, line: {{ color: '#ffffff', width: 0.6 }} }},
-                        name: 'İller (N = 81)'
-                    }},
-                    {{
-                        x: trendX,
-                        y: trendY,
-                        mode: 'lines',
-                        line: {{ color: '#f59e0b', width: 2 }},
-                        name: 'OLS Trendi'
-                    }}
-                ], {{
-                    margin: {{ t: 20, l: 40, r: 20, b: 40 }},
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    plot_bgcolor: 'rgba(0,0,0,0)',
-                    xaxis: {{ title: {{ text: 'OSB Alanı (Hektar)', font: {{ color: '#cbd5e1', size: 11 }} }}, gridcolor: '#093452', tickfont: {{ color: '#94a3b8', size: 10 }} }},
-                    yaxis: {{ title: {{ text: 'PM2.5 Düzeyi (µg/m³)', font: {{ color: '#cbd5e1', size: 11 }} }}, gridcolor: '#093452', tickfont: {{ color: '#94a3b8', size: 10 }} }},
-                    legend: {{ font: {{ color: '#cbd5e1', size: 10 }}, bgcolor: 'rgba(3,27,46,0.6)' }}
-                }}, {{ responsive: true, displayModeBar: false }});
-            }}
-
-            // 2. Moran Scatter Plot
-            const moranDiv = document.getElementById('dashboardMoranScatterDiv');
-            if (moranDiv) {{
-                const pmMean = CITIES.reduce((a, b) => a + b.pm25, 0) / (CITIES.length || 1);
-                const pmStd = Math.sqrt(CITIES.reduce((a, b) => a + Math.pow(b.pm25 - pmMean, 2), 0) / (CITIES.length || 1)) || 1;
-                
-                const zScores = CITIES.map(c => (c.pm25 - pmMean) / pmStd);
-                // Basit mekânsal gecikme yaklaşımı (Moran I ~ +0.35 eğimi etrafında)
-                const wzScores = zScores.map((z, idx) => 0.35 * z + (Math.sin(idx) * 0.4));
-
-                const qNames = [];
-                const qColors = [];
-                zScores.forEach((z, i) => {{
-                    const wz = wzScores[i];
-                    if (z >= 0 && wz >= 0) {{ qNames.push('High-High (Sıcak)'); qColors.push('#ef4444'); }}
-                    else if (z < 0 && wz < 0) {{ qNames.push('Low-Low (Soğuk)'); qColors.push('#10b981'); }}
-                    else if (z >= 0 && wz < 0) {{ qNames.push('High-Low (Aykırı)'); qColors.push('#f59e0b'); }}
-                    else {{ qNames.push('Low-High (Aykırı)'); qColors.push('#8b5cf6'); }}
-                }});
-
-                const mTexts = CITIES.map((c, i) => `<b>${{c.il}}</b><br>Z-skoru: ${{fmt(zScores[i])}}<br>Mekânsal Gecikme: ${{fmt(wzScores[i])}}<br>Durum: ${{qNames[i]}}`);
-
-                Plotly.newPlot(moranDiv, [
-                    {{
-                        x: zScores,
-                        y: wzScores,
-                        mode: 'markers',
-                        text: mTexts,
-                        hoverinfo: 'text',
-                        marker: {{ size: 8, color: qColors, opacity: 0.88, line: {{ color: '#ffffff', width: 0.6 }} }},
-                        name: 'İller (4 Çeyrek)'
-                    }},
-                    {{
-                        x: [-2.5, 2.5],
-                        y: [-2.5 * 0.35, 2.5 * 0.35],
-                        mode: 'lines',
-                        line: {{ color: '#cbd5e1', width: 1.8 }},
-                        name: 'Moran Doğrusu (Eğim ≈ +0.35)'
-                    }}
-                ], {{
-                    margin: {{ t: 20, l: 40, r: 20, b: 40 }},
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    plot_bgcolor: 'rgba(0,0,0,0)',
-                    xaxis: {{ title: {{ text: 'Standartlaştırılmış PM2.5 (Z-skoru)', font: {{ color: '#cbd5e1', size: 11 }} }}, gridcolor: '#093452', zerolinecolor: '#093452', tickfont: {{ color: '#94a3b8', size: 10 }} }},
-                    yaxis: {{ title: {{ text: 'Mekânsal Gecikme (Spatial Lag Wz)', font: {{ color: '#cbd5e1', size: 11 }} }}, gridcolor: '#093452', zerolinecolor: '#093452', tickfont: {{ color: '#94a3b8', size: 10 }} }},
-                    legend: {{ font: {{ color: '#cbd5e1', size: 10 }}, bgcolor: 'rgba(3,27,46,0.6)' }}
-                }}, {{ responsive: true, displayModeBar: false }});
-            }}
-        }}, 50);
-    }}
-}}
-
-// ==========================================
-// 10. BÖLGELER, SANAYİ, EKONOMİ
-// ==========================================
-function renderRegionsModule() {{
-    const cont = document.getElementById('regionsModuleContent');
-    const regions = ["Marmara", "Ege", "Akdeniz", "İç Anadolu", "Karadeniz", "Doğu Anadolu", "Güneydoğu Anadolu"];
-    let cards = '';
-    regions.forEach(r => {{
-        const rCities = CITIES.filter(c => c.bolge === r);
-        const avg = rCities.reduce((a, b) => a + b.pm25, 0) / (rCities.length || 1);
-        const worst = rCities.reduce((p, c) => (c.pm25 > p.pm25 ? c : p), rCities[0]);
-        const best = rCities.reduce((p, c) => (c.pm25 < p.pm25 ? c : p), rCities[0]);
-        cards += `
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4 style="font-size:15px; color:#ffffff;">${{r}} Bölgesi</h4>
-                    <span style="font-size:11px; color:#38bdf8; font-weight:700;">${{rCities.length}} İl</span>
-                </div>
-                <div style="font-size:24px; font-weight:800; color:${{getColor(avg, 'PM2.5')}}; margin:8px 0;">${{fmt(avg)}} <span style="font-size:12px; color:#64748b;">µg/m³</span></div>
-                <div style="font-size:12px; color:#94a3b8;">• En Düşük PM2.5: <strong style="color:#00e599;">${{best ? best.il : '-'}}</strong> (${{best ? fmt(best.pm25) : '-'}})</div>
-                <div style="font-size:12px; color:#94a3b8; margin-top:2px;">• En Yüksek PM2.5: <strong style="color:#ef4444;">${{worst ? worst.il : '-'}}</strong> (${{worst ? fmt(worst.pm25) : '-'}})</div>
-            </div>
-        `;
-    }});
-    cont.innerHTML = `<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">${{cards}}</div>`;
-}}
-
-function renderIndustryModule() {{
-    const cont = document.getElementById('industryModuleContent');
-    const totalOsb = CITIES.reduce((a, b) => a + (b.osb_sayisi || 0), 0);
-    const totalArea = CITIES.reduce((a, b) => a + (b.osb || 0), 0);
-    
-    cont.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:20px; padding-bottom:30px;">
-            <!-- 1. ÜST KISIM - ÇİFT NEON KPI BLOKLARI -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                <!-- KART 1: OSB SAYISI (NEON CYAN #00f2fe) -->
-                <div style="background:linear-gradient(135deg, rgba(0, 242, 254, 0.12) 0%, rgba(11, 19, 43, 0.95) 100%); border:1px solid #00f2fe; border-radius:16px; padding:22px; box-shadow:0 10px 30px rgba(0, 242, 254, 0.2), inset 0 0 20px rgba(0, 242, 254, 0.08); position:relative; overflow:hidden;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:28px;">🏭</span>
-                            <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700; letter-spacing:0.5px;">
-                                SANAYİ SİCİLİ • BAKANLIK VERİSİ
-                            </span>
-                        </div>
-                        <span style="background:rgba(2, 18, 32, 0.8); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.4); padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:600;">
-                            BASKI ÖLÇER
-                        </span>
-                    </div>
-                    <div style="font-size:12.5px; color:#8faec9; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
-                        Türkiye Geneli Toplam OSB Sayısı
-                    </div>
-                    <div style="font-size:36px; font-weight:900; color:#ffffff; margin:4px 0; text-shadow:0 0 20px rgba(0, 242, 254, 0.4);">
-                        ${{totalOsb}} <span style="font-size:18px; color:#00f2fe; font-weight:700;">Adet OSB</span>
-                    </div>
-                    <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                        Bakanlık siciline kayıtlı 81 ilde 304 faal üretimde ve 115 planlama/altyapı aşamasında organize sanayi bölgesi.
-                    </div>
-                </div>
-
-                <!-- KART 2: TAHSİSLİ ALAN (NEON AMBER #ff9f3d) -->
-                <div style="background:linear-gradient(135deg, rgba(255, 159, 61, 0.12) 0%, rgba(11, 19, 43, 0.95) 100%); border:1px solid #ff9f3d; border-radius:16px; padding:22px; box-shadow:0 10px 30px rgba(255, 159, 61, 0.2), inset 0 0 20px rgba(255, 159, 61, 0.08); position:relative; overflow:hidden;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:28px;">🗺️</span>
-                            <span style="background:rgba(255, 159, 61, 0.15); color:#ff9f3d; border:1px solid #ff9f3d; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700; letter-spacing:0.5px;">
-                                TAHSİSLİ ALAN • HARİTA ENVANTERİ
-                            </span>
-                        </div>
-                        <span style="background:rgba(2, 18, 32, 0.8); color:#fbbf24; border:1px solid rgba(251, 191, 36, 0.4); padding:3px 8px; border-radius:6px; font-size:10.5px; font-weight:600;">
-                            BASKI ÖLÇER
-                        </span>
-                    </div>
-                    <div style="font-size:12.5px; color:#8faec9; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
-                        Toplam Tahsisli OSB Üretim Alanı
-                    </div>
-                    <div style="font-size:36px; font-weight:900; color:#ffffff; margin:4px 0; text-shadow:0 0 20px rgba(255, 159, 61, 0.4);">
-                        ${{fmt(totalArea)}} <span style="font-size:18px; color:#ff9f3d; font-weight:700;">Hektar</span>
-                    </div>
-                    <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                        Sanayi ve Teknoloji Bakanlığı onaylı organize sanayi bölgelerinin resmi yüzölçümü toplamı (OSBÜK verisi).
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. ORTA KISIM - BÖLGESEL SIRALAMA & KRİTİK BASKI KARARLARI (3:2) -->
-            <div style="display:grid; grid-template-columns:3fr 2fr; gap:20px; align-items:start;">
-                <!-- SOL: HORIZONTAL PLOTLY BAR GRAFİĞİ -->
-                <div style="background:rgba(17, 26, 46, 0.9); border:1px solid rgba(0, 242, 254, 0.3); border-radius:14px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
-                    <div style="font-size:15px; font-weight:800; color:#ffffff; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
-                        <span>🏭</span> Bölgesel OSB Yoğunluğu ve Çevre Baskısı Sıralaması
-                    </div>
-                    <div style="font-size:12px; color:#8faec9; margin-bottom:14px;">
-                        7 Coğrafi bölgenin tescilli 419 OSB dağılımı ve partikül madde yükü
-                    </div>
-                    <div id="industryBarChart" style="height:340px; width:100%;"></div>
-                </div>
-
-                <!-- SAĞ: YÜKSEK OSB VE KİRLİLİK GÖSTERGELERİ -->
-                <div style="display:flex; flex-direction:column; gap:14px;">
-                    <div style="background:rgba(17, 26, 46, 0.92); border:1px solid rgba(239, 68, 68, 0.5); border-radius:14px; padding:18px; box-shadow:0 8px 24px rgba(239, 68, 68, 0.15);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span style="font-size:14px; font-weight:800; color:#ffffff;">
-                                🚨 Marmara Aksı (Kocaeli, Bursa, Tekirdağ)
-                            </span>
-                            <div style="display:flex; gap:6px;">
-                                <span style="background:rgba(239, 68, 68, 0.2); color:#fca5a5; border:1px solid #ef4444; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700;">
-                                    YÜKSEK OSB
-                                </span>
-                                <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700;">
-                                    SANAYİ SİCİLİ
-                                </span>
-                            </div>
-                        </div>
-                        <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                            Bölge genelinde 100 OSB yer almakta olup, sanayi kümelenmesi ve partikül madde konsantrasyonu en yüksek seviyelerdedir.
-                        </div>
-                        <div style="margin-top:8px; font-size:11px; color:#f87171; font-weight:600;">
-                            • Veri Notu: Sanayi tesislerinin yoğun olduğu koridorda emisyon kontrolleri ve hava kalitesi izleme sistemleri uygulanmaktadır.
-                        </div>
-                    </div>
-
-                    <div style="background:rgba(17, 26, 46, 0.92); border:1px solid rgba(245, 158, 11, 0.5); border-radius:14px; padding:18px; box-shadow:0 8px 24px rgba(245, 158, 11, 0.15);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span style="font-size:14px; font-weight:800; color:#ffffff;">
-                                🚨 Güneydoğu Aksı (Gaziantep)
-                            </span>
-                            <div style="display:flex; gap:6px;">
-                                <span style="background:rgba(245, 158, 11, 0.2); color:#fde047; border:1px solid #f59e0b; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700;">
-                                    YÜKSEK PM2,5
-                                </span>
-                                <span style="background:rgba(0, 242, 254, 0.15); color:#00f2fe; border:1px solid #00f2fe; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700;">
-                                    SANAYİ SİCİLİ
-                                </span>
-                            </div>
-                        </div>
-                        <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
-                            Tekstil, kimya ve gıda imalat tesislerinin yoğunlaştığı OSB havzalarında partikül madde konsantrasyonları izlenmektedir.
-                        </div>
-                        <div style="margin-top:8px; font-size:11px; color:#fbbf24; font-weight:600;">
-                            • Veri Notu: Bölgesel sanayi faaliyetleri ve meteorolojik faktörlerin partikül madde düzeyleri üzerindeki etkisi takip edilmektedir.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Plotly bar grafiği çizimi
-    if (window.Plotly) {{
-        const bNames = ['Doğu Anadolu', 'Akdeniz', 'Güneydoğu Anadolu', 'Karadeniz', 'Ege', 'İç Anadolu', 'Marmara'];
-        const bOsb = [29, 44, 35, 70, 66, 75, 100];
-        const bTexts = [
-            '29 OSB | PM2.5: 44,2 µg/m³ (%6,9)',
-            '44 OSB | PM2.5: 35,1 µg/m³ (%10,5)',
-            '35 OSB | PM2.5: 38,7 µg/m³ (%8,4)',
-            '70 OSB | PM2.5: 31,4 µg/m³ (%16,7)',
-            '66 OSB | PM2.5: 36,3 µg/m³ (%15,8)',
-            '75 OSB | PM2.5: 34,0 µg/m³ (%17,9)',
-            '100 OSB | PM2.5: 35,7 µg/m³ (%23,9)'
-        ];
-        const bColors = '#0369a1';
-
-        Plotly.newPlot('industryBarChart', [{{
-            type: 'bar',
-            orientation: 'h',
-            x: bOsb,
-            y: bNames,
-            text: bTexts,
-            textposition: 'inside',
-            insidetextanchor: 'start',
-            marker: {{
-                color: bColors,
-                line: {{ color: 'rgba(255,255,255,0.2)', width: 1 }}
-            }},
-            hoverinfo: 'text'
-        }}], {{
-            height: 330,
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: {{ t: 20, l: 140, r: 40, b: 40 }},
-            xaxis: {{
-                title: {{ text: 'OSB Sayısı (Adet)', font: {{ color: '#8faec9', size: 11 }} }},
-                tickfont: {{ color: '#94a3b8' }},
-                gridcolor: 'rgba(255,255,255,0.06)',
-                range: [0, 115]
-            }},
-            yaxis: {{
-                tickfont: {{ color: '#ffffff', size: 12 }}
-            }}
-        }}, {{ responsive: true, displayModeBar: false }});
-    }}
-}}
-
-function renderAIForecastModule(targetCity) {{
-    const cont = document.getElementById('aiForecastModuleContent');
-    if (!cont) return;
-    
-    // 81 İlin OSB ve PM2.5 değerlerini sırala
-    const osbSorted = CITIES.map(c => c.osb_sayisi || 0).sort((a,b) => a - b);
-    const pmSorted = CITIES.map(c => c.pm25 || 0).sort((a,b) => a - b);
-    
-    function getQuantile(arr, q) {{
-        const idx = (arr.length - 1) * q;
-        const low = Math.floor(idx);
-        const high = Math.ceil(idx);
-        return arr[low] + (arr[high] - arr[low]) * (idx - low);
-    }}
-    
-    const q1_osb = getQuantile(osbSorted, 0.25);
-    const q3_osb = getQuantile(osbSorted, 0.75);
-    const q1_pm = getQuantile(pmSorted, 0.25);
-    const q3_pm = getQuantile(pmSorted, 0.75);
-    
-    const katA_cities = CITIES.filter(c => (c.osb_sayisi || 0) <= q1_osb && (c.pm25 || 0) >= q3_pm);
-    const katB_cities = CITIES.filter(c => (c.osb_sayisi || 0) >= q3_osb && (c.pm25 || 0) >= q3_pm);
-    
-    const selectedCity = targetCity || window.currentAICity || 'Iğdır';
-    window.currentAICity = selectedCity;
-    const cityObj = CITIES.find(c => c.il === selectedCity) || CITIES[0];
-    
-    let category = "Kategori Dışı (Orta Segment / Dengeli)";
-    let growthRate = 0.01;
-    let pulseClass = "pulse-box-normal";
-    let badgeColor = "#00e5db";
-    let badgeLabel = "Kategori Dışı (Orta Segment / Dengeli)";
-    let nedenSonuc = `${{cityObj.il}} ilinde OSB sayısı ve PM2.5 konsantrasyonu çeyreklik uç değer sınırlarının dışındadır.`;
-    let onlem = `Düzenli hava kalitesi izleme ve mevzuat standartlarına uyumun takibi önerilir.`;
-    
-    const cityOsb = cityObj.osb_sayisi || 0;
-    const cityPm = cityObj.pm25 || 0;
-    
-    if (cityOsb <= q1_osb && cityPm >= q3_pm) {{
-        category = "Kategori A";
-        growthRate = 0.03;
-        pulseClass = "pulse-box-a";
-        badgeColor = "#f59e0b";
-        badgeLabel = "Kategori A: Düşük OSB, Yüksek Kirlilik";
-        nedenSonuc = `${{cityObj.il}} ilinde OSB sayısı Q1 alt çeyreklik eşiğinde veya altında iken, PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerindedir.`;
-        onlem = `Emisyon envanteri ve topoğrafik özelliklerin detaylı incelenmesi önerilir.`;
-    }} else if (cityOsb >= q3_osb && cityPm >= q3_pm) {{
-        category = "Kategori B";
-        growthRate = 0.05;
-        pulseClass = "pulse-box-b";
-        badgeColor = "#ef4444";
-        badgeLabel = "Kategori B: Yüksek OSB, Yüksek Kirlilik";
-        nedenSonuc = `${{cityObj.il}} ilinde hem OSB sayısı hem de PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerindedir.`;
-        onlem = `Sanayi emisyon denetimlerinin ve sürekli izleme sistemlerinin sürdürülmesi önerilir.`;
-    }} else if (cityPm >= q3_pm) {{
-        category = "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)";
-        growthRate = 0.02;
-        pulseClass = "pulse-box-a";
-        badgeColor = "#f97316";
-        badgeLabel = "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)";
-        nedenSonuc = `${{cityObj.il}} ilinde PM2.5 konsantrasyonu Q3 üst çeyreklik eşiğinde veya üzerinde iken, OSB sayısı orta aralıktadır.`;
-        onlem = `Kentsel ısınma, ulaşım ve yerel emisyon kaynaklarının incelenmesi önerilir.`;
-    }}
-    
-    const years = [2026, 2027, 2028, 2029, 2030, 2031];
-    const projValues = years.map((y, i) => Math.round(cityPm * Math.pow(1.0 + growthRate, i) * 100) / 100);
-    const startVal = projValues[0];
-    const endVal = projValues[projValues.length - 1];
-    const diffPct = Math.round(((endVal - startVal) / startVal) * 1000) / 10;
-    const diffSign = diffPct > 0 ? "+" : "";
-    
-    const sortedCities = [...CITIES].sort((a,b) => a.il.localeCompare(b.il, 'tr'));
-    const cityOptionsHtml = sortedCities.map(c => 
-        `<option value="${{c.il}}" ${{c.il === selectedCity ? 'selected' : ''}}>${{c.il}} (${{c.bolge}} — PM2.5: ${{fmt(c.pm25)}}, OSB: ${{c.osb_sayisi}})</option>`
-    ).join('');
-    
-    const katAPills = katA_cities.sort((a,b) => b.pm25 - a.pm25).map(c => 
-        `<span onclick="renderAIForecastModule('${{c.il}}')" style="cursor:pointer; background:#2a1b0a; border:1px solid #f59e0b; color:#fbbf24; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block; margin:2px;">${{c.il}} (${{fmt(c.pm25)}})</span>`
-    ).join('');
-    
-    const katBPills = katB_cities.sort((a,b) => b.pm25 - a.pm25).map(c => 
-        `<span onclick="renderAIForecastModule('${{c.il}}')" style="cursor:pointer; background:#2d1215; border:1px solid #ef4444; color:#f87171; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; display:inline-block; margin:2px;">${{c.il}} (${{fmt(c.pm25)}})</span>`
-    ).join('');
-    
-    cont.innerHTML = `
-        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:18px;">
-            <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
-                <div style="font-size:11px; color:#8faec9;">OSB Eşikleri (81 İl)</div>
-                <div style="font-size:18px; font-weight:800; color:#38bdf8; margin-top:4px;">Q1: ${{q1_osb.toFixed(0)}} | Q3: ${{q3_osb.toFixed(0)}}</div>
-                <div style="font-size:11px; color:#557896; margin-top:2px;">Alt %25 ≤ ${{q1_osb.toFixed(0)}} &bull; Üst %25 ≥ ${{q3_osb.toFixed(0)}}</div>
-            </div>
-            <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
-                <div style="font-size:11px; color:#8faec9;">PM2.5 Çeyreklik Eşiği</div>
-                <div style="font-size:18px; font-weight:800; color:#00e5db; margin-top:4px;">Q1: ${{fmt(q1_pm)}} | Q3: ${{fmt(q3_pm)}}</div>
-                <div style="font-size:11px; color:#557896; margin-top:2px;">Kritik Eşik ≥ ${{fmt(q3_pm)}} µg/m³</div>
-            </div>
-            <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
-                <div style="font-size:11px; color:#8faec9;">Kategori A (Düşük OSB, Yüksek PM2.5)</div>
-                <div style="font-size:18px; font-weight:800; color:#f59e0b; margin-top:4px;">${{katA_cities.length}} İl Tespit Edildi</div>
-                <div style="font-size:11px; color:#557896; margin-top:2px;">Düşük OSB, Yüksek Kirlilik</div>
-            </div>
-            <div class="ai-info-bubble" style="padding:14px 18px; margin-bottom:0;">
-                <div style="font-size:11px; color:#8faec9;">Kategori B (Yüksek OSB, Yüksek PM2.5)</div>
-                <div style="font-size:18px; font-weight:800; color:#ef4444; margin-top:4px;">${{katB_cities.length}} İl Tespit Edildi</div>
-                <div style="font-size:11px; color:#557896; margin-top:2px;">Yüksek OSB, Yüksek Kirlilik</div>
-            </div>
-        </div>
-        
-        <div style="background:#031b2e; border:1px solid #093452; border-radius:12px; padding:16px 20px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <label style="font-size:13px; font-weight:700; color:#f8fafc;">Analiz Edilecek İl:</label>
-                <select id="aiCitySelectBox" onchange="renderAIForecastModule(this.value)" style="background:#07253d; border:1px solid #00e5db55; color:#ffffff; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; outline:none; cursor:pointer;">
-                    ${{cityOptionsHtml}}
-                </select>
-            </div>
-            
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background:${{badgeColor}}22; border:1px solid ${{badgeColor}}; color:${{badgeColor}}; padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700;">
-                    ${{badgeLabel}}
-                </span>
-                <span style="color:#94a3b8; font-size:12px;">
-                    Mevcut PM2.5: <strong style="color:#f8fafc;">${{fmt(cityPm)}} µg/m³</strong> &bull; OSB: <strong style="color:#f8fafc;">${{cityOsb}}</strong>
-                </span>
-            </div>
-        </div>
-        
-        <div style="display:grid; grid-template-columns:1.5fr 1.3fr; gap:18px; margin-bottom:18px;">
-            <div style="background:#031b2e; border:1px solid #093452; border-radius:12px; padding:16px; min-height:400px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div>
-                        <div style="font-size:14px; font-weight:800; color:#ffffff;">📈 5 Yıllık Trend Projeksiyonu (2026–2031)</div>
-                        <div style="font-size:11px; color:#8faec9;">Yıllık ${{growthRate > 0 ? '+' : ''}}%${{(growthRate*100).toFixed(0)}} matematiksel artış modeli</div>
-                    </div>
-                    <span style="background:#021220; border:1px solid #00e5db44; color:#00e5db; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;">Kesik Çizgili Model</span>
-                </div>
-                <div id="aiForecastChartDiv" style="width:100%; height:340px;"></div>
-            </div>
-            
-            <div style="display:flex; flex-direction:column; justify-content:space-between;">
-                <div class="ai-info-bubble">
-                    <div style="color:#38bdf8; text-shadow:0 0 10px rgba(56,189,248,0.6); font-size:15px; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-                        <span>🔬</span> Veri Analizi ve Göstergeler
-                    </div>
-                    <p style="color:#e2e8f0; font-size:13.5px; line-height:1.65; margin:0;">
-                        ${{nedenSonuc}}
-                    </p>
-                </div>
-                
-                <div class="ai-info-bubble ${{pulseClass}}">
-                    <div style="color:${{badgeColor}}; text-shadow:0 0 10px ${{badgeColor}}aa; font-size:15px; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-                        <span>📋</span> Politika ve Müdahale Notları
-                    </div>
-                    <p style="color:#ffffff; font-size:13.5px; line-height:1.65; margin:0; font-weight:600;">
-                        ${{onlem}}
-                    </p>
-                </div>
-                
-                <div class="ai-info-bubble" style="margin-bottom:0;">
-                    <div style="font-size:11px; color:#8faec9; margin-bottom:6px;">5 Yıllık Projeksiyon Değişimi (2026 ➔ 2031)</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <span style="font-size:11px; color:#557896;">2026:</span>
-                            <strong style="font-size:15px; color:#ffffff; margin-left:4px;">${{fmt(startVal)}} µg/m³</strong>
-                        </div>
-                        <div style="color:#38bdf8; font-size:16px;">➔</div>
-                        <div>
-                            <span style="font-size:11px; color:#557896;">2031:</span>
-                            <strong style="font-size:15px; color:#ffffff; margin-left:4px;">${{fmt(endVal)}} µg/m³</strong>
-                        </div>
-                        <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#f87171; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:700;">
-                            ${{diffSign}}%${{fmt(diffPct)}} Kümülatif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div class="ai-info-bubble" style="margin-bottom:0;">
-                <div style="color:#fbbf24; font-size:14px; font-weight:700; margin-bottom:6px;">
-                    Kategori A: Düşük OSB, Yüksek PM2.5 İlleri (${{katA_cities.length}} İl)
-                </div>
-                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Düşük sanayi yoğunluğu (OSB ≤ ${{q1_osb.toFixed(0)}}), partikül seviyesi (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
-                <div>${{katAPills}}</div>
-            </div>
-            
-            <div class="ai-info-bubble" style="margin-bottom:0;">
-                <div style="color:#f87171; font-size:14px; font-weight:700; margin-bottom:6px;">
-                    Kategori B: Yüksek OSB, Yüksek PM2.5 İlleri (${{katB_cities.length}} İl)
-                </div>
-                <div style="font-size:11px; color:#8faec9; margin-bottom:8px;">Yüksek OSB kümelenmesi (OSB ≥ ${{q3_osb.toFixed(0)}}), yüksek emisyon (PM2.5 ≥ ${{fmt(q3_pm)}})</div>
-                <div>${{katBPills}}</div>
-            </div>
-        </div>
-        
-        <div style="background:rgba(2,18,32,0.6); border:1px solid #1e293b; border-left:3px solid #38bdf8; padding:10px 14px; border-radius:6px; margin-top:14px; font-size:12px; color:#94a3b8;">
-            <strong>Bilgi Notu:</strong> Listelenmeyen 68 il, belirlenen uç çeyreklik eşiklerinin dışında kalarak orta segmentte yer alan 'Dengeli Profil' grubundadır.
-        </div>
-    `;
-    
-    if (window.Plotly) {{
-        Plotly.newPlot('aiForecastChartDiv', [{{
-            x: years,
-            y: projValues,
-            mode: 'lines+markers+text',
-            name: '5 Yıllık Trend Projeksiyonu',
-            line: {{
-                color: badgeColor,
-                width: 3.5,
-                dash: 'dash'
-            }},
-            marker: {{
-                size: 10,
-                color: '#ffffff',
-                line: {{ color: badgeColor, width: 3 }}
-            }},
-            text: projValues.map(v => fmt(v)),
-            textposition: 'top center',
-            textfont: {{ color: '#f8fafc', size: 12, family: 'Inter, Segoe UI, sans-serif' }},
-            hovertemplate: '<b>Yıl:</b> %{{x}}<br><b>Tahmini PM2.5:</b> %{{y:.2f}} µg/m³<extra></extra>'
-        }}], {{
-            paper_bgcolor: '#031b2e',
-            plot_bgcolor: '#021220',
-            xaxis: {{
-                title: {{ text: 'Projeksiyon Yılı', font: {{ color: '#8faec9', size: 11 }} }},
-                tickmode: 'array',
-                tickvals: years,
-                tickfont: {{ color: '#cbd5e1', size: 11 }},
-                gridcolor: '#07253d',
-                zeroline: false
-            }},
-            yaxis: {{
-                title: {{ text: 'PM2.5 (µg/m³)', font: {{ color: '#8faec9', size: 11 }} }},
-                tickfont: {{ color: '#cbd5e1', size: 11 }},
-                gridcolor: '#07253d',
-                zeroline: false
-            }},
-            shapes: [
-                {{ type: 'line', y0: 5, y1: 5, x0: 2026, x1: 2031, line: {{ color: '#10b981', width: 1.5, dash: 'dot' }} }},
-                {{ type: 'line', y0: 35, y1: 35, x0: 2026, x1: 2031, line: {{ color: '#f59e0b', width: 1.5, dash: 'dot' }} }}
-            ],
-            annotations: [
-                {{ y: 5, x: 2031, text: 'DSÖ Kılavuz (5 µg/m³)', showarrow: false, font: {{ color: '#10b981', size: 10 }}, yanchor: 'bottom', xanchor: 'right' }},
-                {{ y: 35, x: 2031, text: 'DSÖ IT-1 (35 µg/m³)', showarrow: false, font: {{ color: '#f59e0b', size: 10 }}, yanchor: 'bottom', xanchor: 'right' }}
-            ],
-            margin: {{ l: 40, r: 40, t: 20, b: 35 }},
-            showlegend: false
-        }}, {{ responsive: true, displayModeBar: false }});
-    }}
-}}
-
-// ==========================================
-// 10.B AI VERİ ASİSTANI (CHATBOT MOTORU)
-// ==========================================
-let chatHistory = [
-    {{
-        role: "assistant",
-        text: "Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>. 🌍<br><br>81 ilin hava kalitesi (PM2.5), OSB sanayi baskısı ve resmi çevre karnesi hakkında sorularınızı yanıtlamaya hazırım.<br><br>Bana şunları sorabilirsiniz:<br>• <em>'PM2.5 en yüksek iller hangileri?'</em><br>• <em>'PM2.5 en düşük iller'</em><br>• <em>'İstanbul veya Iğdır\\'ın durumu'</em>"
-    }}
-];
-
-function renderChatAssistantModule() {{
-    const cont = document.getElementById('chatAssistantModuleContent');
-    if (!cont) return;
-
-    cont.innerHTML = `
-        <div style="background:#031b2e; border:1px solid #093452; border-radius:12px; padding:20px; max-width:960px; margin:0 auto; display:flex; flex-direction:column; height:680px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #07253d; padding-bottom:14px; margin-bottom:14px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <div style="width:38px; height:38px; border-radius:50%; background:#07253d; border:1px solid #00e5db; display:flex; align-items:center; justify-content:center; font-size:18px;">🤖</div>
-                    <div>
-                        <div style="font-size:15px; font-weight:800; color:#ffffff;">HavaAtlası AI Veri Asistanı</div>
-                        <div style="font-size:11px; color:#6d8fae;">Doğal Dil Veri Tabanı ve Anomali Sorgulama Modeli</div>
-                    </div>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <span style="background:rgba(0,229,219,0.12); border:1px solid #00e5db44; color:#00e5db; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700;">🟢 Çevrimiçi</span>
-                    <button onclick="clearChatHistory()" style="background:#021220; border:1px solid #093452; color:#8faec9; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer;">🗑️ Temizle</button>
-                </div>
-            </div>
-
-            <!-- Hızlı Soru Hapları -->
-            <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
-                <button onclick="sendQuickPrompt('en yuksek pm2.5 illeri hangileri?')" style="background:#07253d; border:1px solid #ef444455; color:#f87171; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🚨 En Yüksek PM2.5 İlleri</button>
-                <button onclick="sendQuickPrompt('en dusuk pm2.5 illeri hangileri?')" style="background:#07253d; border:1px solid #00e59955; color:#00e599; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🌿 En Düşük PM2.5 İlleri</button>
-                <button onclick="sendQuickPrompt('İstanbul ve Ankara hava kalitesi farkı')" style="background:#07253d; border:1px solid #facc1555; color:#facc15; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">⚖️ İstanbul vs Ankara</button>
-                <button onclick="sendQuickPrompt('en çok osb olan sanayi illeri')" style="background:#07253d; border:1px solid #38bdf855; color:#38bdf8; padding:5px 12px; border-radius:20px; font-size:11.5px; cursor:pointer; font-weight:600;">🏭 Sanayi İlleri</button>
-            </div>
-
-            <!-- Mesajlar Konteyneri -->
-            <div id="chatMessagesBox" style="flex:1; overflow-y:auto; padding:10px 6px; display:flex; flex-direction:column; gap:14px;">
-                <!-- Mesajlar buraya basılır -->
-            </div>
-
-            <!-- Giriş Çubuğu -->
-            <div style="display:flex; gap:10px; margin-top:14px; border-top:1px solid #07253d; padding-top:14px;">
-                <input type="text" id="chatInputBar" placeholder="Hava kalitesi veya şehirler hakkında bir soru sorun... (örn: en yüksek, en düşük, sanayi)" 
-                    style="flex:1; background:#021220; border:1px solid #093452; border-radius:8px; padding:10px 16px; color:#ffffff; font-size:13px; outline:none;" 
-                    onkeydown="if(event.key==='Enter') executeChatSubmit();" />
-                <button onclick="executeChatSubmit()" style="background:#00e5db; border:none; border-radius:8px; padding:0 20px; color:#021220; font-weight:700; font-size:13px; cursor:pointer;">
-                    Gönder
-                </button>
-            </div>
-        </div>
-    `;
-
-    renderChatMessages();
-}}
-
-function renderChatMessages() {{
-    const box = document.getElementById('chatMessagesBox');
-    if (!box) return;
-
-    let html = '';
-    chatHistory.forEach(m => {{
-        if (m.role === 'user') {{
-            html += `
-                <div style="display:flex; justify-content:flex-end; align-items:flex-start; gap:10px;">
-                    <div style="background:#06263e; border:1px solid #00e5db44; color:#ffffff; padding:10px 16px; border-radius:12px 12px 2px 12px; max-width:80%; font-size:13.5px; line-height:1.5;">
-                        ${{m.text}}
-                    </div>
-                    <div style="width:32px; height:32px; border-radius:50%; background:#082d45; display:flex; align-items:center; justify-content:center; font-size:14px;">👤</div>
-                </div>
-            `;
-        }} else {{
-            html += `
-                <div style="display:flex; justify-content:flex-start; align-items:flex-start; gap:10px;">
-                    <div style="width:32px; height:32px; border-radius:50%; background:#07253d; border:1px solid #00e5db; display:flex; align-items:center; justify-content:center; font-size:15px;">🤖</div>
-                    <div style="background:#021220; border:1px solid #093452; color:#e2e8f0; padding:12px 18px; border-radius:12px 12px 12px 2px; max-width:85%; font-size:13.5px; line-height:1.6;">
-                        ${{m.text}}
-                    </div>
-                </div>
-            `;
-        }}
-    }});
-
-    box.innerHTML = html;
-    box.scrollTop = box.scrollHeight;
-}}
-
-function executeChatSubmit() {{
-    const inp = document.getElementById('chatInputBar');
-    if (!inp) return;
-    const txt = inp.value.trim();
-    if (!txt) return;
-    inp.value = '';
-
-    chatHistory.push({{ role: 'user', text: txt }});
-    renderChatMessages();
-
-    setTimeout(() => {{
-        const resp = answerUserQuery(txt);
-        chatHistory.push({{ role: 'assistant', text: resp }});
-        renderChatMessages();
-    }}, 200);
-}}
-
-function sendQuickPrompt(promptTxt) {{
-    chatHistory.push({{ role: 'user', text: promptTxt }});
-    renderChatMessages();
-
-    setTimeout(() => {{
-        const resp = answerUserQuery(promptTxt);
-        chatHistory.push({{ role: 'assistant', text: resp }});
-        renderChatMessages();
-    }}, 200);
-}}
-
-function clearChatHistory() {{
-    chatHistory = [
-        {{
-            role: "assistant",
-            text: "Sohbet sıfırlandı. Size hava kalitesi ve 81 il verileri konusunda nasıl yardımcı olabilirim?"
-        }}
-    ];
-    renderChatMessages();
-}}
-
-function answerUserQuery(userQuery) {{
-    const q = userQuery.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
-
-    // 1. En Yüksek PM2.5
-    if (q.includes('kirli') || q.includes('kotu') || q.includes('en yuksek') || q.includes('tehlikeli')) {{
-        const top3 = [...CITIES].sort((a,b) => b.pm25 - a.pm25).slice(0, 3);
-        const list = top3.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong> (${{c.bolge}}): <code style="color:#ef4444; background:#2d1215; padding:2px 6px; border-radius:4px;">${{fmt(c.pm25)}} µg/m³</code> (DSÖ sınırının ${{fmt(c.pm25/5)}} katı)`).join('<br>');
-        return `🚨 <strong>Türkiye Genelinde PM2.5 Seviyesi En Yüksek 3 İl:</strong><br><br>${{list}}`;
-    }}
-
-    // 2. En Düşük PM2.5
-    if (q.includes('temiz') || q.includes('iyi') || q.includes('en dusuk') || q.includes('saglikli') || q.includes('ferah')) {{
-        const top3 = [...CITIES].sort((a,b) => a.pm25 - b.pm25).slice(0, 3);
-        const list = top3.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong> (${{c.bolge}}): <code style="color:#00e599; background:#04281f; padding:2px 6px; border-radius:4px;">${{fmt(c.pm25)}} µg/m³</code>`).join('<br>');
-        return `🌿 <strong>Türkiye Genelinde PM2.5 Seviyesi En Düşük 3 İl:</strong><br><br>${{list}}`;
-    }}
-
-    // 3. Şehir Bazlı Eşleşme
-    for (let c of CITIES) {{
-        const cNorm = c.il.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
-        if (q.includes(cNorm)) {{
-            const status = c.pm25 > 50 ? '<span style="color:#ef4444; font-weight:700;">Kritik</span>' : (c.pm25 > 35 ? '<span style="color:#f97316; font-weight:700;">Yüksek</span>' : '<span style="color:#00e599; font-weight:700;">İyi</span>');
-            return `🏙️ <strong>${{c.il}} İli Detaylı Çevre ve Hava Kalitesi Karnesi:</strong><br><br>• <strong>PM2.5 Kirlilik Değeri:</strong> <code>${{fmt(c.pm25)}} µg/m³</code> (Durum: ${{status}})<br>• <strong>Bölge:</strong> ${{c.bolge}} &bull; <strong>Plaka:</strong> ${{c.plaka}}<br>• <strong>Nüfus:</strong> ${{c.nufus.toLocaleString('tr-TR')}} kişi<br>• <strong>Organize Sanayi Bölgesi (OSB):</strong> ${{c.osb_sayisi}} adet (${{fmt(c.osb)}} hektar)<br>• <strong>DSÖ Sınır Aşımı:</strong> DSÖ kılavuz limitinin <strong>${{fmt(c.pm25/5)}} katı</strong>`;
-        }}
-    }}
-
-    // 4. Sanayi / OSB
-    if (q.includes('osb') || q.includes('sanayi') || q.includes('fabrika') || q.includes('endustri')) {{
-        const top3Osb = [...CITIES].sort((a,b) => b.osb_sayisi - a.osb_sayisi).slice(0, 3);
-        const list = top3Osb.map((c, i) => `<strong>${{i+1}}. ${{c.il}}</strong>: ${{c.osb_sayisi}} OSB (${{fmt(c.osb)}} hektar) &bull; PM2.5: <code>${{fmt(c.pm25)}} µg/m³</code>`).join('<br>');
-        return `🏭 <strong>Türkiye'de En Çok Organize Sanayi Bölgesine (OSB) Sahip 3 İl:</strong><br><br>${{list}}`;
-    }}
-
-    // 5. Genel Karşılama
-    return `👋 Merhaba! Ben <strong>HavaAtlası AI Veri Asistanı</strong>.<br><br>Platform veritabanındaki 81 ilin hava kalitesi, sanayi ve sağlık göstergelerini gerçek zamanlı sorgulayabilirim.<br><br>Deneyebileceğiniz bazı sorular:<br>• <em>'PM2.5 en yüksek iller hangileri?'</em><br>• <em>'PM2.5 en düşük iller'</em><br>• <em>'En çok OSB olan sanayi illeri'</em> veya <em>'sanayi'</em><br>• <em>'İstanbul\\'un durumu ne?'</em>, <em>'Bursa'</em>, <em>'Iğdır'</em>`;
 }}
 
 // ==========================================

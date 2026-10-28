@@ -4,8 +4,8 @@ HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 
 Özellikler:
 - Avrupa CAMS (Copernicus Atmosphere Monitoring Service) verileri.
-- 90 günlük geçmiş saatlik/günlük PM2.5 zaman serileri.
-- Çevrimdışı ve önbellekli (cached) çalışma desteği.
+- Tek koordinat için geçmiş saatlik/günlük PM2.5 zaman serisi.
+- Ulusal seri: il bazlı CAMS önbelleğinin nüfus ağırlıklı ortalaması (sentetik yedek yok).
 """
 
 import os
@@ -15,7 +15,6 @@ import numpy as np
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Tuple
 
-CACHE_FILE = "data/daily_air_quality_90d.csv"
 
 class OpenMeteoAirQualityConnector:
     BASE_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
@@ -73,43 +72,39 @@ class OpenMeteoAirQualityConnector:
 
 def get_national_timeseries(past_days: int = 90) -> pd.DataFrame:
     """
-    Türkiye geneli son 90 günlük hava kalitesi zaman serisini getirir.
-    Öncelikle yerel önbelleğe bakar, yoksa API'den çekip kaydeder.
+    Türkiye geneli günlük PM2.5 serisi: 81 il merkezinin CAMS günlük değerlerinin
+    NÜFUS AĞIRLIKLI ortalaması (data/daily_city_air_quality.csv üzerinden).
+
+    Veri yoksa boş DataFrame döner; sentetik/uydurma yedek seri ÜRETİLMEZ.
+    Arayüz boş sonuçta "veri yok" göstermelidir.
     """
-    if os.path.exists(CACHE_FILE):
-        try:
-            df = pd.read_csv(CACHE_FILE)
-            df["date"] = pd.to_datetime(df["date"])
-            return df
-        except Exception:
-            pass
-            
-    # API'den çekmeyi dene
-    connector = OpenMeteoAirQualityConnector()
-    # Türkiye coğrafi merkezi (Ankara/Kırşehir civarı 39.5, 34.0)
-    df_fetched = connector.fetch_city_timeseries(lat=39.5, lon=34.0, past_days=past_days)
-    
-    if df_fetched is not None and len(df_fetched) > 10:
-        df_fetched.to_csv(CACHE_FILE, index=False)
-        return df_fetched
-        
-    # Çevrimdışı yedek (fallback) deterministik zaman serisi üretimi
-    today = datetime.now()
-    dates = [today - timedelta(days=i) for i in range(past_days, -1, -1)]
-    
-    np.random.seed(42)
-    # Türkiye genel ortalama PM2.5 trendi (36 µg/m³ civarında dönemsel ve hava şartları dalgalanmalı)
-    base_pm = 36.5
-    trend = np.sin(np.linspace(0, 3 * np.pi, len(dates))) * 6.0
-    noise = np.random.normal(0, 2.8, len(dates))
-    pm25_vals = np.clip(base_pm + trend + noise, 12.0, 75.0).round(2)
-    
-    df_fb = pd.DataFrame({
-        "date": dates,
-        "pm25": pm25_vals,
-        "pm25_min": (pm25_vals * 0.75).round(2),
-        "pm25_max": (pm25_vals * 1.35).round(2)
-    })
-    df_fb["pm25_ma7"] = df_fb["pm25"].rolling(7, min_periods=1).mean().round(2)
-    df_fb.to_csv(CACHE_FILE, index=False)
-    return df_fb
+    from data_sources.constants import NUFUSLAR
+
+    cols = ["date", "pm25", "pm25_min", "pm25_max", "pm25_ma7"]
+    city_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                             "data", "daily_city_air_quality.csv")
+    if not os.path.exists(city_file):
+        return pd.DataFrame(columns=cols)
+    try:
+        df = pd.read_csv(city_file, encoding="utf-8")
+    except Exception:
+        return pd.DataFrame(columns=cols)
+    df["date"] = pd.to_datetime(df["date"])
+    df["w"] = df["il"].map(NUFUSLAR)
+    df = df.dropna(subset=["pm25", "w"])
+    if df.empty:
+        return pd.DataFrame(columns=cols)
+    cutoff = df["date"].max() - timedelta(days=past_days)
+    df = df[df["date"] > cutoff]
+    out = df.groupby("date").apply(
+        lambda g: pd.Series({
+            "pm25": np.average(g["pm25"], weights=g["w"]),
+            "pm25_min": g["pm25"].min(),
+            "pm25_max": g["pm25"].max(),
+        }),
+        include_groups=False,
+    ).reset_index().sort_values("date")
+    out["pm25_ma7"] = out["pm25"].rolling(7, min_periods=1).mean().round(2)
+    for c in ("pm25", "pm25_min", "pm25_max"):
+        out[c] = out[c].round(2)
+    return out[cols]

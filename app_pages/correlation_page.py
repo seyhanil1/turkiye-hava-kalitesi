@@ -9,20 +9,33 @@ import numpy as np
 import plotly.graph_objects as go
 from scipy import stats
 
-from data_sources.constants import IL_RAKIM
+from data_sources.constants import IL_RAKIM, pm25_kademe_etiketi
+from analytics.correlation import calculate_bivariate_correlation, calculate_bootstrap_ci
+
+
+def tr_sign(v: float) -> str:
+    return f"{v:+.2f}".replace(".", ",")
+
+
+def _p_str(p: float) -> str:
+    return "p &lt; 0,001" if p < 0.001 else f"p = {p:.3f}".replace(".", ",")
+
+
+def _guc(r: float) -> str:
+    a = abs(r)
+    yon = "pozitif" if r > 0 else "negatif"
+    if a < 0.1:
+        return "İlişki yok denecek kadar zayıf"
+    if a < 0.3:
+        return f"Zayıf {yon}"
+    if a < 0.5:
+        return f"Orta düzeyde {yon}"
+    return f"Güçlü {yon}"
 
 
 def get_aqi_level(pm: float) -> str:
-    """PM2.5 değerine göre kirlilik seviye rozeti döner."""
-    if pm > 60:
-        return "Kritik"
-    elif pm > 45:
-        return "Sağlıksız"
-    elif pm > 30:
-        return "Hassas"
-    elif pm > 15:
-        return "Orta"
-    return "İyi"
+    """PM2.5 değerine göre kirlilik seviye rozeti döner (sitenin tek kademe tanımı)."""
+    return pm25_kademe_etiketi(pm)
 
 
 def render_correlation_page(df: pd.DataFrame):
@@ -66,13 +79,21 @@ def render_correlation_page(df: pd.DataFrame):
             <li><strong>Ekolojik Yanılgı (Ecological Fallacy):</strong> İl düzeyindeki makro bulgular doğrudan bireysel maruziyete genellenemez.</li>
         </ul>
         <div style="margin-top: 8px; font-size: 11px; color: #8faec9;">
-            Örneklem: <strong>N = 81 İl</strong> | Veri Kapsamı: <strong>Resmi Gözlem Dönemi</strong>
+            Örneklem: <strong>N = 81 İl</strong> | PM2.5: <strong>CAMS 2025 yıllık model ortalaması</strong>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Özet Korelasyon Kartı & Düzeltilmiş Bulgu
-    st.markdown("""
+    # Özet Korelasyon Kartı: tüm değerler veriden hesaplanır
+    biv = calculate_bivariate_correlation(work_df["osb_alani_hektar"], work_df["pm25"])
+    ci_lo, ci_hi = calculate_bootstrap_ci(work_df["osb_alani_hektar"], work_df["pm25"], method="spearman")
+    biv_pop = calculate_bivariate_correlation(work_df["nufus"], work_df["pm25"])
+    rho_txt = tr_sign(biv["spearman_rho"])
+    r_txt = tr_sign(biv["pearson_r"])
+    ci_txt = f"[%95 GA: {ci_lo:.2f}, {ci_hi:.2f}]".replace(".", ",")
+    rho_pop_txt = tr_sign(biv_pop["spearman_rho"])
+    anlamli_txt = "İstatistiksel olarak anlamlı" if biv["pearson_p"] < 0.05 else "İstatistiksel olarak anlamlı değil"
+    st.markdown(f"""
     <div style="background:#031b2e; border:1px solid #093452; border-radius:10px; padding:18px; margin-bottom:22px;">
         <h4 style="font-size:15px; color:#ffffff; margin: 0 0 6px 0;">
             Organize Sanayi Bölgesi Alanı & Partikül Kirliliği İlişkisi
@@ -83,27 +104,27 @@ def render_correlation_page(df: pd.DataFrame):
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:14px;">
             <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
                 <div style="font-size:11px; color:#8faec9; font-weight:600;">Spearman Sıra Korelasyonu</div>
-                <div style="font-size:22px; font-weight:800; color:#00e5db; margin-top:2px;">ρ = +0,52</div>
-                <div style="font-size:10px; color:#10b981;">Orta düzeyde pozitif</div>
+                <div style="font-size:22px; font-weight:800; color:#00e5db; margin-top:2px;">ρ = {rho_txt}</div>
+                <div style="font-size:10px; color:#10b981;">{_guc(biv["spearman_rho"])}</div>
             </div>
             <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
                 <div style="font-size:11px; color:#8faec9; font-weight:600;">Pearson Korelasyonu</div>
-                <div style="font-size:22px; font-weight:800; color:#38bdf8; margin-top:2px;">r = +0,48</div>
-                <div style="font-size:10px; color:#38bdf8;">İstatistiksel olarak anlamlı</div>
+                <div style="font-size:22px; font-weight:800; color:#38bdf8; margin-top:2px;">r = {r_txt}</div>
+                <div style="font-size:10px; color:#38bdf8;">{anlamli_txt}</div>
             </div>
             <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
-                <div style="font-size:11px; color:#8faec9; font-weight:600;">%95 Bootstrap Güven Aralığı</div>
-                <div style="font-size:20px; font-weight:800; color:#facc15; margin-top:2px;">[%95 CI: 0,31, 0,62]</div>
+                <div style="font-size:11px; color:#8faec9; font-weight:600;">%95 Bootstrap Güven Aralığı (ρ)</div>
+                <div style="font-size:20px; font-weight:800; color:#facc15; margin-top:2px;">{ci_txt}</div>
                 <div style="font-size:10px; color:#cbd5e1;">1.000 iterasyon</div>
             </div>
             <div style="background:#021220; padding:12px; border-radius:8px; border:1px solid #07253d;">
                 <div style="font-size:11px; color:#8faec9; font-weight:600;">Anlamlılık Düzeyi</div>
-                <div style="font-size:22px; font-weight:800; color:#10b981; margin-top:2px;">p &lt; 0,001</div>
-                <div style="font-size:10px; color:#cbd5e1;">n = 81 İl Analiz Edildi</div>
+                <div style="font-size:22px; font-weight:800; color:#10b981; margin-top:2px;">{_p_str(biv["spearman_p"])}</div>
+                <div style="font-size:10px; color:#cbd5e1;">n = {biv["n"]} İl Analiz Edildi (Spearman)</div>
             </div>
         </div>
         <div style="background:rgba(2,18,32,0.6); border-left:3px solid #00d2ee; padding:10px 14px; border-radius:4px; font-size:12.5px; color:#cbd5e1; line-height:1.6;">
-            <strong>Bulgular:</strong> Marmara ve Çukurova hattında sanayi/OSB yoğunluğu kirlilikle pozitif ilişkilidir (r = +0,48). Ancak Doğu Anadolu'daki yüksek kirlilik (Iğdır, Erzincan) sanayiden ziyade kapalı topografik havza, kış inversiyonu ve sınır ötesi toz taşınımı kaynaklıdır. Bu durum tek değişkenli modellerin yetersizliğini ve mekânsal faktörlerin önemini gösterir.
+            <strong>Bulgular:</strong> OSB alanı ile PM2.5 arasında Spearman ρ = {rho_txt}. Ancak nüfus ile PM2.5 arasındaki ilişki de ρ = {rho_pop_txt} düzeyindedir: OSB'si büyük iller aynı zamanda kalabalık büyükşehirlerdir. Bu nedenle tek değişkenli korelasyon sanayinin kendi etkisini nüfus, trafik ve ısınmadan ayıramaz; aşağıdaki çoklu regresyon bu etkenleri birlikte ele alır. CAMS modeli kapalı havzalardaki (ör. Iğdır) yerel kirliliği düşük tahmin edebilir.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -142,23 +163,18 @@ def render_correlation_page(df: pd.DataFrame):
     x_data = work_df[x_col].astype(float)
     y_data = work_df["pm25"].astype(float)
 
-    # OLS Trendline parametreleri (r = +0.48 ve R² ≈ 0.23 uyumlu fit)
-    if x_col in ["osb_alani_hektar", "toplam_osb"]:
-        r_val = 0.48
-        r2_val_scatter = r_val ** 2  # 0.2304
-        std_x = float(x_data.std(ddof=1)) if x_data.std(ddof=1) > 0 else 1.0
-        std_y = float(y_data.std(ddof=1)) if y_data.std(ddof=1) > 0 else 1.0
-        slope = r_val * (std_y / std_x)
-        intercept = float(y_data.mean() - slope * x_data.mean())
-    else:
-        slope, intercept, r_val, p_val, std_err = stats.linregress(x_data, y_data)
-        r2_val_scatter = r_val ** 2
+    # OLS trend doğrusu: her değişken için gerçek en küçük kareler uyumu
+    slope, intercept, r_val, p_val, std_err = stats.linregress(x_data, y_data)
+    r2_val_scatter = r_val ** 2
 
     x_range = np.linspace(x_data.min(), x_data.max(), 100)
     y_trend = slope * x_range + intercept
 
-    # Uç değer illeri (Özellikle sanayisiz ama yüksek kirli iller)
-    outlier_cities = ["Iğdır", "Osmaniye", "Erzincan", "Malatya", "Düzce"]
+    # Uç değer illeri: OSB sayısı alt çeyrekte, PM2.5 üst çeyrekte olanlar (veriden hesaplanır)
+    outlier_cities = set(work_df.loc[
+        (work_df["toplam_osb"] <= work_df["toplam_osb"].quantile(0.25))
+        & (work_df["pm25"] >= work_df["pm25"].quantile(0.75)), "il"
+    ])
 
     # Hover bilgileri ve seviye rozetleri
     hover_texts = []
@@ -363,9 +379,11 @@ def render_correlation_page(df: pd.DataFrame):
     st.dataframe(ols_table, hide_index=True, use_container_width=True)
 
     # İstatistiksel Yorum
-    st.markdown("""
+    anlamli_degiskenler = [n for n, pv in zip(["OSB Sayısı", "Rakım", "Nüfus / 100 Bin"], p_vals[1:]) if pv < 0.05]
+    anlamli_metin = ", ".join(anlamli_degiskenler) if anlamli_degiskenler else "hiçbir bağımsız değişken"
+    st.markdown(f"""
     <div style="background: rgba(3, 27, 46, 0.6); border: 1px dashed #093452; border-radius: 8px; padding: 12px 16px; margin-top: 6px; font-size: 12.5px; color: #cbd5e1; line-height: 1.6;">
-        <strong>İstatistiksel Yorum:</strong> Doğrusal çoklu regresyon modeli kirlilik varyansının yalnızca %2,4'ünü açıklayabilmektedir (Düzeltilmiş R² negatiftir). Bu durum, il bazındaki kirliliğin klasik makro göstergelerle doğrusal olarak açıklanamayacağını; mikro-klima, topoğrafik çanak havza hapsi ve sınır ötesi taşınım gibi mekânsal faktörlerin belirleyici olduğunu göstermektedir.
+        <strong>İstatistiksel Yorum:</strong> Model PM2.5 varyansının {r2_pct_str}'ünü açıklamaktadır (Düzeltilmiş R² = {adj_r2_str}). Diğer değişkenler sabitken %5 düzeyinde anlamlı olan: <strong>{anlamli_metin}</strong>. Model emisyon kaynaklarını (konut ısınması, trafik, termik santral) ve meteorolojiyi içermediğinden katsayılar nedensel etki olarak yorumlanmamalıdır.
     </div>
     """, unsafe_allow_html=True)
 
@@ -407,8 +425,21 @@ def render_correlation_page(df: pd.DataFrame):
     # Mekânsal Gecikme (Spatial Lag Wz)
     wz_scores = np.dot(W_mat, z_scores)
 
-    # Moran's I Katsayısı
-    moran_i = float(np.sum(z_scores * wz_scores) / np.sum(z_scores ** 2))
+    # Moran's I Katsayısı ve permütasyon testi (999 permütasyon, tek yönlü: pozitif kümelenme)
+    sum_z2 = float(np.sum(z_scores ** 2))
+    moran_i = float(np.sum(z_scores * wz_scores) / sum_z2)
+    rng = np.random.default_rng(42)
+    perm_i = np.array([
+        np.sum(zp * np.dot(W_mat, zp)) / sum_z2
+        for zp in (rng.permutation(z_scores) for _ in range(999))
+    ])
+    moran_p = float((np.sum(perm_i >= moran_i) + 1) / 1000)
+    moran_txt = tr_sign(moran_i)
+    moran_p_txt = _p_str(moran_p)
+    if moran_p < 0.05 and moran_i > 0:
+        moran_yorum = "<strong>Pozitif Mekânsal Kümelenme:</strong> Komşu iller benzer kirlilik desenine sahip; kirlilik coğrafi havzalarda kümeleniyor."
+    else:
+        moran_yorum = "<strong>Anlamlı Kümelenme Yok:</strong> Komşu illerin kirlilik düzeyleri rastgele dağılımdan istatistiksel olarak ayrışmıyor."
 
     # 4 Çeyrek (Quadrant) Sınıflandırması
     quadrants = []
@@ -422,20 +453,20 @@ def render_correlation_page(df: pd.DataFrame):
         else:
             quadrants.append("Low-High (Mekânsal Aykırı)")
 
-    # Moran's I Sonuç Rozeti (Kullanıcı tarafından istenen format)
-    st.markdown("""
+    # Moran's I Sonuç Rozeti
+    st.markdown(f"""
     <div style="background:#021626; border:1px solid #00d2ee; border-radius:8px; padding:14px 18px; margin-bottom:16px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="background:rgba(0,210,238,0.18); color:#00d2ee; font-weight:800; font-size:13.5px; padding:4px 10px; border-radius:6px; border:1px solid rgba(0,210,238,0.4);">
-                    Moran's I ≈ +0,35, p &lt; 0,01
+                    Moran's I = {moran_txt}, {moran_p_txt}
                 </span>
                 <strong style="color:#ffffff; font-size:14px;">Mekânsal Otokorelasyon Çıkarımı:</strong>
             </div>
             <span style="font-size:11px; color:#8faec9;">Ters Mesafe Ağırlık Matrisi (W)</span>
         </div>
         <p style="margin:8px 0 0 0; font-size:12.5px; color:#cbd5e1; line-height:1.5;">
-            <strong>Pozitif Mekânsal Kümelenme:</strong> Komşu iller benzer kirlilik desenine sahip; kirlilik coğrafi havzalarda kümeleniyor.
+            {moran_yorum}
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -491,14 +522,14 @@ def render_correlation_page(df: pd.DataFrame):
 
     # Moran Doğrusu
     z_line = np.linspace(z_scores.min(), z_scores.max(), 50)
-    wz_line = 0.35 * z_line
+    wz_line = moran_i * z_line
 
     fig_moran.add_trace(go.Scatter(
         x=z_line,
         y=wz_line,
         mode="lines",
         line=dict(color="#cbd5e1", width=1.8),
-        name="Moran Doğrusu (Eğim ≈ +0,35)"
+        name=f"Moran Doğrusu (Eğim = {moran_txt})"
     ))
 
     fig_moran.update_layout(

@@ -89,7 +89,7 @@ def render_glossary_page(df: pd.DataFrame = None):
         {
             "term": "HavaAtlası Operasyonel Kademeleri (5 Düzey)",
             "cat": "Sınıflandırma",
-            "desc": "Platformda kullanılan 5 düzeyli karşılaştırmalı ölçek: İyi (≤15 µg/m³), Orta (15,1 - 30 µg/m³), Hassas (30,1 - 50 µg/m³), Sağlıksız (50,1 - 70 µg/m³), Kritik (>70 µg/m³). DSÖ 24 saatlik kılavuz değeri ve ara hedefleri referans alınarak 81 ilin tamamını kapsayacak şekilde yapılandırılmıştır."
+            "desc": "Platformda yıllık ortalama PM2.5 için kullanılan 5 düzeyli ölçek: Düşük (≤10 µg/m³), Orta (10,1 - 15 µg/m³), Yüksek (15,1 - 25 µg/m³), Çok Yüksek (25,1 - 35 µg/m³), Kritik (>35 µg/m³). Eşikler DSÖ 2021 yıllık ara hedeflerinden (IT-4 10, IT-3 15, IT-2 25, IT-1 35) alınmıştır; kademe adları platforma özgüdür ve DSÖ'nün resmi bir risk ölçeği değildir. Tüm kademeler DSÖ kılavuz değerinin (5 µg/m³) üzerindedir."
         }
     ]
 

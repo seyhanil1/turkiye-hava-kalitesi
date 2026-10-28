@@ -128,25 +128,32 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
     # ÖZEL ANALİTİK SORU 1: SANAYİSİ AZ AMA HAVASI EN KİRLİ İLLER VE KÖK NEDENLERİ
     if ("sanayisi az" in p_norm or "sanayisiz" in p_norm or ("sanayi" in p_norm and "az" in p_norm)) and \
        any(k in p_norm for k in ["kirli", "kirlilik", "hava", "sebebi"]):
-        outlier_cities = ["Iğdır", "Erzincan", "Osmaniye", "Düzce"]
+        q1_osb = df["toplam_osb"].quantile(0.25)
+        az_sanayi = df[df["toplam_osb"] <= q1_osb].sort_values("pm25", ascending=False).head(4)
         lines = []
-        for c_name in outlier_cities:
-            c_row = df[df["il"] == c_name]
-            if not c_row.empty:
-                r = c_row.iloc[0]
-                lines.append(
-                    f"• **{c_name}** ({r.get('bolge', '')}): PM2.5: `{r['pm25']:.1f} µg/m³` (DSÖ kılavuzunun {r['pm25']/5.0:.1f} katı) &bull; **Yalnızca {int(r.get('toplam_osb', 0))} OSB**"
+        for _, r in az_sanayi.iterrows():
+            lines.append(
+                f"• **{r['il']}** ({r.get('bolge', '')}): PM2.5: `{r['pm25']:.1f} µg/m³` (DSÖ kılavuzunun {r['pm25']/5.0:.1f} katı) &bull; **Yalnızca {int(r.get('toplam_osb', 0))} OSB**"
+            )
+        istasyon_lines = []
+        if "pm25_istasyon_max_2024" in df.columns:
+            ist = df[(df["toplam_osb"] <= q1_osb) & df["pm25_istasyon_max_2024"].notna()]
+            for _, r in ist.sort_values("pm25_istasyon_max_2024", ascending=False).iterrows():
+                istasyon_lines.append(
+                    f"• **{r['il']}**: istasyon `{r['pm25_istasyon_max_2024']:.1f} µg/m³` — CAMS modeli `{r['pm25']:.1f} µg/m³`"
                 )
 
         return (
-            "🏔️ **Sanayisi Az Olmasına Rağmen Havası En Kirli İller ve Kök Nedenleri:**\n\n"
+            f"🏔️ **Sanayisi Az Olmasına Rağmen Havası En Kirli İller (OSB sayısı ≤ {q1_osb:.0f}, CAMS 2025):**\n\n"
             + "\n".join(lines) + "\n\n"
-            "🔍 **Neden Sanayisiz İllerde Kirlilik Bu Kadar Yüksek?**\n"
-            "1. **Topoğrafik Çanak (Havza) Hapsi:** Iğdır, Erzincan ve Düzce gibi iller etrafı yüksek dağlarla çevrili derin çanak havzalarda yer alır. Rüzgar sirkülasyonu kısıtlıdır; kirli hava kütlesi havzada hapsolur.\n"
-            "2. **Kış Sıcaklık Terselmesi (İnversiyon):** Kış aylarında yer seviyesindeki soğuk hava tabakası üstteki sıcak hava tabakası altında sıkışır. Bu durum adeta görünmez bir 'hava kapağı' oluşturarak bacalardan ve egzozlardan çıkan partiküllerin dikey dağılımını engeller.\n"
-            "3. **Sınır Ötesi Toz ve Taşınım:** Doğu Anadolu havzası, komşu ülkelerden ve kurak bölgelerden gelen sınır ötesi çöl tozu ve mineral partikül taşınımına doğrudan açıktır.\n"
-            "4. **Kentsel Isınmada Katı Yakıt:** Düşük gelirli mahallelerde kömür ve linyit ısınması yer seviyesinde yoğun partikül dumanı birikimine yol açar.\n\n"
-            "💡 **Özet:** Türkiye'deki kirlilik haritası tek başına sanayiyi göstermez; mikro-klima ve coğrafi hapis mekanizmaları en az sanayi kadar belirleyicidir."
+            + (("📍 **Kara Rapor 2025 istasyon ölçümleri (2024) bu illerde modelden belirgin yüksek:**\n"
+                + "\n".join(istasyon_lines) + "\n\n") if istasyon_lines else "")
+            + "🔍 **Sanayi Dışı Olası Nedenler:**\n"
+            "1. **Topoğrafik Çanak (Havza):** Etrafı dağlarla çevrili havzalarda rüzgar sirkülasyonu kısıtlıdır; kirli hava kütlesi havzada kalır.\n"
+            "2. **Kış Sıcaklık Terselmesi (İnversiyon):** Soğuk hava tabakası yere yakın sıkışarak bacalardan ve egzozlardan çıkan partiküllerin dikey dağılımını engeller.\n"
+            "3. **Sınır Ötesi Toz Taşınımı:** Güney ve doğu illeri kurak bölgelerden gelen mineral toz taşınımına açıktır.\n"
+            "4. **Konut Isınmasında Katı Yakıt:** Kömür ve linyit ısınması yer seviyesinde yoğun partikül birikimine yol açar.\n\n"
+            "⚠️ **Not:** ~10 km çözünürlüklü CAMS modeli bu yerel etkileri tam yakalayamaz; il sıralaması istasyon ölçümlerinden farklı olabilir."
         )
 
     # ÖZEL ANALİTİK SORU 2: DSÖ 5 µg/m³ KILAVUZ DEĞERİNİ KARŞILAYAN İL VAR MI?
@@ -162,7 +169,8 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             f"• **Türkiye Aritmetik Ortalaması:** `{avg_pm:.1f} µg/m³` (DSÖ kılavuz değerinin **{avg_pm/5.0:.1f} katı**).\n"
             f"• **En Düşük Kirlilikli İl:** **{min_c['il']}** (`{min_c['pm25']:.1f} µg/m³` - DSÖ sınırının **{min_c['pm25']/5.0:.1f} katı**).\n"
             f"• **En Yüksek Kirlilikli İl:** **{max_c['il']}** (`{max_c['pm25']:.1f} µg/m³` - DSÖ sınırının **{max_c['pm25']/5.0:.1f} katı**).\n\n"
-            "💡 **Kıyaslama:** Türkiye'nin en temiz kabul edilen illerinde dahi partikül yoğunluğu DSÖ'nün insan sağlığı için önerdiği 5 µg/m³ eşiğinin 3 ila 7 katı üzerindedir."
+            f"💡 **Kıyaslama:** İllerin yıllık ortalamaları DSÖ'nün 5 µg/m³ kılavuz değerinin {min_c['pm25']/5.0:.1f} ila {max_c['pm25']/5.0:.1f} katı arasındadır.\n\n"
+            "_Not: Değerler CAMS 2025 yıllık model ortalamasıdır; istasyon ölçümleri genellikle daha yüksektir (ör. Kara Rapor 2025'te Iğdır istasyonu 46,8 µg/m³)._"
         )
 
     # ÖZEL ANALİTİK SORU 5: HAVA KİRLİLİĞİ İLE SOLUNUM ÖLÜMLERİ ARASINDA PARALELLİK VAR MI?
@@ -172,7 +180,7 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             "⚠️ **Cevap: Doğrudan ve doğrusal bir birebir paralellik bulunmamaktadır.**\n\n"
             "TÜİK ölüm nedeni istatistikleri ve PM2.5 kirlilik verileri karşılaştırıldığında şu kritik epidemiyolojik gerçekler öne çıkmaktadır:\n\n"
             "1. **Demografik Yaş Yapısı Faktörü:** Solunum yolu kaynaklı vefatlar (KOAH, pnömoni vb.) ileri yaş gruplarında katlanarak artmaktadır. Örneğin Edirne ve Çanakkale gibi yaşlı nüfus oranı yüksek illerde kirlilik orta düzeyde olsa dahi 100 bin kişiye düşen solunum vefatı yüksek çıkmaktadır.\n"
-            "2. **Genç Nüfuslu Sanayi/Kirlilik Havzaları:** Güneydoğu Anadolu (Şanlıurfa, Gaziantep) gibi kirlilik oranının yüksek ancak nüfusun genç olduğu illerde kaba ölüm hızları daha düşük gözlenmektedir.\n"
+            "2. **Genç Nüfuslu İller:** Hakkari ve Şırnak gibi nüfusun genç olduğu illerde kaba solunum ölüm hızları 30/100 bin civarında kalırken Edirne'de 200/100 binin üzerine çıkmaktadır; fark büyük ölçüde yaş yapısından kaynaklanır.\n"
             "3. **Kronik Maruziyet Gecikmesi (Lag Etkisi):** Solunum yolu hastalıkları anlık hava kirliliğinden ziyade 20-30 yıllık birikimli maruziyetin sonucudur.\n"
             "4. **Ekolojik Yanılgı (Ecological Fallacy):** İl düzeyindeki makro kirlilik verileri, bireylerin mesleki veya iç ortam maruziyetini tek başına yansıtamaz.\n\n"
             "💡 **Özet:** Hava kirliliği solunum hastalıkları için kanıtlanmış bir risk faktörüdür; ancak il bazındaki vefat istatistiklerinde nüfusun yaş ortalaması ve sağlık altyapısı birincil belirleyici olmaktadır."
@@ -190,10 +198,10 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
         return (
             "🏭 **Organize Sanayi Bölgesi (OSB) Sayısı En Yüksek İllerde Kirlilik Durumu:**\n\n"
             + "\n".join(lines) + "\n\n"
-            "📊 **Analitik Bulgular:**\n"
-            "1. **Marmara Üretim Koridoru:** Bursa (17 OSB, 38,4 µg/m³) ve Tekirdağ (14 OSB, 38,8 µg/m³) gibi yoğun üretim akslarında kirlilik seviyesi Türkiye ortalamasının üzerindedir.\n"
-            "2. **Metropoller ve Yayılım Kapasitesi:** Ankara (15 OSB, 39,2 µg/m³) ve İzmir (15 OSB, 34,7 µg/m³) gibi illerde yüksek sanayi ve nüfus bulunmasına rağmen, geniş topoğrafik yapı kirliliğin Iğdır gibi kapalı çanak havzalardaki ekstrem seviyelere (80+ µg/m³) ulaşmasını önlemektedir.\n"
-            "3. **Sonuç:** Yüksek OSB sayısı genel emisyon tabanını yükseltmektedir; ancak coğrafi çanak yapısı olmayan açık havzalarda meteorolojik rüzgar dağılımı kirliliği hafifletmektedir."
+            f"📊 **Analitik Bulgular:** Bu 5 ilin ortalama PM2.5 değeri `{top_osb_df['pm25'].mean():.1f} µg/m³`, "
+            f"81 il ortalaması `{df['pm25'].mean():.1f} µg/m³`.\n\n"
+            "⚠️ **Yorum Sınırı:** OSB sayısı yüksek iller aynı zamanda nüfusu ve trafiği yüksek büyükşehirlerdir. "
+            "İl düzeyindeki bu karşılaştırma sanayinin etkisini nüfus, ısınma, trafik ve topoğrafyadan ayıramaz; nedensellik göstermez."
         )
 
     # 2. KURAL: KİRLİLİK VE OSB İLİŞKİSİ / KORELASYON SORGULARI
@@ -206,19 +214,23 @@ def generate_local_response(user_prompt: str, df: pd.DataFrame) -> str:
             rho_str = f"{rho:+.2f}".replace(".", ",")
             p_str = "< 0,001" if p_val < 0.001 else f"= {p_val:.3f}".replace(".", ",")
         else:
-            rho_str = "+0,11"
-            p_str = "= 0,335"
+            rho_str = "-"
+            p_str = "hesaplanamadı"
+        pop_df = df[["nufus", "pm25"]].dropna()
+        rho_pop = stats.spearmanr(pop_df["nufus"], pop_df["pm25"])[0] if len(pop_df) >= 10 else float("nan")
+        rho_pop_str = f"{rho_pop:+.2f}".replace(".", ",")
 
         return (
             "📊 **Türkiye Genelinde Hava Kirliliği ve Organize Sanayi (OSB) İlişkisi Analitiği**\n\n"
             f"- **Spearman Sıra Korelasyon Katsayısı (ρ):** `{rho_str}` ({p_str}, n = {len(df)})\n\n"
-            "🔍 **Bilimsel Değerlendirme & Kök Neden Analizi:**\n"
-            "1. **Doğrudan Sanayi Baskısı:** Marmara (Kocaeli, Bursa, Tekirdağ) ve Ege (İzmir) havzalarında yoğun OSB parselleri "
-            "ve enerji tüketimi, yer seviyesi emisyonları ve ikincil partikül oluşumunu doğrudan artırmaktadır.\n"
-            "2. **Topoğrafik Çanak & İnversiyon Etkisi:** Iğdır, Düzce ve Erzincan gibi illerde OSB sayısı nispeten düşük olmasına "
-            "rağmen çanak vadi topografyası ve kış aylarındaki sıcaklık inversiyonu, kirliliğin dağılmasını engelleyerek PM2.5 değerlerini "
-            "Türkiye'nin en üst seviyesine taşımaktadır.\n\n"
-            "💡 **Sonuç:** Türkiye'de hava kalitesi tek başına sanayi varlığıyla değil; **sanayi emisyonları, topoğrafik çanak yapısı ve meteorolojik dinamiklerin** bileşik etkisiyle şekillenmektedir."
+            f"- **Karşılaştırma — Nüfus ile PM2.5 (ρ):** `{rho_pop_str}`\n\n"
+            "🔍 **Değerlendirme:**\n"
+            "1. **Karıştırıcı Etken:** OSB alanı büyük iller aynı zamanda kalabalık büyükşehirlerdir; nüfus, trafik ve konut ısınması "
+            "PM2.5 ile en az OSB kadar güçlü ilişkilidir. Bu korelasyon sanayinin kendi etkisini ayırt etmez.\n"
+            "2. **Model Sınırı:** PM2.5 değerleri ~10 km çözünürlüklü CAMS modelinin il merkezi değeridir; Iğdır gibi kapalı havzalarda "
+            "kış inversiyonu ve yerel ısınma kaynaklı kirliliği eksik gösterebilir (Kara Rapor 2025: Iğdır istasyonu 46,8 µg/m³).\n\n"
+            "💡 **Sonuç:** İl düzeyindeki ekolojik korelasyon bir ilişkiyi betimler; nedensellik kurmak için emisyon envanteri ve "
+            "nüfusu kontrol eden modeller gerekir."
         )
 
     # 3. KURAL: BÖLGESEL SIRALAMA & EN TEMİZ VE EN KİRLİ BÖLGE SORGULARI

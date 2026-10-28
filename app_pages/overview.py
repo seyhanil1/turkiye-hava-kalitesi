@@ -88,11 +88,11 @@ def render_overview_page(
         st.plotly_chart(fig_map, use_container_width=True)
         st.markdown(
             "<div style='text-align:center; font-size:11px; color:#8faec9; margin-top:-8px; margin-bottom:10px; padding:4px 8px; background:#021626; border-radius:4px; border:1px solid #083454;'>"
-            "<span style='color:#00e599; font-weight:600;'>Yeşil:</span> İyi (≤15) <span style='color:#335370;'>|</span> "
-            "<span style='color:#facc15; font-weight:600;'>Sarı:</span> Orta (15-30) <span style='color:#335370;'>|</span> "
-            "<span style='color:#f97316; font-weight:600;'>Turuncu:</span> Hassas (30-50) <span style='color:#335370;'>|</span> "
-            "<span style='color:#f87171; font-weight:600;'>Kırmızı:</span> Sağlıksız (50-70) <span style='color:#335370;'>|</span> "
-            "<span style='color:#ef4444; font-weight:600;'>Bordo:</span> Kritik (&gt;70 µg/m³)"
+            "<span style='color:#00e599; font-weight:600;'>Yeşil:</span> Düşük (≤10) <span style='color:#335370;'>|</span> "
+            "<span style='color:#facc15; font-weight:600;'>Sarı:</span> Orta (10-15) <span style='color:#335370;'>|</span> "
+            "<span style='color:#f97316; font-weight:600;'>Turuncu:</span> Yüksek (15-25) <span style='color:#335370;'>|</span> "
+            "<span style='color:#f87171; font-weight:600;'>Kırmızı:</span> Çok Yüksek (25-35) <span style='color:#335370;'>|</span> "
+            "<span style='color:#ef4444; font-weight:600;'>Bordo:</span> Kritik (&gt;35 µg/m³)"
             "</div>",
             unsafe_allow_html=True
         )
@@ -106,8 +106,8 @@ def render_overview_page(
     # 6. ALT BİLGİ VE KAYNAKLAR
     st.markdown("""
     <div style='margin-top: 30px; padding: 16px; border-top: 1px solid #1e293b; color: #64748b; font-size: 0.8rem; text-align: center;'>
-        <b>Veri Kaynakları:</b> Temiz Hava Hakkı Platformu (Kara Rapor 2025) &bull; TÜİK Ölüm ve Nüfus İstatistikleri (2022-2025) &bull; OSB verileri: OSBÜK (Ekim 2026) &bull; Copernicus CAMS / Open-Meteo &bull; DSÖ 2021 Kılavuz Limitleri
+        <b>Veri Kaynakları:</b> Copernicus CAMS / Open-Meteo (PM2.5 yıllık 2025 ve günlük model) &bull; Temiz Hava Hakkı Platformu Kara Rapor 2025 (istasyon karşılaştırması) &bull; TÜİK Ölüm ve Nüfus İstatistikleri &bull; OSB verileri: OSBÜK (Ekim 2026) &bull; DSÖ 2021 Kılavuzu
         <br>
-        <i>Son Veri Eşitleme: 2026-10-10 &bull; Analitik Motor: Python Statsmodels & Scipy &bull; Durum: Doğrulanmış Resmi Veri</i>
+        <i>PM2.5 değerleri istasyon ölçümü değil, CAMS model tahminidir &bull; Analitik Motor: Python Statsmodels & Scipy</i>
     </div>
     """, unsafe_allow_html=True)

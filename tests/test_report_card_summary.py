@@ -56,23 +56,24 @@ def test_city_summary_turkish_characters_and_edge_cases():
     """
     df = build_master_dataset()
 
-    # 1. Iğdır (Düşük OSB + Yüksek PM2.5 uç durumu)
-    igdir = generate_city_summary(df, "Iğdır")
-    igdir_text = " ".join(igdir["sentences"])
-    assert "OSB sayısı düşük gruptayken PM2,5 yüksek gruptadır." in igdir_text
-    assert "81 il içinde PM2,5'te 80. sırada (1 = en düşük)." in igdir_text
+    # 1-2. Türkçe karakterli iller: sıralama veriden hesaplanan sırayla aynı olmalı
+    for il in ["Iğdır", "Şanlıurfa", "İzmir", "Çanakkale"]:
+        txt = " ".join(generate_city_summary(df, il)["sentences"])
+        sira = int(df["pm25"].rank(ascending=True, method="min")[df["il"] == il].iloc[0])
+        assert f"81 il içinde PM2,5'te {sira}. sırada (1 = en düşük)." in txt
 
-    # 2. Şanlıurfa (Yüksek OSB + Düşük PM2.5 uç durumu)
-    urfa = generate_city_summary(df, "Şanlıurfa")
-    urfa_text = " ".join(urfa["sentences"])
-    assert "OSB sayısı yüksek gruptayken PM2,5 düşük gruptadır." in urfa_text
-    assert "81 il içinde PM2,5'te 13. sırada (1 = en düşük)." in urfa_text
+    # Bölge ortalamasının altındaki il için fark negatif işaretli yazılmalı (−1 < fark < 0 dahil)
+    from app_pages.report_card import to_tr_num, to_tr_sign
+    assert to_tr_num(-0.4, 1) == "-0,4"
+    assert to_tr_sign(-0.4, 1) == "-0,4"
+    assert to_tr_sign(0.4, 1) == "+0,4"
 
     # 3. İstanbul (En kalabalık il)
     ist = generate_city_summary(df, "İstanbul")
     ist_text = " ".join(ist["sentences"])
     assert "81 il içinde nüfus büyüklüğünde 1. sırada" in ist_text
-    assert "Marmara Bölgesi ortalamasına (35,7 µg/m³) göre +2,7 µg/m³ fark göstermektedir." in ist_text
+    marmara_ort = df[df["bolge"] == "Marmara"]["pm25"].mean()
+    assert f"Marmara Bölgesi ortalamasına ({to_tr_num(marmara_ort, 1)} µg/m³)" in ist_text
     assert ist["kunye"]["nufus"] == 15655924
     assert ist["kunye"]["plaka"] == 34
     assert ist["kunye"]["faal_osb"] == 8
@@ -123,9 +124,9 @@ def test_report_card_apptest_rendering_and_dom():
 
     # Faal OSB ve resmi birim kontrolleri
     assert "Faal OSB:" in all_markdown
-    assert "8 Adet (%88,9)" in all_markdown
     assert "(Yüz Binde)" in all_markdown
-    assert "+2,7 µg/m³" in all_markdown
+    assert "Kirlilik Kademesi" in all_markdown
+    assert "CAMS 2025 model" in all_markdown
 
     # Yasaklı kelimeler DOM'da olmamalı
     assert "en temiz" not in all_markdown.lower()
@@ -134,28 +135,25 @@ def test_report_card_apptest_rendering_and_dom():
 
 
 def test_dso_risk_tier_5_scales_and_afyonkarahisar():
-    """5 kademeli resmi DSÖ ölçeğini ve Afyonkarahisar'ın 'Hassas' sınıfını doğrular."""
-    # Eşik kontrolleri
-    assert get_dso_risk_tier(10.0) == "İyi"
-    assert get_dso_risk_tier(15.0) == "İyi"
-    assert get_dso_risk_tier(15.1) == "Orta"
-    assert get_dso_risk_tier(30.0) == "Orta"
-    assert get_dso_risk_tier(30.1) == "Hassas"
-    assert get_dso_risk_tier(33.94) == "Hassas"
-    assert get_dso_risk_tier(50.0) == "Hassas"
-    assert get_dso_risk_tier(50.1) == "Sağlıksız"
-    assert get_dso_risk_tier(70.0) == "Sağlıksız"
-    assert get_dso_risk_tier(70.1) == "Kritik"
+    """DSÖ 2021 yıllık ara hedeflerine (10/15/25/35) dayalı 5 kademeyi ve master tabloyla tutarlılığı doğrular."""
+    assert get_dso_risk_tier(4.0) == "Düşük"
+    assert get_dso_risk_tier(10.0) == "Düşük"
+    assert get_dso_risk_tier(10.1) == "Orta"
+    assert get_dso_risk_tier(15.0) == "Orta"
+    assert get_dso_risk_tier(15.1) == "Yüksek"
+    assert get_dso_risk_tier(25.0) == "Yüksek"
+    assert get_dso_risk_tier(25.1) == "Çok Yüksek"
+    assert get_dso_risk_tier(35.0) == "Çok Yüksek"
+    assert get_dso_risk_tier(35.1) == "Kritik"
 
-    # Afyonkarahisar kontrolü
     df = build_master_dataset()
     afyon = df[df["il"] == "Afyonkarahisar"].iloc[0]
-    assert afyon["dso_risk"] == "Hassas"
+    assert afyon["dso_risk"] == get_dso_risk_tier(afyon["pm25"])
     assert afyon["dso_risk"] != "Yüksek Risk"
 
 
 def test_report_card_afyonkarahisar_rendering_and_query_sync():
-    """URL parametresi ?il=Afyonkarahisar ile gelindiğinde 'Hassas' rozetinin basıldığını doğrular."""
+    """URL parametresi ?il=Afyonkarahisar ile gelindiğinde ilin kademe rozetinin basıldığını doğrular."""
     def app_afyon():
         import streamlit as st
         from app_pages.report_card import render_report_card_page
@@ -170,7 +168,8 @@ def test_report_card_afyonkarahisar_rendering_and_query_sync():
     assert not at.exception
     all_markdown = " ".join([m.value for m in at.markdown])
     assert "Afyonkarahisar" in all_markdown
-    assert "Hassas" in all_markdown
+    _df = build_master_dataset()
+    assert _df.set_index("il").loc["Afyonkarahisar", "dso_risk"] in all_markdown
     assert "Yüksek Risk" not in all_markdown
 
 

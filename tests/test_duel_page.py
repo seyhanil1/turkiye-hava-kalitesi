@@ -70,7 +70,9 @@ def test_duel_page_istanbul_ankara_exact_values():
     assert "5.803.482" in all_markdown
     assert "Plaka 34" in all_markdown
     assert "Plaka 06" in all_markdown
-    assert "38,4 µg/m³" in all_markdown
+    from data_sources.local_official_data import build_master_dataset as _b
+    _m = _b().set_index("il")
+    assert (f"{_m.loc['İstanbul', 'pm25']:.1f}".replace(".", ",") + " µg/m³") in all_markdown
     assert "71,2 (yüz binde)" in all_markdown
     assert "63,0 (yüz binde)" in all_markdown
     assert "9 Adet" in all_markdown
@@ -84,7 +86,8 @@ def test_duel_page_istanbul_ankara_exact_values():
 
     # 2. Fark çipleri ve matematiksel tutarlılık
     assert "+6 Adet" in all_markdown
-    assert "0,9 µg/m³" in all_markdown
+    _fark = abs(round(_m.loc["İstanbul", "pm25"], 1) - round(_m.loc["Ankara", "pm25"], 1))
+    assert (f"{_fark:.1f}".replace(".", ",") + " µg/m³") in all_markdown
     assert "+6,0 OSB" not in all_markdown
 
     # 3. Metin kalitesi kontrolü (Sayısal NaN, Inf, None kelime olarak bulunmamalı)

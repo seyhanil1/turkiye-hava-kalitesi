@@ -27,18 +27,13 @@ def test_industry_page_data_integrity(master_df):
 
 
 def test_pixel_perfect_dashboard_modules_content(master_df):
-    """Dashboard HTML çıktısında Sanayi modülünün eksiksiz yer aldığını doğrular."""
+    """Ulaşılamayan eski dashboard modülleri (sabit istatistikler içeren) HTML'den kaldırılmış olmalı."""
     html = generate_pixel_perfect_dashboard_html(master_df)
 
-    # 2. Sanayi Profili Modülü Kontrolleri
-    assert "Türkiye Geneli Toplam OSB Sayısı" in html
-    assert "Toplam Tahsisli OSB Üretim Alanı" in html
-    assert "Bölgesel OSB Yoğunluğu ve Çevre Baskısı Sıralaması" in html
-    assert "Marmara Aksı (Kocaeli, Bursa, Tekirdağ)" in html
-    assert "Güneydoğu Aksı (Gaziantep)" in html
-    assert "KRİTİK BASKI" in html
-    assert "SANAYİ SİCİLİ" in html
-    assert "industryBarChart" in html
+    for eski in ["industryBarChart", "view-korelasyon", "view-duello", "view-ai_tahmin",
+                 "SANAYİ SİCİLİ", "Bakanlık siciline", "r = +0,48", "t = 8,42", "Projeksiyon"]:
+        assert eski not in html, eski
+    assert "view-genel_bakis" in html
 
 
 def test_industry_page_kpi_cards_and_parsel_removal():
@@ -53,13 +48,14 @@ def test_industry_page_kpi_cards_and_parsel_removal():
     assert "parsel" not in content.lower()
 
     # Yeni resmi Faal OSB KPI kartını doğrula
-    assert "BAKANLIK SİCİLİ • FAAL ORANI" in content
+    assert "OSBÜK • FAAL ORANI" in content
+    assert "BAKANLIK" not in content
     assert "AKTİF ÜRETİMDEKİ OSB" in content
     assert "Tescilli 419 OSB'nin 304'ü fiilen işletme ve üretim aşamasındadır (OSBÜK Ekim 2026)." in content
     assert "planlama/altyapı aşamasında organize sanayi bölgesi" in content
 
-    # Marmara kartındaki metin güncellemesini doğrula
-    assert "Marmara bölgesi genelinde 100 tescilli OSB (78 faal üretimde)" in content
+    # Marmara kartı veriden hesaplanmalı
+    assert "Marmara bölgesi genelinde {marmara_osb} OSB ({marmara_faal} faal üretimde)" in content
     assert "faal üretim kapasitesi" in content
 
 
@@ -68,16 +64,10 @@ def test_industry_page_barchart_descending_and_formatting():
     with open("app_pages/industry_page.py", "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Sıralamanın Marmara (100) > İç Anadolu (75) > Karadeniz (70) > Ege (66) > Akdeniz (44) > Güneydoğu (35) > Doğu Anadolu (29) olduğunu doğrula
-    pos_marmara = content.find('"bolge": "Marmara"')
-    pos_icanadolu = content.find('"bolge": "İç Anadolu"')
-    pos_karadeniz = content.find('"bolge": "Karadeniz"')
-    pos_ege = content.find('"bolge": "Ege"')
-    pos_akdeniz = content.find('"bolge": "Akdeniz"')
-    pos_guneydogu = content.find('"bolge": "Güneydoğu Anadolu"')
-    pos_dogu = content.find('"bolge": "Doğu Anadolu"')
-
-    assert -1 < pos_marmara < pos_icanadolu < pos_karadeniz < pos_ege < pos_akdeniz < pos_guneydogu < pos_dogu
+    # Bölge verisi sabit liste yerine master tablodan hesaplanmalı ve OSB'ye göre azalan sıralanmalı
+    assert '"bolge": "Marmara", "osb": 100' not in content
+    assert 'df.groupby("bolge").agg(osb=("toplam_osb", "sum")' in content
+    assert 'reg.sort_values("osb", ascending=False)' in content
 
     # Doğu Anadolu metin ezilmesini önlemek için textposition="auto" olduğunu doğrula
     assert 'textposition="auto"' in content

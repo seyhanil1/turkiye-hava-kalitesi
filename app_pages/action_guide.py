@@ -40,7 +40,7 @@ def render_action_guide_page(df: pd.DataFrame = None):
                     Hava kirliliğiyle mücadele yalnızca bireysel korunmayı değil, aynı zamanda kaynağında emisyon azaltımını zorunlu kılar.
                 </span>
             </div>
-            <span style="font-size: 11px; color: #8faec9; font-family: monospace;">Kılavuz Referansı: DSÖ-2021 / ÇŞİDB-2025</span>
+            <span style="font-size: 11px; color: #8faec9; font-family: monospace;">Kılavuz Referansı: DSÖ-2021</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -70,7 +70,7 @@ def render_action_guide_page(df: pd.DataFrame = None):
                     Kirlilik seviyesinin pik yaptığı <strong>sabah ve akşam iş/okul çıkışı saatlerinde</strong> dış ortamda ağır fiziksel aktivitelerden (koşu, antrenman, spor) kaçınılmalıdır.
                 </li>
                 <li>
-                    PM2.5 düzeyinin <strong>'Hassas', 'Sağlıksız' veya 'Kritik'</strong> olduğu günlerde dışarı çıkması zorunlu olan risk grupları (yaşlılar, çocuklar, solunum hastaları) standart cerrahi maske yerine partikül tutucu <strong>FFP2/N95 maske</strong> tercih etmelidir.
+                    PM2.5 düzeyinin <strong>'Yüksek', 'Çok Yüksek' veya 'Kritik'</strong> olduğu günlerde dışarı çıkması zorunlu olan risk grupları (yaşlılar, çocuklar, solunum hastaları) standart cerrahi maske yerine partikül tutucu <strong>FFP2/N95 maske</strong> tercih etmelidir.
                 </li>
             </ul>
         </div>

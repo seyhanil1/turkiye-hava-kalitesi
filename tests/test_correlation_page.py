@@ -7,32 +7,42 @@ from data_sources.constants import IL_RAKIM
 from app_pages.correlation_page import render_correlation_page
 
 
-def test_correlation_scatter_ols_trendline_positive_fit():
-    """Scatter plot OLS trendline r=+0.48 ve R²≈0.23 pozitif fit testi."""
+def _render_correlation():
+    from data_sources.local_official_data import build_master_dataset
+    from app_pages.correlation_page import render_correlation_page
+    render_correlation_page(build_master_dataset())
+
+
+def test_correlation_scatter_ols_trendline_matches_data():
+    """Saçılım grafiğindeki OLS doğrusu sabit bir r yerine verinin gerçek en küçük kareler uyumu olmalı."""
+    from scipy import stats
     df = build_master_dataset()
-    if "rakim" not in df.columns:
-        df["rakim"] = df["il"].map(IL_RAKIM).fillna(500.0)
+    reg = stats.linregress(df["osb_alani_hektar"].astype(float), df["pm25"].astype(float))
 
-    x_data = df["osb_alani_hektar"].astype(float)
-    y_data = df["pm25"].astype(float)
+    at = AppTest.from_function(_render_correlation)
+    at.run(timeout=60)
+    assert not at.exception
 
-    r_val = 0.48
-    r2_val_scatter = r_val ** 2
-    std_x = float(x_data.std(ddof=1))
-    std_y = float(y_data.std(ddof=1))
-    slope = r_val * (std_y / std_x)
-    intercept = float(y_data.mean() - slope * x_data.mean())
+    slope_str = f"{reg.slope:.4f}".replace(".", ",")
+    r2_str = f"{reg.rvalue ** 2:.3f}".replace(".", ",")
+    legend_names = [t["name"] for chart in at.get("plotly_chart")
+                    for t in __import__("json").loads(chart.proto.spec)["data"] if t.get("name")]
+    assert f"OLS Trendi (Eğim = {slope_str}, R² = {r2_str})" in legend_names
 
-    # Eğim pozitif olmalı ve R² yaklaşık 0.23 olmalı
-    assert slope > 0.001
-    assert round(r2_val_scatter, 3) == 0.230
 
-    slope_str = f"{slope:.4f}".replace(".", ",")
-    r2_str = f"{r2_val_scatter:.3f}".replace(".", ",")
-    legend_str = f"OLS Trendi (Eğim = {slope_str}, R² = {r2_str})"
-    assert "0,0038" in legend_str
-    assert "0,230" in legend_str
-    assert "." not in legend_str.split("Eğim = ")[1].split(",")[0]  # Türkçe virgül kontrolü
+def test_correlation_summary_card_uses_computed_values():
+    """Özet kartındaki Spearman/Pearson değerleri veriden hesaplanmalı; eski sabit değerler bulunmamalı."""
+    from analytics.correlation import calculate_bivariate_correlation
+    df = build_master_dataset()
+    biv = calculate_bivariate_correlation(df["osb_alani_hektar"], df["pm25"])
+
+    at = AppTest.from_function(_render_correlation)
+    at.run(timeout=60)
+    assert not at.exception
+    md = " ".join(m.value for m in at.markdown)
+    assert f"ρ = {biv['spearman_rho']:+.2f}".replace(".", ",") in md
+    assert f"r = {biv['pearson_r']:+.2f}".replace(".", ",") in md
+    assert "Moran's I = " in md
 
 
 def test_correlation_outlier_offsets_no_overlap():
@@ -92,34 +102,22 @@ def test_correlation_multiple_regression_no_scientific_notation():
         assert "e+" not in s
         assert "," in s  # Türkçe ondalık virgül
 
-    # Nüfus katsayısı beklenen değer
-    assert b_strs[3] == "+0,0257"
-    assert se_strs[3] == "0,1024"
+    # Katsayılar statsmodels OLS ile birebir aynı olmalı
+    import statsmodels.api as sm
+    ols = sm.OLS(y_reg, X_mat).fit()
+    assert np.allclose(beta_coeffs, ols.params)
+    assert np.allclose(se_beta, ols.bse)
 
 
-def test_correlation_commentary_text_exact_match():
-    """Regresyon yorum metninin bilimsel tutarlılığı ve çelişki içermediği testi."""
+def test_correlation_no_hardcoded_statistics():
+    """Sayfa kaynağında veriden bağımsız sabit istatistik bulunmamalı."""
     with open("app_pages/correlation_page.py", "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Eski çelişkili ifadenin kaldırıldığını doğrula
+    for sabit in ["ρ = +0,52", "r = +0,48", "[%95 CI: 0,31, 0,62]", "Moran's I ≈ +0,35",
+                  "r_val = 0.48", "0.35 * z_line", "%2,4'ünü"]:
+        assert sabit not in content, sabit
     assert "açıklayıcılık artmaktadır" not in content
-
-    # Yeni akademik yorum metninin varlığını doğrula
-    expected_commentary = (
-        "Doğrusal çoklu regresyon modeli kirlilik varyansının yalnızca %2,4'ünü açıklayabilmektedir "
-        "(Düzeltilmiş R² negatiftir). Bu durum, il bazındaki kirliliğin klasik makro göstergelerle "
-        "doğrusal olarak açıklanamayacağını; mikro-klima, topoğrafik çanak havza hapsi ve sınır ötesi "
-        "taşınım gibi mekânsal faktörlerin belirleyici olduğunu göstermektedir."
-    )
-    assert expected_commentary in content
-
-    # Güven aralığındaki Türkçe virgül kontrolü
-    assert "[%95 CI: 0,31, 0,62]" in content
-    assert "[%95 CI: 0.31, 0.62]" not in content
-
-    # Moran I Türkçe virgül kontrolü
-    assert "Moran's I ≈ +0,35, p &lt; 0,01" in content
 
 
 def test_correlation_apptest_navigation_and_no_city_selector():

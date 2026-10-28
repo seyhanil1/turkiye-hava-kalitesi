@@ -42,21 +42,21 @@ def render_health_guide_page(df: pd.DataFrame = None):
         <div style="background:#031b2e; border:1px solid #00e599; border-radius:10px; padding:16px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                 <span style="background:rgba(0,229,153,0.15); color:#00e599; font-weight:700; font-size:11px; padding:2px 8px; border-radius:4px;">
-                    İYİ (≤15 µg/m³)
+                    DÜŞÜK (≤10 µg/m³)
                 </span>
-                <strong style="color:#ffffff; font-size:14px;">Açık Hava İçin İdeal</strong>
+                <strong style="color:#ffffff; font-size:14px;">En Düşük Kademe</strong>
             </div>
             <p style="font-size:12.5px; color:#cbd5e1; margin:0; line-height:1.5;">
-                DSÖ 24 saatlik kılavuz eşiğinin altındaki seviyedir. Tüm nüfus grupları için açık hava fiziksel aktiviteleri ve havalandırma uygundur.
+                DSÖ Ara Hedef-4 (10 µg/m³) karşılanır; ancak kılavuz değeri 5 µg/m³'ün üzerindedir ve PM2.5 için güvenli eşik yoktur. Açık hava aktiviteleri genel olarak sürdürülebilir.
             </p>
         </div>
 
         <div style="background:#031b2e; border:1px solid #facc15; border-radius:10px; padding:16px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                 <span style="background:rgba(250,204,21,0.15); color:#facc15; font-weight:700; font-size:11px; padding:2px 8px; border-radius:4px;">
-                    ORTA (15,1 - 30 µg/m³)
+                    ORTA (10,1 - 15 µg/m³)
                 </span>
-                <strong style="color:#ffffff; font-size:14px;">Kabul Edilebilir Seviye</strong>
+                <strong style="color:#ffffff; font-size:14px;">Ara Hedef-3 Düzeyi</strong>
             </div>
             <p style="font-size:12.5px; color:#cbd5e1; margin:0; line-height:1.5;">
                 Hava kalitesi genel nüfus için kabul edilebilir düzeydedir; ancak aşırı hassas bireylerde hafif solunum yolu rahatsızlıkları tetiklenebilir.
@@ -66,12 +66,12 @@ def render_health_guide_page(df: pd.DataFrame = None):
         <div style="background:#031b2e; border:1px solid #f97316; border-radius:10px; padding:16px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                 <span style="background:rgba(249,115,22,0.15); color:#f97316; font-weight:700; font-size:11px; padding:2px 8px; border-radius:4px;">
-                    HASSAS (30,1 - 50 µg/m³)
+                    YÜKSEK (15,1 - 25 µg/m³)
                 </span>
                 <strong style="color:#ffffff; font-size:14px;">Hassas Gruplar İçin Uyarı</strong>
             </div>
             <p style="font-size:12.5px; color:#cbd5e1; margin:0; line-height:1.5;">
-                DSÖ Ara Hedef-1 sınırını aşar. Çocuklar, yaşlılar ve astım/KOAH hastaları uzun süreli ağır açık hava egzersizlerini sınırlandırmalıdır.
+                DSÖ Ara Hedef-3 sınırını aşar. Çocuklar, yaşlılar ve astım/KOAH hastaları uzun süreli ağır açık hava egzersizlerini sınırlandırmalıdır.
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -81,7 +81,7 @@ def render_health_guide_page(df: pd.DataFrame = None):
         <div style="background:#031b2e; border:1px solid #f87171; border-radius:10px; padding:16px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                 <span style="background:rgba(248,113,113,0.15); color:#f87171; font-weight:700; font-size:11px; padding:2px 8px; border-radius:4px;">
-                    SAĞLIKSIZ (50,1 - 70 µg/m³)
+                    ÇOK YÜKSEK (25,1 - 35 µg/m³)
                 </span>
                 <strong style="color:#ffffff; font-size:14px;">Genel Nüfus Riski</strong>
             </div>
@@ -93,7 +93,7 @@ def render_health_guide_page(df: pd.DataFrame = None):
         <div style="background:#031b2e; border:1px solid #ef4444; border-radius:10px; padding:16px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                 <span style="background:rgba(239,68,68,0.15); color:#ef4444; font-weight:700; font-size:11px; padding:2px 8px; border-radius:4px;">
-                    KRİTİK (>70 µg/m³)
+                    KRİTİK (>35 µg/m³)
                 </span>
                 <strong style="color:#ffffff; font-size:14px;">Yüksek Maruziyet Alarmı</strong>
             </div>

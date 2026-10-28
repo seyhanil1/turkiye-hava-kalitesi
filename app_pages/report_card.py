@@ -11,6 +11,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional
 
 from visualization.components import render_metric_card
+from data_sources.constants import pm25_kademe_etiketi
 
 
 def to_tr_num(val: float, decimals: int = 1) -> str:
@@ -21,9 +22,10 @@ def to_tr_num(val: float, decimals: int = 1) -> str:
     dec = Decimal(f"{float(val):.4f}").quantize(Decimal(dec_fmt), rounding=ROUND_HALF_UP)
     if decimals == 0:
         return f"{int(dec):,}".replace(",", ".")
-    parts = f"{dec:.{decimals}f}".split(".")
+    sign = "-" if dec < 0 else ""
+    parts = f"{abs(dec):.{decimals}f}".split(".")
     int_part = f"{int(parts[0]):,}".replace(",", ".")
-    return f"{int_part},{parts[1]}"
+    return f"{sign}{int_part},{parts[1]}"
 
 
 def to_tr_sign(val: float, decimals: int = 1) -> str:
@@ -41,17 +43,8 @@ def get_disp_val(val: float, decimals: int = 1) -> float:
 
 
 def get_dso_risk_tier(val: float) -> str:
-    """5 kademeli resmi ölçeğe göre DSÖ risk sınıfı etiketini döndürür."""
-    if val <= 15.0:
-        return "İyi"
-    elif val <= 30.0:
-        return "Orta"
-    elif val <= 50.0:
-        return "Hassas"
-    elif val <= 70.0:
-        return "Sağlıksız"
-    else:
-        return "Kritik"
+    """Yıllık PM2.5 için platform kademesini döndürür (eşikler DSÖ 2021 yıllık ara hedefleri)."""
+    return pm25_kademe_etiketi(val)
 
 
 def generate_city_summary(df: pd.DataFrame, city_name: str) -> dict:
@@ -218,7 +211,7 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
         bolge_pm_disp = get_disp_val(bolge_ort_pm25, 1)
         delta_bolge = round(il_pm_disp - bolge_pm_disp, 1)
         render_metric_card(
-            title="PM2.5 Konsantrasyonu",
+            title="PM2.5 Yıllık Ort. (CAMS 2025 model)",
             value=to_tr_num(il_row["pm25"], 1),
             unit=" µg/m³",
             delta=f"{to_tr_sign(delta_bolge, 1)} µg/m³ (Bölge Ort.)",
@@ -227,21 +220,47 @@ def render_report_card_page(df: pd.DataFrame, ts_df: Optional[pd.DataFrame] = No
     with c2:
         dso_risk_tier = get_dso_risk_tier(float(il_row["pm25"]))
         render_metric_card(
-            title="DSÖ Risk Sınıfı",
+            title="Kirlilik Kademesi",
             value=dso_risk_tier,
             unit="",
-            delta=f"DSÖ Eşiğinin {to_tr_num(il_row['dso_limit_kat'], 1)} Katı",
-            delta_type="positive" if il_row["pm25"] > 15 else "neutral"
+            delta=f"DSÖ Kılavuzunun (5 µg/m³) {to_tr_num(il_row['dso_limit_kat'], 1)} Katı",
+            delta_type="positive" if il_row["pm25"] > 10 else "neutral"
         )
     with c3:
         render_metric_card(
             title="Solunum Ölüm Oranı",
             value=to_tr_num(il_row["solunum_olum_100k"], 1),
             unit=" (Yüz Binde)",
-            delta="TÜİK 2024 (Kaba Hız)",
+            delta="TÜİK 2024 · Kaba hız, yaşa göre düzeltilmemiş",
             delta_type="neutral"
         )
-        
+
+    # Ek göstergeler: yaş yapısını kısmen dengeleyen pay, AirQ+ atfedilebilir ölüm ve istasyon karşılaştırması
+    ek_parcalar = []
+    if pd.notna(il_row.get("solunum_olum_payi")):
+        ek_parcalar.append(
+            f"Solunum ölümlerinin tüm ölümler içindeki payı: <strong>%{to_tr_num(il_row['solunum_olum_payi'], 1)}</strong>"
+        )
+    if pd.notna(il_row.get("atfedilen_olum_tahmini")):
+        atf_sayi = f"{int(il_row['atfedilen_olum_tahmini']):,}".replace(",", ".")
+        ek_parcalar.append(
+            f"PM2.5'e atfedilebilir ölüm (AirQ+ yaklaşık tahmin): <strong>~{atf_sayi}</strong> "
+            f"(tüm ölümler içindeki pay: %{to_tr_num(il_row['atfedilen_olum_payi'], 1)})"
+        )
+    if pd.notna(il_row.get("pm25_istasyon_max_2024")):
+        ek_parcalar.append(
+            f"Kara Rapor 2025 en yüksek istasyon (2024): <strong>{to_tr_num(il_row['pm25_istasyon_max_2024'], 1)} µg/m³</strong> "
+            f"— CAMS modeli bu ilde istasyon ölçümünün altında kalıyor"
+        )
+    if ek_parcalar:
+        st.markdown(
+            "<div style='margin-top:10px; padding:10px 14px; background:#031b2e; border:1px solid #093452; "
+            "border-radius:8px; font-size:12.5px; color:#cbd5e1; line-height:1.7;'>"
+            + " &bull; ".join(ek_parcalar)
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+
     st.write("")
     
     # 2. ORTA BÖLÜM: BÖLGESEL VE TÜRKİYE KARŞILAŞTIRMASI & İL KÜNYESİ

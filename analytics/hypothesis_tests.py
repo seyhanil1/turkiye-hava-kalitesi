@@ -198,7 +198,11 @@ def run_regional_anova(
         "h1": h1,
         "interpretation": (
             f"ANOVA F-testi (F = {f_stat_str}, p = {f_pval_str}) ve Kruskal-Wallis testi (H = {h_stat_str}, p = {kw_pval_str}) sonucunda; "
-            + ("bölgeler arasında hava kalitesi açısından istatistiksel olarak anlamlı fark bulunmuştur (p < 0.05)." if (is_sig_anova or is_sig_kw)
-               else "gruplar arasında istatistiksel olarak anlamlı bir fark tespit edilmemiştir (p > 0.05).")
+            + ("bölgeler arasında hava kalitesi açısından istatistiksel olarak anlamlı fark bulunmuştur (her iki test için p < 0.05)." if (is_sig_anova and is_sig_kw)
+               else "gruplar arasında istatistiksel olarak anlamlı bir fark tespit edilmemiştir (p > 0.05)." if not (is_sig_anova or is_sig_kw)
+               else ("yalnızca sıra tabanlı Kruskal-Wallis testi anlamlı fark göstermektedir (p < 0.05), ANOVA göstermemektedir; "
+                     "sonuç kullanılan teste duyarlıdır ve dikkatle yorumlanmalıdır." if is_sig_kw
+                     else "yalnızca ANOVA anlamlı fark göstermektedir (p < 0.05), sıra tabanlı Kruskal-Wallis göstermemektedir; "
+                          "sonuç kullanılan teste duyarlıdır ve dikkatle yorumlanmalıdır."))
         )
     }

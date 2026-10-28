@@ -40,11 +40,13 @@ def test_methodology_no_code_leaks():
     assert "b_df['pm25'].mean()" not in content
     assert "dropna()" not in content
     assert "with st.expander(\"Yöntem ve Kaynaklar\")" not in content
-    assert "Doğrulanmış 12 Aylık Konsolidasyon Dönemi" in content
-    assert "Copernicus CAMS zaman serisi 11.10.2025 – 10.10.2026 (12 Aylık Doğrulanmış Konsolidasyon) gözlem aralığını kapsar" in content
+    # Gerçek dışı "doğrulanmış 12 ay" iddiası kaldırıldı; yıllık değerler CAMS 2025 (12 ay)
+    assert "Doğrulanmış 12 Aylık" not in content
+    assert "2025 yılı 8.760 saatlik değerlerinin ortalamasıdır" in content
+    assert "Kara Rapor 2025" in content
+    assert "RR = 1,08" in content
     assert "11.07.2026" not in content
-    assert "OSB verileri: OSBÜK (Ekim 2026)" in content
-    assert "faal işletme/üretim oranları (OSBÜK Ekim 2026)" in content
+    assert "OSBÜK (Ekim 2026) OSB envanteri" in content
     assert "hektar büyüklükleri" not in content
     assert "81 ilin PM2.5 değerlerinin ağırlıksız aritmetik ortalamasıdır." in content
     assert "İlgili coğrafi bölgedeki illerin PM2.5 konsantrasyonlarının bölgesel aritmetik ortalamasıdır." in content

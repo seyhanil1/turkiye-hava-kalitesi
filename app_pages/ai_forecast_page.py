@@ -10,7 +10,6 @@ HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
 
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
 from typing import Dict, Any, Tuple, List
 
 
@@ -55,171 +54,33 @@ def determine_city_category(
     q3_osb: float, 
     q1_pm25: float, 
     q3_pm25: float
-) -> Tuple[str, float]:
+) -> str:
     """
-    Seçilen ilin hangi kategoriye girdiğini tespit eder
-    ve 5 yıllık projeksiyon için yıllık artış oranını döndürür.
-    
+    Seçilen ilin çeyreklik (Q1/Q3) eşiklerine göre hangi gruba girdiğini döndürür.
+    Bu yalnızca betimleyici bir gruplamadır; nedensellik veya gelecek tahmini içermez.
+
     Koşullar:
-    - OSB <= 2 ve PM2.5 >= 38.9: "Kategori A: Düşük OSB, Yüksek Kirlilik"
-    - OSB >= 6 ve PM2.5 >= 38.9: "Kategori B: Yüksek OSB, Yüksek Kirlilik"
-    - PM2.5 >= 38.9 olup OSB'si 3-5 arası olanlar (örn. Tokat): "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)"
-    - Her iki değişkende de normal aralıkta kalanlar: "Kategori Dışı (Orta Segment / Dengeli)"
+    - OSB <= Q1 ve PM2.5 >= Q3: "Kategori A: Düşük OSB, Yüksek Kirlilik"
+    - OSB >= Q3 ve PM2.5 >= Q3: "Kategori B: Yüksek OSB, Yüksek Kirlilik"
+    - PM2.5 >= Q3, OSB orta segmentte: "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)"
+    - Diğerleri: "Kategori Dışı (Orta Segment / Dengeli)"
     """
     osb = float(row["osb_sayisi"])
     pm25 = float(row["pm25"])
 
     if osb <= q1_osb and pm25 >= q3_pm25:
-        # Kategori A: Düşük OSB, Yüksek Kirlilik (%3 yıllık artış)
-        return CategoryStr("Kategori A: Düşük OSB, Yüksek Kirlilik"), 0.03
+        return CategoryStr("Kategori A: Düşük OSB, Yüksek Kirlilik")
     elif osb >= q3_osb and pm25 >= q3_pm25:
-        # Kategori B: Yüksek OSB, Yüksek Kirlilik (%5 yıllık artış)
-        return CategoryStr("Kategori B: Yüksek OSB, Yüksek Kirlilik"), 0.05
+        return CategoryStr("Kategori B: Yüksek OSB, Yüksek Kirlilik")
     elif pm25 >= q3_pm25:
-        # PM2.5 >= 38.9 olup OSB'si orta segmentte kalan iller (%2 yıllık artış)
-        return CategoryStr("Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)"), 0.02
+        return CategoryStr("Kategori Dışı (Yüksek Kirlilik / Orta Sanayi)")
     else:
-        # Her iki değişkende de normal aralıkta (%1 yıllık artış)
-        return CategoryStr("Kategori Dışı (Orta Segment / Dengeli)"), 0.01
-
-
-def build_projection_series(base_pm25: float, annual_growth_rate: float) -> Tuple[List[int], List[float]]:
-    """
-    2026-2031 (5 yıllık) projeksiyon değerlerini hesaplar.
-    """
-    years = [2026, 2027, 2028, 2029, 2030, 2031]
-    values = []
-    for i in range(len(years)):
-        val = base_pm25 * ((1.0 + annual_growth_rate) ** i)
-        values.append(round(val, 2))
-    return years, values
-
-
-def create_forecast_figure(
-    city_name: str, 
-    category: str, 
-    years: List[int], 
-    values: List[float], 
-    growth_rate: float
-) -> go.Figure:
-    """
-    Plotly go.Scatter ile koyu temalı, ucu kesik çizgili (dashed) şık 5 yıllık projeksiyon grafiği üretir.
-    """
-    if category.startswith("Kategori A") or category == "Kategori A":
-        theme_color = "#f59e0b"   # Amber / Uyarı
-        badge_text = "Kategori A (Düşük OSB, Yüksek PM2.5) — Yıllık +%3 Artış Trendi"
-    elif category.startswith("Kategori B") or category == "Kategori B":
-        theme_color = "#ef4444"   # Kırmızı / Kritik Sanayi
-        badge_text = "Kategori B (Yüksek OSB, Yüksek PM2.5) — Yıllık +%5 Artış Trendi"
-    elif "Yüksek Kirlilik" in category:
-        theme_color = "#f97316"   # Turuncu / Yüksek Kirlilik
-        badge_text = "Kategori Dışı (Yüksek Kirlilik / Orta Sanayi) — Yıllık +%2 Artış Trendi"
-    else:
-        theme_color = "#00e5db"   # Neon Turkuaz / Normal
-        badge_text = "Kategori Dışı (Orta Segment / Dengeli) — Yıllık +%1 Artış Trendi"
-
-    fig = go.Figure()
-
-    # DSÖ 2021 Kılavuz Değeri (5 µg/m³) - Çizginin üstüne kaydırılmış etiket
-    fig.add_hline(
-        y=5.0,
-        line_dash="dot",
-        line_color="#10b981",
-        line_width=1.5,
-        annotation_text="DSÖ Yıllık Kılavuz Eşiği (5 µg/m³)",
-        annotation_position="top right",
-        annotation_yshift=8,
-        annotation_yanchor="bottom",
-        annotation_font=dict(color="#10b981", size=10)
-    )
-
-    # DSÖ IT-1 Geçiş Hedefi (35 µg/m³) - Çizginin üstüne kaydırılmış etiket
-    fig.add_hline(
-        y=35.0,
-        line_dash="dot",
-        line_color="#f59e0b",
-        line_width=1.5,
-        annotation_text="DSÖ IT-1 Geçiş Eşiği (35 µg/m³)",
-        annotation_position="top right",
-        annotation_yshift=8,
-        annotation_yanchor="bottom",
-        annotation_font=dict(color="#f59e0b", size=10)
-    )
-
-    # 5 Yıllık Trend Projeksiyonu Çizgisi (Dashed / Ucu Kesik Çizgili)
-    fig.add_trace(go.Scatter(
-        x=years,
-        y=values,
-        mode="lines+markers+text",
-        name="5 Yıllık Trend Projeksiyonu",
-        line=dict(
-            color=theme_color,
-            width=3.5,
-            dash="dash"  # Kesik çizgi
-        ),
-        marker=dict(
-            size=11,
-            color="#ffffff",
-            line=dict(color=theme_color, width=3.5)
-        ),
-        text=[f"{v:.1f}".replace(".", ",") for v in values],
-        textposition="top center",
-        textfont=dict(color="#f8fafc", size=12, family="Inter, Segoe UI, sans-serif"),
-        hovertemplate=(
-            "<b>Yıl:</b> %{x}<br>"
-            "<b>Tahmini PM2.5:</b> %{text} µg/m³<br>"
-            f"<b>Model:</b> {badge_text}<extra></extra>"
-        )
-    ))
-
-    # Koyu Tema ve Glassmorphic Düzen
-    fig.update_layout(
-        title=dict(
-            text=f"<b>{city_name}</b> — 5 Yıllık Trend Projeksiyonu (2026–2031) <span style='font-size:11px; color:{theme_color};'>[{badge_text}]</span>",
-            font=dict(color="#f8fafc", size=12.5, family="Inter, Segoe UI, sans-serif")
-        ),
-        paper_bgcolor="#0b1324",
-        plot_bgcolor="#070d17",
-        xaxis=dict(
-            title=dict(text="Projeksiyon Yılı", font=dict(color="#94a3b8", size=12)),
-            tickmode="array",
-            tickvals=years,
-            ticktext=[str(y) for y in years],
-            gridcolor="#1e293b",
-            gridwidth=1,
-            tickfont=dict(color="#cbd5e1", size=12),
-            zeroline=False
-        ),
-        yaxis=dict(
-            title=dict(text="PM2.5 Konsantrasyonu (µg/m³)", font=dict(color="#94a3b8", size=12)),
-            gridcolor="#1e293b",
-            gridwidth=1,
-            tickfont=dict(color="#cbd5e1", size=12),
-            zeroline=False
-        ),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1,
-            font=dict(color="#94a3b8", size=11)
-        ),
-        hoverlabel=dict(
-            bgcolor="#0f172a",
-            bordercolor=theme_color,
-            font=dict(color="#f8fafc", family="Inter, sans-serif")
-        ),
-        margin=dict(l=40, r=40, t=60, b=40),
-        height=420
-    )
-
-    return fig
+        return CategoryStr("Kategori Dışı (Orta Segment / Dengeli)")
 
 
 def render_ai_forecast_page(df: pd.DataFrame):
     """
-    Yapay Zeka İçgörü & Tahmin Motoru sayfasını oluşturur.
+    İl Grupları sayfasını oluşturur (OSB ve PM2.5 çeyreklik gruplaması).
     """
     # 1. CSS & ANİMASYON ENJEKSİYONU
     st.markdown("""
@@ -427,14 +288,14 @@ def render_ai_forecast_page(df: pd.DataFrame):
             iller,
             key="province_groups_city_select",
             on_change=on_city_change,
-            help="81 il arasından dilediğinizi seçerek istatistiksel trend modelini, anomali sınıflandırmasını ve projeksiyonunu inceleyin."
+            help="81 il arasından dilediğinizi seçerek ilin OSB ve PM2.5 çeyreklik grubunu inceleyin."
         )
         if secilen_il and secilen_il != st.session_state.get("selected_city"):
             st.session_state["selected_city"] = secilen_il
             st.query_params["il"] = secilen_il
 
     il_row = df[df["il"] == secilen_il].iloc[0]
-    category, growth_rate = determine_city_category(il_row, q1_osb, q3_osb, q1_pm25, q3_pm25)
+    category = determine_city_category(il_row, q1_osb, q3_osb, q1_pm25, q3_pm25)
 
     with col_sel_right:
         # Seçilen ilin hızlı rozet durumu
@@ -516,8 +377,8 @@ def render_ai_forecast_page(df: pd.DataFrame):
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("""
+    st.markdown(f"""
     <div style='background:rgba(2,18,32,0.6); border:1px solid #1e293b; border-left:3px solid #38bdf8; padding:10px 14px; border-radius:6px; margin-top:14px; font-size:12.5px; color:#94a3b8;'>
-        <strong>Bilgi Notu:</strong> Listelenmeyen 68 il, belirlenen uç çeyreklik eşiklerinin dışında kalarak orta segmentte yer alan 'Dengeli Profil' grubundadır.
+        <strong>Bilgi Notu:</strong> Listelenmeyen {len(df) - len(kat_a_df) - len(kat_b_df)} il, belirlenen uç çeyreklik eşiklerinin dışında kalarak orta segmentte yer alan 'Dengeli Profil' grubundadır. PM2.5 değerleri CAMS 2025 yıllık model ortalamasıdır; gruplama nedensellik göstermez.
     </div>
     """, unsafe_allow_html=True)

@@ -40,16 +40,15 @@ def test_city_detection_single_and_multiple(master_df):
 def test_button_1_riskli_3_sehir(master_df):
     resp = generate_local_response("🚨 En Riskli 3 Şehir", master_df)
     assert "PM2.5 Seviyesi En Yüksek" in resp
-    assert "Osmaniye" in resp
-    assert "Iğdır" in resp
-    assert "Erzincan" in resp
+    for il in master_df.sort_values("pm25", ascending=False)["il"].head(3):
+        assert il in resp
 
 
 def test_button_2_temiz_3_sehir(master_df):
     resp = generate_local_response("🌿 En Temiz 3 Şehir", master_df)
     assert "PM2.5 Seviyesi En Düşük" in resp
-    assert "Tunceli" in resp
-    assert "Artvin" in resp
+    for il in master_df.sort_values("pm25")["il"].head(3):
+        assert il in resp
 
 
 def test_button_3_osb_sehirler(master_df):
@@ -91,8 +90,8 @@ def test_new_button_1_solunum_riski(master_df):
 def test_new_button_2_dso_limit_asanlar(master_df):
     resp = generate_local_response("DSÖ Limitini En Çok Aşanlar", master_df)
     assert "DSÖ" in resp
-    assert "Osmaniye" in resp
-    assert "Iğdır" in resp
+    for il in master_df.sort_values("pm25", ascending=False)["il"].head(3):
+        assert il in resp
 
 
 def test_new_button_3_sanayi_baskisi(master_df):
@@ -104,14 +103,14 @@ def test_new_button_3_sanayi_baskisi(master_df):
 
 def test_new_button_4_en_temiz_bolge(master_df):
     resp = generate_local_response("En Temiz Bölge", master_df)
-    assert "Karadeniz" in resp
+    assert master_df.groupby("bolge")["pm25"].mean().idxmin() in resp
     assert "En Temiz Coğrafi Bölge" in resp
 
 
 def test_natural_language_queries(master_df):
     # 1. Havası en temiz bölge hangisi?
     resp_bolge = generate_local_response("Havası en temiz bölge hangisi?", master_df)
-    assert "Karadeniz" in resp_bolge
+    assert master_df.groupby("bolge")["pm25"].mean().idxmin() in resp_bolge
 
     # 2. Bursa il profili
     resp_bursa = generate_local_response("Bursa il profili", master_df)
@@ -127,7 +126,8 @@ def test_natural_language_queries(master_df):
     # 4. Kirlilik ve OSB ilişkisi
     resp_corr = generate_local_response("Kirlilik ve OSB ilişkisi", master_df)
     assert "Korelasyon" in resp_corr or "Spearman" in resp_corr
-    assert "Marmara" in resp_corr
+    assert "Nüfus ile PM2.5" in resp_corr
+    assert "nedensellik" in resp_corr
 
 
 def test_six_analytical_questions(master_df):
@@ -135,8 +135,10 @@ def test_six_analytical_questions(master_df):
     q1 = "Sanayisi az olmasına rağmen havası en kirli iller hangileri ve sebebi ne?"
     r1 = generate_local_response(q1, master_df)
     assert "Sanayisi Az Olmasına Rağmen Havası En Kirli İller" in r1
-    assert "Iğdır" in r1
-    assert "Erzincan" in r1
+    q1 = master_df["toplam_osb"].quantile(0.25)
+    beklenen = master_df[master_df["toplam_osb"] <= q1].sort_values("pm25", ascending=False)["il"].head(4)
+    for il in beklenen:
+        assert il in r1
     assert "İnversiyon" in r1 or "inversiyon" in r1
     assert "Topoğrafik" in r1 or "topografik" in r1.lower()
 

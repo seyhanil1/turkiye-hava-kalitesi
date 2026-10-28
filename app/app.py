@@ -54,7 +54,8 @@ def load_application_data():
     if os.path.exists(master_csv):
         try:
             df = pd.read_csv(master_csv, encoding="utf-8")
-            if len(df) == 81:
+            # Eski şemalı önbellek (CAMS öncesi) kullanılmaz; yeniden üretilir
+            if len(df) == 81 and "pm25_kaynak" in df.columns:
                 return df
         except Exception:
             pass
@@ -119,8 +120,8 @@ df_daily = load_daily_city_air_quality()
 cities_list = sorted(list(df_master["il"].dropna().unique())) if not df_master.empty else list(PLAKA_ILLER.values())
 
 date_info = get_dataset_date_info()
-date_range_str = date_info.get("date_range_str", "11.07.2026 – 10.10.2026")
-period_label_str = date_info.get("period_label_str", "Doğrulanmış 12 Aylık Konsolidasyon Dönemi")
+date_range_str = date_info.get("date_range_str", "-")
+period_label_str = date_info.get("period_label_str", "-")
 
 # Ortak filtre durumu ve URL senkronizasyonu
 if "city" in st.query_params:
@@ -543,16 +544,17 @@ with st.sidebar:
         on_change=on_page_select
     )
 
-    # 3. Resmi Veri Kaynakları Rozetleri
+    # 3. Veri Kaynakları Rozetleri
     st.markdown("""
     <div style='margin-top: 16px; padding-top: 10px; border-top: 1px solid #07253d;'>
         <div style='font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #648ba8; margin-bottom: 5px;'>
             Veri Kaynakları
         </div>
         <div style='display: flex; flex-wrap: wrap; gap: 4px;' class="notranslate" translate="no">
-            <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='Çevre ve Şehircilik Bakanlığı 2025 Kara Rapor'>ÇŞİDB</span>
-            <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='Copernicus CAMS Atmosfer Modeli' class="notranslate" translate="no">CAMS</span>
+            <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='Temiz Hava Hakkı Platformu, Kara Rapor 2025 (2024 istasyon verisi)'>Kara Rapor</span>
+            <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='Copernicus CAMS atmosfer modeli (Open-Meteo) — ana PM2.5 kaynağı' class="notranslate" translate="no">CAMS</span>
             <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='TÜİK Sağlık ve Ölüm İstatistikleri'>TÜİK</span>
+            <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='OSB envanteri (Ekim 2026)'>OSBÜK</span>
             <span style='font-size: 10px; background-color: #041b2c; color: #6d93b3; padding: 2px 7px; border-radius: 4px; border: 1px solid #092c46; font-weight: 500;' title='DSÖ 2021 Kılavuz Sınırları'>DSÖ</span>
         </div>
     </div>

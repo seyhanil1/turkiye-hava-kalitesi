@@ -20,8 +20,10 @@ def test_health_shield_content_integrity():
     assert "DSÖ Kılavuz Standartları &amp; Halk Sağlığı Koruma Kalkanı" in source
     assert "DSÖ Yıllık Kılavuz Değeri: <strong style='color:#ffffff; margin-left:3px;'>5 µg/m³</strong>" in source
     assert "DSÖ 24 Saatlik Kılavuz Değeri: <strong style='color:#ffffff; margin-left:3px;'>15 µg/m³</strong>" in source
-    assert "Türkiye Ölçüm Ortalaması (Kara Rapor): <strong style='color:#ffffff; margin-left:3px;'>36,3 µg/m³</strong>" in source
-    assert "Kritik Alarm Seviyesi: <strong style='color:#ffffff; margin-left:3px;'>&gt;50 µg/m³</strong>" in source
+    # Kara Rapor 2025'te yayımlanan gerçek değer (eski doğrulanamayan 36,3 ortalaması kaldırıldı)
+    assert "En Yüksek İstasyon (Iğdır, Kara Rapor 2025): <strong style='color:#ffffff; margin-left:3px;'>46,8 µg/m³</strong>" in source
+    assert "DSÖ Ara Hedef-1 (yıllık): <strong style='color:#ffffff; margin-left:3px;'>35 µg/m³</strong>" in source
+    assert "36,3 µg/m³" not in source
 
     # 2. 4 Koruma Kartı
     assert "Hassas Gruplar (Kronik/Çocuk/Yaşlı)" in source

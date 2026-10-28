@@ -41,7 +41,8 @@ def test_analytics_components_generation():
     assert "Ulusal Kirlilik Maruziyeti" in card_html
     assert "0 / 81 İl" in card_html
     assert "Kritik" in card_html
-    assert "Sağlıksız" in card_html
+    assert "Çok Yüksek" in card_html
+    assert "Sağlıksız" not in card_html
     assert "TOPOGRAFİK RİSK GRUBU (ÇANAK HAVZALAR)" in card_html
     assert "Iğdır, Düzce, Erzincan vb." in card_html
 
@@ -98,9 +99,10 @@ def test_overview_kpi_cards_and_map_legend():
     assert 'ortalamanın ı' not in html
     
     # 3. 5 kademeli harita renk skalası şeridi
-    assert "Yeşil:</span> İyi (≤15)" in html
-    assert ("Sarı:</span> Orta (15.1-30)" in html or "Sarı:</span> Orta (15-30)" in html)
-    assert ("Turuncu:</span> Hassas (30.1-50)" in html or "Turuncu:</span> Hassas (30-50)" in html)
-    assert ("Kırmızı:</span> Sağlıksız (50.1-70)" in html or "Kırmızı:</span> Sağlıksız (50-70)" in html)
-    assert "Bordo:</span> Kritik (&gt;70 µg/m³)" in html
+    # DSÖ 2021 yıllık ara hedeflerine dayalı kademeler
+    assert "Yeşil:</span> Düşük (≤10)" in html
+    assert "Sarı:</span> Orta (10.1-15)" in html
+    assert "Turuncu:</span> Yüksek (15.1-25)" in html
+    assert "Kırmızı:</span> Çok Yüksek (25.1-35)" in html
+    assert "Bordo:</span> Kritik (&gt;35 µg/m³)" in html
 

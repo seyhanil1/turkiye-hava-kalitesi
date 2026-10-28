@@ -177,71 +177,90 @@ DSO_KILAVUZ_DEGERLERI = {
 DSO_LIMITLERI = DSO_KILAVUZ_DEGERLERI
 
 # ==========================================
-# TEK UNİFİED KİRLİLİK KADEMELENDİRMESİ
+# TEK KİRLİLİK KADEMELENDİRMESİ (YILLIK ORTALAMA PM2.5)
 # ==========================================
-# Tüm sitede (harita, lejant, şehir sıralaması rozetleri, dağılım çubuğu)
-# kullanılan tek ve tutarlı operasyonel sınıflandırma.
-# Toplam kategori sayısı 5 olup, 81 ilin tamamını kapsar (c1+c2+c3+c4+c5 = 81).
+# Eşikler DSÖ 2021 Küresel Hava Kalitesi Kılavuzu'nun YILLIK PM2.5 ara hedeflerinden
+# (IT-1 35, IT-2 25, IT-3 15, IT-4 10 µg/m³) türetilmiştir. Kademe adları bu platforma
+# özgüdür; DSÖ'nün resmi bir "5 kademeli risk ölçeği" yoktur. DSÖ kılavuz değeri (5 µg/m³)
+# altında güvenli eşik bulunmadığından en düşük kademe de "iyi" değil, "düşük" olarak adlandırılır.
+# Tüm sitede (harita, lejant, rozetler, dağılım çubuğu) yalnızca bu tanım kullanılmalıdır.
 KIRLILIK_KADEMELERI = {
-    "kaynak_aciklamasi": "Bu panele özgü operasyonel sınıflandırmadır (DSÖ 2021 24 saatlik 15 µg/m³ kılavuz değeri ve ara hedefleri referans alınmıştır).",
+    "kaynak_aciklamasi": (
+        "Platforma özgü sınıflandırma; eşikler DSÖ 2021 yıllık PM2.5 ara hedeflerine "
+        "(35 / 25 / 15 / 10 µg/m³) dayanır. Tüm kademeler DSÖ kılavuz değerinin (5 µg/m³) üzerindedir."
+    ),
     "pm25": [
         {
             "id": "iyi",
-            "etiket": "İyi",
-            "tam_ad": "İyi Düzey (≤15 µg/m³)",
+            "etiket": "Düşük",
+            "tam_ad": "Düşük (≤10 µg/m³ · DSÖ Ara Hedef-4 karşılanıyor)",
             "min_val": 0.0,
-            "max_val": 15.0,
+            "max_val": 10.0,
             "renk": "#00e599",
             "bg": "rgba(0, 229, 153, 0.15)",
             "border": "#00e599",
-            "aciklama": "DSÖ 24 saatlik kılavuz değeri (15 µg/m³) altındaki seviye."
+            "aciklama": "DSÖ Ara Hedef-4 (10 µg/m³) karşılanıyor; ancak kılavuz değeri 5 µg/m³'ün üzerinde."
         },
         {
             "id": "orta",
             "etiket": "Orta",
-            "tam_ad": "Orta Düzey (15,1 - 30 µg/m³)",
-            "min_val": 15.0,
-            "max_val": 30.0,
+            "tam_ad": "Orta (10,1 - 15 µg/m³ · Ara Hedef-3)",
+            "min_val": 10.0,
+            "max_val": 15.0,
             "renk": "#facc15",
             "bg": "rgba(250, 204, 21, 0.15)",
             "border": "#facc15",
-            "aciklama": "DSÖ yıllık kılavuzunun üzerinde, orta düzey partikül yükü."
+            "aciklama": "DSÖ Ara Hedef-3 (15 µg/m³) karşılanıyor, Ara Hedef-4 aşılıyor."
         },
         {
             "id": "hassas",
-            "etiket": "Hassas",
-            "tam_ad": "Hassas Grup Riski (30,1 - 50 µg/m³)",
-            "min_val": 30.0,
-            "max_val": 50.0,
+            "etiket": "Yüksek",
+            "tam_ad": "Yüksek (15,1 - 25 µg/m³ · Ara Hedef-2)",
+            "min_val": 15.0,
+            "max_val": 25.0,
             "renk": "#f97316",
             "bg": "rgba(249, 115, 22, 0.15)",
             "border": "#f97316",
-            "aciklama": "DSÖ Ara Hedef-1 sınırını aşan, kronik/çocuk/yaşlı gruplar için riskli seviye."
+            "aciklama": "DSÖ Ara Hedef-3 aşılıyor; hassas gruplar için belirgin uzun dönem risk."
         },
         {
             "id": "sagliksiz",
-            "etiket": "Sağlıksız",
-            "tam_ad": "Sağlıksız Seviye (50,1 - 70 µg/m³)",
-            "min_val": 50.0,
-            "max_val": 70.0,
+            "etiket": "Çok Yüksek",
+            "tam_ad": "Çok Yüksek (25,1 - 35 µg/m³ · Ara Hedef-1)",
+            "min_val": 25.0,
+            "max_val": 35.0,
             "renk": "#f87171",
             "bg": "rgba(248, 113, 113, 0.15)",
             "border": "#f87171",
-            "aciklama": "Tüm nüfus için solunum ve dolaşım sağlığı riski."
+            "aciklama": "DSÖ Ara Hedef-2 aşılıyor (AB 2030 yıllık limiti 10, mevcut AB limiti 25 µg/m³)."
         },
         {
             "id": "kritik",
             "etiket": "Kritik",
-            "tam_ad": "Kritik / Ağır Risk (>70 µg/m³)",
-            "min_val": 70.0,
+            "tam_ad": "Kritik (>35 µg/m³ · Ara Hedef-1 aşıldı)",
+            "min_val": 35.0,
             "max_val": 999.0,
             "renk": "#ef4444",
             "bg": "rgba(239, 68, 68, 0.15)",
             "border": "#ef4444",
-            "aciklama": "Acil durum uyarısı gerektiren yüksek maruziyet seviyesi."
+            "aciklama": "DSÖ'nün en gevşek ara hedefi (IT-1, 35 µg/m³) bile aşılıyor."
         }
     ]
 }
+
+
+def pm25_kademe(val: float) -> dict:
+    """Yıllık ortalama PM2.5 değeri için KIRLILIK_KADEMELERI kaydını döndürür (üst sınır dahil)."""
+    levels = KIRLILIK_KADEMELERI["pm25"]
+    for lvl in levels:
+        if val <= lvl["max_val"]:
+            return lvl
+    return levels[-1]
+
+
+def pm25_kademe_etiketi(val: float) -> str:
+    """Yıllık ortalama PM2.5 değeri için kademe etiketini döndürür."""
+    return pm25_kademe(val)["etiket"]
 
 
 def get_dataset_date_info() -> dict:
@@ -252,42 +271,28 @@ def get_dataset_date_info() -> dict:
     import os
     import pandas as pd
     
-    csv_paths = [
-        os.path.join("data", "daily_city_air_quality.csv"),
-        os.path.join("data", "daily_air_quality_90d.csv")
-    ]
-    
-    start_date = "11.07.2026"
-    end_date = "10.10.2026"
+    csv_path = os.path.join("data", "daily_city_air_quality.csv")
+    start_date = end_date = "-"
     now_ts = pd.Timestamp.now()
-    
-    for p in csv_paths:
-        if os.path.exists(p):
-            try:
-                df_t = pd.read_csv(p)
-                col = "date" if "date" in df_t.columns else ("tarih" if "tarih" in df_t.columns else None)
-                if col:
-                    d_min = pd.to_datetime(df_t[col]).min()
-                    d_max = pd.to_datetime(df_t[col]).max()
-                    # Bitiş tarihi bugünden ileri bir gelecek tarih olamaz
-                    if d_max > now_ts:
-                        d_max = min(d_max, now_ts)
-                    start_date = d_min.strftime("%d.%m.%Y")
-                    end_date = d_max.strftime("%d.%m.%Y")
-                    break
-            except Exception:
-                pass
-                
+    if os.path.exists(csv_path):
+        try:
+            dates = pd.to_datetime(pd.read_csv(csv_path, usecols=["date"])["date"])
+            d_min, d_max = dates.min(), min(dates.max(), now_ts)
+            start_date = d_min.strftime("%d.%m.%Y")
+            end_date = d_max.strftime("%d.%m.%Y")
+        except Exception:
+            pass
+
     return {
         "start_date": start_date,
         "end_date": end_date,
         "date_range_str": f"{start_date} – {end_date}",
-        "period_label_str": "Doğrulanmış 12 Aylık Konsolidasyon Dönemi",
-        "reference_year": "2026",
+        "period_label_str": "Yıllık değerler: CAMS 2025 (12 ay) · Günlük seri: " + f"{start_date} – {end_date}",
+        "reference_year": "2025",
         "sources": {
-            "istasyon": "T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı (ÇŞİDB) & Kara Rapor 2025",
-            "model": "Copernicus CAMS Atmosferik Yeniden Analiz Modeli",
-            "saglik": "TÜİK Ölüm Nedeni İstatistikleri (2022-2024)",
+            "istasyon": "Temiz Hava Hakkı Platformu, Kara Rapor 2025 (ÇŞİDB istasyonlarının 2024 verisi)",
+            "model": "Copernicus CAMS (Open-Meteo) — 2025 yıllık ve son 90 gün günlük model değerleri",
+            "saglik": "TÜİK Ölüm Nedeni İstatistikleri (2024; 2022-2024 ortalaması)",
             "sanayi": "OSB verileri: OSBÜK (Ekim 2026)"
         }
     }
