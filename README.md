@@ -7,6 +7,8 @@
 Türkiye'nin 81 ili için ince partikül madde (PM2.5) değerlerini, Kara Rapor 2025 istasyon ölçümlerini, OSB envanterini
 ve TÜİK ölüm istatistiklerini bir araya getiren, istatistiksel analizlerle desteklenmiş statik bir web sitesi.
 
+**Canlı site: [hava.seyhanil.com](https://hava.seyhanil.com)**
+
 > ⚠️ İl PM2.5 değerleri **istasyon ölçümü değil, Copernicus CAMS model tahminidir** ve yerel kirliliği düşük gösterebilir.
 > Ayrıntılar: [`data/README.md`](data/README.md).
 
