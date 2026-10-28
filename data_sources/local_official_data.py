@@ -107,7 +107,7 @@ def parse_tuik_saglik(filepath: str = "data/tuik_saglik.xlsx") -> pd.DataFrame:
         year_raw = str(df_raw.iloc[idx, 1]).strip()
         year_clean = re.sub(r"[^\d]", "", year_raw)
         
-        if year_clean in ["2022", "2023", "2024", "2025"]:
+        if re.fullmatch(r"20\d{2}", year_clean):
             try:
                 toplam = float(df_raw.iloc[idx, 2])
                 dolasim = float(df_raw.iloc[idx, 3])
