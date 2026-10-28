@@ -1,7 +1,6 @@
 "use client";
 
 import CitySelect, { useCityParam } from "@/components/CitySelect";
-import Plot from "@/components/Plot";
 import { Card, Note } from "@/components/ui";
 import { byName, type Province } from "@/lib/data";
 import { roundDisp, trNum } from "@/lib/format";
@@ -46,20 +45,58 @@ function CityHeader({ p, color }: { p: Province; color: string }) {
   );
 }
 
-function MiniBar({ title, a, b, nameA, nameB, fmt }: {
+/** İki ilin aynı göstergedeki değerleri; çubuk uzunluğu ikisinden büyük olana göre ölçeklenir. */
+function CompareBars({ title, a, b, nameA, nameB, fmt }: {
   title: string; a: number; b: number; nameA: string; nameB: string; fmt: (v: number) => string;
 }) {
+  const max = Math.max(a, b) || 1;
   return (
-    <Card title={title}>
-      <Plot
-        height={230}
-        data={[{
-          type: "bar", x: [nameA, nameB], y: [a, b], marker: { color: [A, B] },
-          text: [fmt(a), fmt(b)], textposition: "outside", cliponaxis: false, hoverinfo: "skip",
-        }]}
-        layout={{ margin: { l: 35, r: 10, t: 25, b: 30 }, yaxis: { range: [0, Math.max(a, b) * 1.3 || 1] } }}
-      />
-    </Card>
+    <div>
+      <div className="mb-2 text-sm font-semibold text-ink">{title}</div>
+      {([[nameA, a, A], [nameB, b, B]] as const).map(([name, v, color]) => (
+        <div key={name} className="mb-1.5 grid grid-cols-[7rem_1fr_auto] items-center gap-3 text-sm">
+          <span className="truncate text-ink-soft">{name}</span>
+          <div className="h-2.5 rounded-full bg-panel-2">
+            <div className="h-2.5 rounded-full" style={{ width: `${(v / max) * 100}%`, background: color }} />
+          </div>
+          <span className="font-semibold tabular-nums" style={{ color }}>{fmt(v)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 0–100 yüzdelik şeridinde iki ilin konumu (yüksek = daha olumlu). */
+function PercentileRow({ label, pa, pb, va, vb, nameA, nameB }: {
+  label: string; pa: number; pb: number; va: string; vb: string; nameA: string; nameB: string;
+}) {
+  const lo = Math.min(pa, pb);
+  const hi = Math.max(pa, pb);
+  return (
+    <div className="mb-6 last:mb-0">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 text-sm">
+        <span className="font-semibold text-ink">{label}</span>
+        <span className="text-xs text-muted">
+          <span style={{ color: A }}>{nameA}: {trNum(pa, 0)}. yüzdelik ({va})</span>
+          {" · "}
+          <span style={{ color: B }}>{nameB}: {trNum(pb, 0)}. yüzdelik ({vb})</span>
+        </span>
+      </div>
+      <div className="relative h-3 rounded-full bg-panel-2">
+        <div className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-slate-500/60" style={{ left: `${lo}%`, width: `${hi - lo}%` }} />
+        {([[pa, A, nameA], [pb, B, nameB]] as const).map(([v, color, name]) => (
+          <span
+            key={name}
+            title={`${name}: ${trNum(v, 0)}. yüzdelik`}
+            className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#031322]"
+            style={{ left: `${v}%`, background: color }}
+          />
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between text-[10px] text-muted">
+        <span>0 (en olumsuz)</span><span>50</span><span>100 (en olumlu)</span>
+      </div>
+    </div>
   );
 }
 
@@ -106,7 +143,6 @@ export default function Duel() {
     },
   ];
 
-  const cats = ["Solunum sağlığı (düşük ölüm hızı)", "Hava temizliği (düşük PM2.5)"];
 
   return (
     <>
@@ -161,39 +197,24 @@ export default function Duel() {
           </div>
 
           <Card title="81 il içindeki yüzdelik konum" subtitle="0–100; yüksek değer daha olumlu (daha düşük PM2.5 veya ölüm hızı)" className="mb-5">
-            <Plot
-              height={260}
-              data={[
-                ...cats.map((c, i) => ({
-                  x: [i === 0 ? a.pct_solunum : a.pct_hava, i === 0 ? b.pct_solunum : b.pct_hava], y: [c, c],
-                  mode: "lines" as const, line: { color: "#334155", width: 4 }, showlegend: false, hoverinfo: "skip" as const,
-                })),
-                {
-                  x: [a.pct_solunum, a.pct_hava], y: cats, mode: "text+markers" as const, name: ilA,
-                  marker: { size: 14, color: A }, text: [`${trNum(a.solunum_olum_100k, 1)} / yüz binde`, `${trNum(a.pm25, 1)} µg/m³`],
-                  textposition: "top center" as const, textfont: { color: A, size: 11 },
-                  hovertemplate: `${ilA}: %{x:.0f}. yüzdelik<extra></extra>`,
-                },
-                {
-                  x: [b.pct_solunum, b.pct_hava], y: cats, mode: "text+markers" as const, name: ilB,
-                  marker: { size: 14, color: B }, text: [`${trNum(b.solunum_olum_100k, 1)} / yüz binde`, `${trNum(b.pm25, 1)} µg/m³`],
-                  textposition: "bottom center" as const, textfont: { color: B, size: 11 },
-                  hovertemplate: `${ilB}: %{x:.0f}. yüzdelik<extra></extra>`,
-                },
-              ]}
-              layout={{
-                margin: { l: 210, r: 20, t: 20, b: 40 },
-                xaxis: { range: [0, 105], title: { text: "Yüzdelik (0–100)", font: { size: 11, color: "#8faec9" } } },
-                legend: { orientation: "h", y: 1.15, x: 0 },
-              }}
+            <PercentileRow
+              label="Hava temizliği (düşük PM2.5)" nameA={ilA} nameB={ilB}
+              pa={a.pct_hava} pb={b.pct_hava} va={`${trNum(a.pm25, 1)} µg/m³`} vb={`${trNum(b.pm25, 1)} µg/m³`}
+            />
+            <PercentileRow
+              label="Solunum sağlığı (düşük ölüm hızı)" nameA={ilA} nameB={ilB}
+              pa={a.pct_solunum} pb={b.pct_solunum}
+              va={`${trNum(a.solunum_olum_100k, 1)} / yüz bin`} vb={`${trNum(b.solunum_olum_100k, 1)} / yüz bin`}
             />
           </Card>
 
-          <div className="mb-5 grid gap-4 md:grid-cols-3">
-            <MiniBar title="PM2.5 (µg/m³)" a={a.pm25} b={b.pm25} nameA={ilA} nameB={ilB} fmt={(v) => trNum(v, 1)} />
-            <MiniBar title="Solunum ölüm hızı (yüz binde)" a={a.solunum_olum_100k} b={b.solunum_olum_100k} nameA={ilA} nameB={ilB} fmt={(v) => trNum(v, 1)} />
-            <MiniBar title="Toplam OSB" a={a.toplam_osb} b={b.toplam_osb} nameA={ilA} nameB={ilB} fmt={(v) => `${v} adet`} />
-          </div>
+          <Card title="Temel göstergeler" className="mb-5">
+            <div className="grid gap-6 md:grid-cols-3">
+              <CompareBars title="PM2.5 (µg/m³)" a={a.pm25} b={b.pm25} nameA={ilA} nameB={ilB} fmt={(v) => trNum(v, 1)} />
+              <CompareBars title="Solunum ölüm hızı (yüz binde)" a={a.solunum_olum_100k} b={b.solunum_olum_100k} nameA={ilA} nameB={ilB} fmt={(v) => trNum(v, 1)} />
+              <CompareBars title="Toplam OSB" a={a.toplam_osb} b={b.toplam_osb} nameA={ilA} nameB={ilB} fmt={(v) => `${v} adet`} />
+            </div>
+          </Card>
 
           <Note>
             PM2.5 değerleri CAMS model tahminidir. Solunum ölüm hızı kaba hızdır, yaşa göre standardize edilmemiştir. OSB verisi OSBÜK

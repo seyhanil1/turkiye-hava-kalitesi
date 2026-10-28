@@ -107,30 +107,51 @@ export function RegionBenchmarkChart({ height = 340 }: { height?: number }) {
   );
 }
 
-/** İllerin bölgelere göre dağılımı (nokta + kutu). */
+/** İllerin bölgelere göre dağılımı: bölge başına kutu + kademe renginde il noktaları. */
 export function RegionStripChart({ height = 420 }: { height?: number }) {
   const order = [...stats.regions.rows].sort((a, b) => b.ortalama - a.ortalama).map((r) => r.bolge);
+  // Noktalar bölge içinde PM2.5 sırasına göre ortadan iki yana sabit dağılır (her açılışta aynı görünüm)
+  const SPREAD = [0, -1, 1, -0.5, 0.5, -1.5, 1.5];
+  const points = order.flatMap((bolge, i) => {
+    const sub = provinces.filter((p) => p.bolge === bolge).sort((a, b) => a.pm25 - b.pm25);
+    return sub.map((p, k) => ({ p, x: i + SPREAD[k % SPREAD.length] * 0.11 }));
+  });
+  const boxes: Data[] = order.map((bolge, i) => {
+    const ys = provinces.filter((p) => p.bolge === bolge).map((p) => p.pm25);
+    return {
+      type: "box", name: bolge, x: ys.map(() => i), y: ys, boxpoints: false, width: 0.55,
+      fillcolor: "rgba(56,189,248,0.07)", line: { color: "rgba(56,189,248,0.55)", width: 1.2 },
+      hoverinfo: "skip", showlegend: false,
+    };
+  });
   return (
     <Plot
       height={height}
-      data={[{
-        type: "box",
-        x: provinces.map((p) => p.bolge),
-        y: provinces.map((p) => p.pm25),
-        text: provinces.map((p) => `${p.il}: ${trNum(p.pm25, 1)} µg/m³ (${trNum(p.pm25 / 5, 1)}x DSÖ)`),
-        hoverinfo: "text",
-        boxpoints: "all",
-        jitter: 0.35,
-        pointpos: 0,
-        marker: { color: "#0ea5e9", size: 8, opacity: 0.75 },
-        fillcolor: "rgba(0,0,0,0)",
-        line: { color: "rgba(143,174,201,0.5)", width: 1 },
-      }]}
+      data={[
+        ...boxes,
+        {
+          type: "scatter", mode: "markers", showlegend: false,
+          x: points.map((d) => d.x), y: points.map((d) => d.p.pm25),
+          marker: {
+            size: 7, color: points.map((d) => tierOf(d.p.pm25).renk), opacity: 0.9,
+            line: { color: "#031322", width: 1 },
+          },
+          text: points.map((d) => `<b>${d.p.il}</b><br>${trNum(d.p.pm25, 1)} µg/m³ · ${tierOf(d.p.pm25).etiket}`),
+          hovertemplate: "%{text}<extra></extra>",
+        },
+      ]}
       layout={{
         margin: { l: 50, r: 20, t: 20, b: 80 },
-        xaxis: { categoryorder: "array", categoryarray: order, tickangle: -35 },
+        xaxis: {
+          tickmode: "array", tickvals: order.map((_, i) => i), ticktext: order, tickangle: -35,
+          showgrid: false, zeroline: false, range: [-0.6, order.length - 0.4],
+        },
         yaxis: { title: { text: "PM2.5 (µg/m³)", font: { size: 11, color: "#8faec9" } }, rangemode: "tozero" },
-        shapes: [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: 5, y1: 5, line: { color: "#ef4444", width: 1.5, dash: "dash" } }],
+        shapes: [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: 5, y1: 5, line: { color: "#ef4444", width: 1.2, dash: "dash" } }],
+        annotations: [{
+          xref: "paper", x: 1, y: 5, text: "DSÖ yıllık kılavuz (5)", showarrow: false,
+          xanchor: "right", yanchor: "bottom", font: { size: 10, color: "#ef4444" },
+        }],
       }}
     />
   );
