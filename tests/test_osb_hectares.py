@@ -1,19 +1,11 @@
 """
-OSB Alanı (Hektar) Doğrulama Testleri
-HavaAtlası - Türkiye Hava Kalitesi ve Bölgesel Veri Analizi Platformu
-
-Bu test paketi:
-1. data/sanayi.txt ham dosyasındaki il bazlı OSB hektar toplamlarının master_data.csv ile 81 ilde birebir aynı olduğunu doğrular.
-2. İstanbul (2.424,7 ha), Ankara (9.173,5 ha) ve İzmir (5.070,8 ha) için değerlerin doğruluğunu ve formatını test eder.
-3. pixel_perfect_dashboard ve sayfalarda hiçbir şekilde '/ 10' bölmesi yapılmadığını denetler.
+Birim Testleri: OSB alanı (hektar) ayrıştırma doğruluğu
 """
 
 import pytest
 import pandas as pd
 from data_sources.local_official_data import parse_sanayi_osb
-from app_pages.duel import to_tr_num
-from visualization.pixel_perfect_dashboard import generate_pixel_perfect_dashboard_html
-
+from analytics.summaries import to_tr_num
 
 def test_raw_sanayi_vs_master_data_all_81_provinces():
     """81 ilin tamamında ham sanayi.txt toplamı ile master_data.csv osb_alani_hektar değerinin birebir aynı olduğunu doğrular."""
@@ -58,20 +50,3 @@ def test_osb_benchmarks_istanbul_ankara_izmir():
     assert to_tr_num(ist_val, 1) == "2.424,7"
     assert to_tr_num(ank_val, 1) == "9.173,5"
     assert to_tr_num(izm_val, 1) == "5.070,8"
-
-
-def test_pixel_perfect_dashboard_has_no_osb_div10():
-    """pixel_perfect_dashboard.py dosyasında veya üretilen HTML'de OSB alanı için '/ 10' bölmesi olmadığını doğrular."""
-    with open("visualization/pixel_perfect_dashboard.py", "r", encoding="utf-8") as f:
-        src = f.read()
-
-    assert "c.osb / 10" not in src
-    assert "cA.osb / 10" not in src
-    assert "cB.osb / 10" not in src
-
-    # Dashboard HTML üretimi ve İstanbul doğrulaması
-    df_master = pd.read_csv("data/master_data.csv")
-    html = generate_pixel_perfect_dashboard_html(df_master)
-
-    # 242,5 değil gerçek 2.424,7 ha olmalı
-    assert "242,5 Hektar Sanayi Alanı" not in html

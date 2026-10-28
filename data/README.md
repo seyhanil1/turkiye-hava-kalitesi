@@ -6,12 +6,13 @@ Platformdaki PM2.5 değerlerinin **istasyon ölçümü değil, CAMS model tahmin
 | Dosya | İçerik | Kaynak | Nasıl üretilir / güncellenir |
 | :--- | :--- | :--- | :--- |
 | `cams_annual_2025.csv` | 81 il merkezi için 2025 yıllık ortalama PM2.5 ve PM10 (µg/m³), saatlik veri tamlığı | [Copernicus CAMS](https://atmosphere.copernicus.eu/) üzerinden [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) (CC-BY 4.0) | `python -m data_sources.cams_annual_connector 2025` |
-| `daily_city_air_quality.csv` | 81 il merkezi için son ~90 günün günlük PM2.5 ortalaması (en az 18 saat dolu günler) | CAMS / Open-Meteo | `python -m data_sources.cams_city_connector` (uygulama içinden de yenilenir) |
+| `daily_city_air_quality.csv` | 81 il merkezi için son ~90 günün günlük PM2.5 ortalaması (en az 18 saat dolu günler) | CAMS / Open-Meteo | `python scripts/export_web_data.py --refresh` |
 | `kara_rapor_2025_istasyon.csv` | 2024 yılı en yüksek 10 istasyonun yıllık PM2.5 ortalaması | Temiz Hava Hakkı Platformu, [Kara Rapor 2025](https://temizhavahakki.org/kara-rapor-2025/) — D. Gümüşel sunumu, "Yıllık PM2,5 ortalamaları" (s. 12) | Elle aktarıldı; rapor yalnızca ilk 10 istasyonu yayımlıyor |
 | `tuik_saglik.xlsx` | İl bazında 2022–2025 toplam, dolaşım, tümör ve solunum sistemi ölümleri | TÜİK Ölüm ve Ölüm Nedeni İstatistikleri | TÜİK veri portalından indirilen tablo |
 | `sanayi.txt` | 81 ilin OSB listesi (tür, durum, alan, parsel) | OSBÜK (Ekim 2026) | Sekme ayrımlı dışa aktarım |
 | `tr-cities.json` | 81 il sınırları (GeoJSON) | Açık kaynak coğrafi veri | — |
-| `master_data.csv` | Yukarıdakilerin birleşimi (uygulama önbelleği) | Türetilmiş | `python src/generate_data.py` |
+| `master_data.csv` | Yukarıdakilerin birleşimi | Türetilmiş | `python scripts/export_web_data.py` |
+| `../web/src/data/*.json` | Sitenin okuduğu il tablosu, istatistikler, günlük seriler ve harita geometrisi | Türetilmiş | `python scripts/export_web_data.py` (her gece GitHub Actions ile) |
 
 Nüfus (TÜİK ADNKS 2023), il merkezi koordinatları ve DSÖ 2021 kılavuz değerleri `data_sources/constants.py` içindedir.
 

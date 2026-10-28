@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #031322;
+  --panel: #031b2e;
+  --panel-2: #021220;
+  --border: #093452;
+  --border-soft: #07253d;
+  --text: #e2e8f0;
+  --text-soft: #cbd5e1;
+  --muted: #8faec9;
+  --accent: #00e5db;
+  --accent-2: #38bdf8;
+  --city-a: #38bdf8;
+  --city-b: #10b981;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--border);
+  --color-line-soft: var(--border-soft);
+  --color-ink: var(--text);
+  --color-ink-soft: var(--text-soft);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --font-sans: var(--font-jakarta);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(0, 229, 219, 0.3);
+}
+
+/* Markdown (asistan yanıtları) */
+.md p { margin: 0 0 0.6rem; }
+.md p:last-child { margin-bottom: 0; }
+.md ul, .md ol { margin: 0 0 0.6rem 1.2rem; list-style: disc; }
+.md ol { list-style: decimal; }
+.md li { margin: 0.15rem 0; }
+.md strong { color: #fff; }
+.md code { background: rgba(0, 229, 219, 0.1); color: var(--accent); padding: 0 4px; border-radius: 4px; font-size: 0.9em; }
+.md table { border-collapse: collapse; margin: 0.4rem 0 0.6rem; font-size: 0.85rem; display: block; overflow-x: auto; }
+.md th, .md td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; }
+.md th { background: var(--panel-2); }

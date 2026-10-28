@@ -1,0 +1,46 @@
+name: Gece veri güncelleme
+
+# Her gece CAMS günlük PM2.5 verisini yeniler, site JSON dosyalarını yeniden üretir ve
+# değişiklik varsa commit'ler. Vercel, main dalındaki bu commit ile siteyi yeniden yayınlar.
+on:
+  schedule:
+    - cron: "30 2 * * *" # 05:30 (Türkiye saati)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: CAMS verisini yenile ve JSON üret
+        run: python scripts/export_web_data.py --refresh
+
+      - name: Testler
+        run: python -m pytest tests -q
+
+      - name: Değişiklikleri commit'le
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/daily_city_air_quality.csv data/master_data.csv web/src/data
+          if git diff --cached --quiet; then
+            echo "Değişiklik yok."
+          else
+            git commit -m "chore(data): günlük CAMS verisi güncellendi"
+            git push
+          fi
